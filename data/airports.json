@@ -1,0 +1,359 @@
+[
+  {
+    "iata": "JFK",
+    "name": "John F. Kennedy International Airport",
+    "city": "New York",
+    "country": "US",
+    "continent": "NA"
+  },
+  {
+    "iata": "LAX",
+    "name": "Los Angeles International Airport",
+    "city": "Los Angeles",
+    "country": "US",
+    "continent": "NA"
+  },
+  {
+    "iata": "ORD",
+    "name": "Chicago O'Hare International Airport",
+    "city": "Chicago",
+    "country": "US",
+    "continent": "NA"
+  },
+  {
+    "iata": "MIA",
+    "name": "Miami International Airport",
+    "city": "Miami",
+    "country": "US",
+    "continent": "NA"
+  },
+  {
+    "iata": "DEN",
+    "name": "Denver International Airport",
+    "city": "Denver",
+    "country": "US",
+    "continent": "NA"
+  },
+  {
+    "iata": "YYZ",
+    "name": "Toronto Pearson International Airport",
+    "city": "Toronto",
+    "country": "CA",
+    "continent": "NA"
+  },
+  {
+    "iata": "YVR",
+    "name": "Vancouver International Airport",
+    "city": "Vancouver",
+    "country": "CA",
+    "continent": "NA"
+  },
+  {
+    "iata": "LHR",
+    "name": "London Heathrow Airport",
+    "city": "London",
+    "country": "GB",
+    "continent": "EU"
+  },
+  {
+    "iata": "CDG",
+    "name": "Charles de Gaulle Airport",
+    "city": "Paris",
+    "country": "FR",
+    "continent": "EU"
+  },
+  {
+    "iata": "FRA",
+    "name": "Frankfurt Airport",
+    "city": "Frankfurt",
+    "country": "DE",
+    "continent": "EU"
+  },
+  {
+    "iata": "AMS",
+    "name": "Amsterdam Airport Schiphol",
+    "city": "Amsterdam",
+    "country": "NL",
+    "continent": "EU"
+  },
+  {
+    "iata": "FCO",
+    "name": "Leonardo da Vinci International Airport",
+    "city": "Rome",
+    "country": "IT",
+    "continent": "EU"
+  },
+  {
+    "iata": "MAD",
+    "name": "Adolfo Suárez Madrid–Barajas Airport",
+    "city": "Madrid",
+    "country": "ES",
+    "continent": "EU"
+  },
+  {
+    "iata": "IST",
+    "name": "Istanbul Airport",
+    "city": "Istanbul",
+    "country": "TR",
+    "continent": "EU"
+  },
+  {
+    "iata": "RUH",
+    "name": "King Khalid International Airport",
+    "city": "Riyadh",
+    "country": "SA",
+    "continent": "AS"
+  },
+  {
+    "iata": "JED",
+    "name": "King Abdulaziz International Airport",
+    "city": "Jeddah",
+    "country": "SA",
+    "continent": "AS"
+  },
+  {
+    "iata": "DMM",
+    "name": "King Fahd International Airport",
+    "city": "Dammam",
+    "country": "SA",
+    "continent": "AS"
+  },
+  {
+    "iata": "MED",
+    "name": "Prince Mohammad Bin Abdulaziz Airport",
+    "city": "Medina",
+    "country": "SA",
+    "continent": "AS"
+  },
+  {
+    "iata": "DXB",
+    "name": "Dubai International Airport",
+    "city": "Dubai",
+    "country": "AE",
+    "continent": "AS"
+  },
+  {
+    "iata": "AUH",
+    "name": "Abu Dhabi International Airport",
+    "city": "Abu Dhabi",
+    "country": "AE",
+    "continent": "AS"
+  },
+  {
+    "iata": "DOH",
+    "name": "Hamad International Airport",
+    "city": "Doha",
+    "country": "QA",
+    "continent": "AS"
+  },
+  {
+    "iata": "KWI",
+    "name": "Kuwait International Airport",
+    "city": "Kuwait City",
+    "country": "KW",
+    "continent": "AS"
+  },
+  {
+    "iata": "CAI",
+    "name": "Cairo International Airport",
+    "city": "Cairo",
+    "country": "EG",
+    "continent": "AF"
+  },
+  {
+    "iata": "CMN",
+    "name": "Mohammed V International Airport",
+    "city": "Casablanca",
+    "country": "MA",
+    "continent": "AF"
+  },
+  {
+    "iata": "JNB",
+    "name": "OR Tambo International Airport",
+    "city": "Johannesburg",
+    "country": "ZA",
+    "continent": "AF"
+  },
+  {
+    "iata": "CPT",
+    "name": "Cape Town International Airport",
+    "city": "Cape Town",
+    "country": "ZA",
+    "continent": "AF"
+  },
+  {
+    "iata": "LOS",
+    "name": "Murtala Muhammed International Airport",
+    "city": "Lagos",
+    "country": "NG",
+    "continent": "AF"
+  },
+  {
+    "iata": "ADD",
+    "name": "Addis Ababa Bole International Airport",
+    "city": "Addis Ababa",
+    "country": "ET",
+    "continent": "AF"
+  },
+  {
+    "iata": "NRT",
+    "name": "Narita International Airport",
+    "city": "Tokyo",
+    "country": "JP",
+    "continent": "AS"
+  },
+  {
+    "iata": "ICN",
+    "name": "Incheon International Airport",
+    "city": "Seoul",
+    "country": "KR",
+    "continent": "AS"
+  },
+  {
+    "iata": "PVG",
+    "name": "Shanghai Pudong International Airport",
+    "city": "Shanghai",
+    "country": "CN",
+    "continent": "AS"
+  },
+  {
+    "iata": "PEK",
+    "name": "Beijing Capital International Airport",
+    "city": "Beijing",
+    "country": "CN",
+    "continent": "AS"
+  },
+  {
+    "iata": "HKG",
+    "name": "Hong Kong International Airport",
+    "city": "Hong Kong",
+    "country": "HK",
+    "continent": "AS"
+  },
+  {
+    "iata": "SIN",
+    "name": "Singapore Changi Airport",
+    "city": "Singapore",
+    "country": "SG",
+    "continent": "AS"
+  },
+  {
+    "iata": "KUL",
+    "name": "Kuala Lumpur International Airport",
+    "city": "Kuala Lumpur",
+    "country": "MY",
+    "continent": "AS"
+  },
+  {
+    "iata": "BKK",
+    "name": "Suvarnabhumi Airport",
+    "city": "Bangkok",
+    "country": "TH",
+    "continent": "AS"
+  },
+  {
+    "iata": "CGK",
+    "name": "Soekarno–Hatta International Airport",
+    "city": "Jakarta",
+    "country": "ID",
+    "continent": "AS"
+  },
+  {
+    "iata": "DEL",
+    "name": "Indira Gandhi International Airport",
+    "city": "New Delhi",
+    "country": "IN",
+    "continent": "AS"
+  },
+  {
+    "iata": "BOM",
+    "name": "Chhatrapati Shivaji Maharaj International Airport",
+    "city": "Mumbai",
+    "country": "IN",
+    "continent": "AS"
+  },
+  {
+    "iata": "ISB",
+    "name": "Islamabad International Airport",
+    "city": "Islamabad",
+    "country": "PK",
+    "continent": "AS"
+  },
+  {
+    "iata": "KHI",
+    "name": "Jinnah International Airport",
+    "city": "Karachi",
+    "country": "PK",
+    "continent": "AS"
+  },
+  {
+    "iata": "LHE",
+    "name": "Allama Iqbal International Airport",
+    "city": "Lahore",
+    "country": "PK",
+    "continent": "AS"
+  },
+  {
+    "iata": "DAC",
+    "name": "Hazrat Shahjalal International Airport",
+    "city": "Dhaka",
+    "country": "BD",
+    "continent": "AS"
+  },
+  {
+    "iata": "SYD",
+    "name": "Sydney Kingsford Smith Airport",
+    "city": "Sydney",
+    "country": "AU",
+    "continent": "OC"
+  },
+  {
+    "iata": "MEL",
+    "name": "Melbourne Airport",
+    "city": "Melbourne",
+    "country": "AU",
+    "continent": "OC"
+  },
+  {
+    "iata": "AKL",
+    "name": "Auckland Airport",
+    "city": "Auckland",
+    "country": "NZ",
+    "continent": "OC"
+  },
+  {
+    "iata": "GRU",
+    "name": "São Paulo/Guarulhos International Airport",
+    "city": "São Paulo",
+    "country": "BR",
+    "continent": "SA"
+  },
+  {
+    "iata": "GIG",
+    "name": "Rio de Janeiro/Galeão International Airport",
+    "city": "Rio de Janeiro",
+    "country": "BR",
+    "continent": "SA"
+  },
+  {
+    "iata": "EZE",
+    "name": "Ezeiza International Airport",
+    "city": "Buenos Aires",
+    "country": "AR",
+    "continent": "SA"
+  },
+  {
+    "iata": "SCL",
+    "name": "Arturo Merino Benítez International Airport",
+    "city": "Santiago",
+    "country": "CL",
+    "continent": "SA"
+  },
+  {
+    "iata": "BOG",
+    "name": "El Dorado International Airport",
+    "city": "Bogotá",
+    "country": "CO",
+    "continent": "SA"
+  }
+]

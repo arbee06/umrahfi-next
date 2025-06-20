@@ -1,0 +1,328 @@
+/* File: styles/fontawesome-custom.css */
+/* Add this file and import it in _app.js after the main Font Awesome CSS */
+
+/* Font Awesome Icon Sizing and Colors */
+.fa-icon-sm { font-size: 0.875rem; }
+.fa-icon-md { font-size: 1rem; }
+.fa-icon-lg { font-size: 1.25rem; }
+.fa-icon-xl { font-size: 1.5rem; }
+.fa-icon-2x { font-size: 2rem; }
+.fa-icon-3x { font-size: 3rem; }
+
+/* Trust indicator icons */
+.home-trust-icon {
+  font-size: 1.125rem;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+/* Card icons */
+.home-card-icon {
+  font-size: 2rem;
+  color: var(--primary);
+  flex-shrink: 0;
+}
+
+/* Badge icons */
+.home-badge-icon {
+  font-size: 1.25rem;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+/* Button icons */
+.home-btn-icon,
+.login-btn-arrow,
+.register-btn-arrow,
+.packages-btn-icon {
+  width: 1.25rem;
+  height: 1.25rem;
+  transition: transform 0.2s ease;
+}
+
+/* Icon hover effects */
+.btn:hover .home-btn-icon,
+.btn:hover .login-btn-arrow,
+.btn:hover .register-btn-arrow {
+  transform: translateX(4px);
+}
+
+/* Feature icons in cards */
+.home-feature-icon svg {
+  width: 1.5rem;
+  height: 1.5rem;
+  color: inherit;
+}
+
+/* CTA feature checks */
+.home-feature-check {
+  width: 1.25rem;
+  height: 1.25rem;
+  background: var(--success);
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+/* Stats section icons */
+.home-stat-emoji {
+  font-size: 3rem;
+  display: block;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+/* Guarantee icons */
+.home-guarantee-icon {
+  font-size: 1.125rem;
+  color: var(--primary);
+}
+
+/* Form input icons */
+.login-input-icon svg,
+.register-input-icon svg {
+  width: 1.25rem;
+  height: 1.25rem;
+  color: var(--gray-400);
+}
+
+/* Demo account icons */
+.login-demo-role-icon svg,
+.register-user-type-icon svg {
+  font-size: 1.125rem;
+}
+
+/* Loading spinner */
+.login-loading-spinner-auth,
+.register-loading-spinner-auth,
+.packages-loading-spinner {
+  width: 1.25rem;
+  height: 1.25rem;
+  animation: fa-spin 1s linear infinite;
+}
+
+/* Package detail icons */
+.packages-detail-icon {
+  font-size: 1.25rem;
+  color: var(--primary);
+  min-width: 1.25rem;
+  margin-top: 0.125rem;
+}
+
+/* Star ratings */
+.packages-star {
+  font-size: 0.875rem;
+  color: var(--gray-300);
+}
+
+.packages-star.filled {
+  color: #fbbf24;
+}
+
+/* Error and success icons */
+.login-error-icon svg,
+.register-error-icon svg {
+  width: 1.25rem;
+  height: 1.25rem;
+  color: var(--error);
+}
+
+/* Password toggle */
+.login-password-toggle svg,
+.register-password-toggle svg {
+  width: 1.25rem;
+  height: 1.25rem;
+  color: var(--gray-400);
+}
+
+.login-password-toggle:hover svg,
+.register-password-toggle:hover svg {
+  color: var(--gray-600);
+}
+
+/* User type selection icons */
+.register-user-type-check svg {
+  width: 1.5rem;
+  height: 1.5rem;
+  color: var(--primary);
+}
+
+/* Visual icons */
+.login-visual-icon svg,
+.register-visual-icon svg {
+  font-size: 2.5rem;
+  color: white;
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2));
+}
+
+/* Feature item icons */
+.register-feature-icon svg {
+  width: 1.5rem;
+  height: 1.5rem;
+  color: var(--success);
+}
+
+/* Empty state icons */
+.packages-empty-icon {
+  font-size: 4rem;
+  color: var(--gray-400);
+  opacity: 0.6;
+}
+
+/* Breadcrumb icons */
+.package-details-breadcrumb-link svg {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+/* Status and action icons */
+.company-dashboard-stat-icon svg,
+.company-orders-stat-icon svg {
+  width: 1.5rem;
+  height: 1.5rem;
+}
+
+/* Table action icons */
+.packages-table .action-btn svg {
+  width: 1rem;
+  height: 1rem;
+}
+
+/* Card header icons */
+.package-details-card-icon svg {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+/* Responsive icon sizing */
+@media (max-width: 768px) {
+  .home-card-icon {
+    font-size: 1.5rem;
+  }
+  
+  .home-stat-emoji {
+    font-size: 2.5rem;
+  }
+  
+  .login-visual-icon svg,
+  .register-visual-icon svg {
+    font-size: 2rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .home-trust-icon {
+    font-size: 1rem;
+  }
+  
+  .home-badge-icon {
+    font-size: 1rem;
+  }
+  
+  .home-stat-emoji {
+    font-size: 2rem;
+  }
+}
+
+/* Dark mode support for icons */
+@media (prefers-color-scheme: dark) {
+  .packages-star.empty {
+    color: var(--gray-600);
+  }
+  
+  .login-input-icon svg,
+  .register-input-icon svg {
+    color: var(--gray-500);
+  }
+}
+
+/* High contrast mode */
+@media (prefers-contrast: high) {
+  .home-feature-check {
+    border: 2px solid white;
+  }
+  
+  .login-input-icon svg,
+  .register-input-icon svg {
+    color: var(--gray-700);
+  }
+}
+
+/* Animation classes for Font Awesome */
+.fa-beat {
+  animation: fa-beat 1s ease-in-out infinite;
+}
+
+.fa-fade {
+  animation: fa-fade 2s ease-in-out infinite;
+}
+
+.fa-flip {
+  animation: fa-flip 1s ease-in-out infinite;
+}
+
+.fa-pulse {
+  animation: fa-pulse 2s ease-in-out infinite;
+}
+
+.fa-shake {
+  animation: fa-shake 1s ease-in-out infinite;
+}
+
+.fa-bounce {
+  animation: fa-bounce 1s ease-in-out infinite;
+}
+
+/* Custom animations */
+@keyframes fa-glow {
+  0%, 100% { 
+    filter: drop-shadow(0 0 5px currentColor);
+    opacity: 1;
+  }
+  50% { 
+    filter: drop-shadow(0 0 20px currentColor);
+    opacity: 0.8;
+  }
+}
+
+.fa-glow {
+  animation: fa-glow 2s ease-in-out infinite;
+}
+
+/* Icon states */
+.icon-success { color: var(--success); }
+.icon-warning { color: var(--warning); }
+.icon-error { color: var(--error); }
+.icon-info { color: var(--primary); }
+.icon-muted { color: var(--gray-400); }
+
+/* Icon backgrounds */
+.icon-bg-success { 
+  background: rgba(16, 185, 129, 0.1);
+  color: var(--success);
+  padding: 0.5rem;
+  border-radius: 0.5rem;
+}
+
+.icon-bg-warning { 
+  background: rgba(245, 158, 11, 0.1);
+  color: var(--warning);
+  padding: 0.5rem;
+  border-radius: 0.5rem;
+}
+
+.icon-bg-error { 
+  background: rgba(239, 68, 68, 0.1);
+  color: var(--error);
+  padding: 0.5rem;
+  border-radius: 0.5rem;
+}
+
+.icon-bg-primary { 
+  background: rgba(37, 99, 235, 0.1);
+  color: var(--primary);
+  padding: 0.5rem;
+  border-radius: 0.5rem;
+}

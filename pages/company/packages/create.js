@@ -1,0 +1,1102 @@
+import { useState } from 'react';
+import { useRouter } from 'next/router';
+import Layout from '@/components/Layout';
+import ProtectedRoute from '@/components/ProtectedRoute';
+import packageService from '@/services/packageService';
+import { getAirports, formatAirportDisplay } from '@/utils/airports';
+import { getCountries } from '@/utils/countries';
+import Swal from 'sweetalert2';
+
+export default function CreatePackage() {
+  const router = useRouter();
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [currentStep, setCurrentStep] = useState(1);
+  const totalSteps = 5;
+  const [airports] = useState(() => getAirports());
+  const [countries] = useState(() => getCountries());
+  
+  const [formData, setFormData] = useState({
+    title: '',
+    description: '',
+    price: '',
+    childPrice: '',
+    duration: '',
+    departureDate: '',
+    returnDate: '',
+    departureAirport: '',
+    arrivalAirport: 'JED',
+    transitAirport: '',
+    totalSeats: '',
+    availableSeats: '',
+    hotelName: '',
+    hotelRating: '3',
+    mealPlan: 'Breakfast',
+    transportation: 'Flight',
+    country: 'Saudi Arabia',
+    inclusions: [''],
+    exclusions: [''],
+    itinerary: [{ day: 1, description: '' }],
+    specialRequests: ''
+  });
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const handleArrayChange = (field, index, value) => {
+    const newArray = [...formData[field]];
+    newArray[index] = value;
+    setFormData(prev => ({
+      ...prev,
+      [field]: newArray
+    }));
+  };
+
+  const handleItineraryChange = (index, field, value) => {
+    const newItinerary = [...formData.itinerary];
+    newItinerary[index][field] = value;
+    setFormData(prev => ({
+      ...prev,
+      itinerary: newItinerary
+    }));
+  };
+
+  const addArrayField = (field) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: [...prev[field], '']
+    }));
+  };
+
+  const addItineraryDay = () => {
+    setFormData(prev => ({
+      ...prev,
+      itinerary: [...prev.itinerary, { day: prev.itinerary.length + 1, description: '' }]
+    }));
+  };
+
+  const removeArrayField = (field, index) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: prev[field].filter((_, i) => i !== index)
+    }));
+  };
+
+  const removeItineraryDay = (index) => {
+    const newItinerary = formData.itinerary.filter((_, i) => i !== index);
+    // Re-number days
+    newItinerary.forEach((item, i) => {
+      item.day = i + 1;
+    });
+    setFormData(prev => ({
+      ...prev,
+      itinerary: newItinerary
+    }));
+  };
+
+  const nextStep = () => {
+    console.log('nextStep called, currentStep:', currentStep, 'totalSteps:', totalSteps);
+    if (currentStep < totalSteps) {
+      setCurrentStep(currentStep + 1);
+    }
+  };
+
+  const prevStep = () => {
+    if (currentStep > 1) {
+      setCurrentStep(currentStep - 1);
+    }
+  };
+
+  const isStepValid = () => {
+    switch (currentStep) {
+      case 1:
+        return formData.title && formData.description && formData.price && formData.childPrice && formData.duration;
+      case 2:
+        return formData.departureDate && formData.returnDate && formData.departureAirport && formData.arrivalAirport && formData.totalSeats && formData.availableSeats;
+      case 3:
+        return formData.hotelName && formData.country;
+      case 4:
+        return formData.itinerary.some(item => item.description.trim());
+      case 5:
+        return true;
+      default:
+        return false;
+    }
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    
+    console.log('handleSubmit called, currentStep:', currentStep, 'totalSteps:', totalSteps);
+    
+    // Only proceed with submission if we're on the final step
+    if (currentStep !== totalSteps) {
+      console.log('Not on final step, returning early');
+      return;
+    }
+    
+    // Show confirmation dialog
+    const result = await Swal.fire({
+      title: 'Create Package?',
+      html: `
+        <div style="text-align: left; margin: 1rem 0;">
+          <p style="margin-bottom: 0.5rem; color: #6b7280;">You're about to create:</p>
+          <p style="font-weight: 600; color: #1f2937; margin-bottom: 0.5rem;">${formData.title}</p>
+          <div style="background: #f0f8ff; padding: 1rem; border-radius: 0.5rem; margin-bottom: 1rem;">
+            <p style="color: #6b7280; margin: 0.25rem 0;">• Adult Price: $${formData.price} per person</p>
+            <p style="color: #6b7280; margin: 0.25rem 0;">• Child Price: $${formData.childPrice} per child</p>
+            <p style="color: #6b7280; margin: 0.25rem 0;">• Duration: ${formData.duration} days</p>
+            <p style="color: #6b7280; margin: 0.25rem 0;">• Total Seats: ${formData.totalSeats}</p>
+            <p style="color: #6b7280; margin: 0.25rem 0;">• Departure: ${new Date(formData.departureDate).toLocaleDateString()}</p>
+            <p style="color: #6b7280; margin: 0.25rem 0;">• Route: ${formData.departureAirport} → ${formData.transitAirport ? formData.transitAirport + ' → ' : ''}${formData.arrivalAirport}</p>
+          </div>
+          <p style="color: #6b7280; font-size: 0.9rem;">The package will be published and available for booking immediately.</p>
+        </div>
+      `,
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonColor: '#059669',
+      cancelButtonColor: '#6b7280',
+      confirmButtonText: 'Yes, Create Package',
+      cancelButtonText: 'Cancel',
+      reverseButtons: true,
+      customClass: {
+        popup: 'custom-swal-popup',
+        title: 'custom-swal-title',
+        htmlContainer: 'custom-swal-html',
+        confirmButton: 'custom-swal-confirm',
+        cancelButton: 'custom-swal-cancel'
+      },
+      buttonsStyling: false,
+      focusConfirm: false,
+      focusCancel: true
+    });
+
+    if (!result.isConfirmed) return;
+
+    setError('');
+    setLoading(true);
+
+    // Show loading state
+    Swal.fire({
+      title: 'Creating Package...',
+      html: 'Please wait while we create your package.',
+      allowOutsideClick: false,
+      allowEscapeKey: false,
+      showConfirmButton: false,
+      customClass: {
+        popup: 'custom-swal-popup'
+      },
+      didOpen: () => {
+        Swal.showLoading();
+      }
+    });
+
+    try {
+      // Prepare data
+      const packageData = {
+        ...formData,
+        price: Number(formData.price),
+        childPrice: Number(formData.childPrice),
+        duration: Number(formData.duration),
+        totalSeats: Number(formData.totalSeats),
+        availableSeats: Number(formData.availableSeats),
+        hotelRating: Number(formData.hotelRating),
+        inclusions: formData.inclusions.filter(item => item.trim()),
+        exclusions: formData.exclusions.filter(item => item.trim()),
+        itinerary: formData.itinerary.filter(item => item.description.trim())
+      };
+
+      const response = await packageService.createPackage(packageData);
+      
+      // Show success message
+      await Swal.fire({
+        title: 'Package Created!',
+        html: `
+          <div style="text-align: center; margin: 1rem 0;">
+            <p style="color: #059669; font-weight: 600; margin-bottom: 1rem;">Your package has been successfully created!</p>
+            <p style="color: #6b7280; margin-bottom: 0.5rem;">Package:</p>
+            <p style="font-weight: 600; color: #1f2937;">${formData.title}</p>
+          </div>
+        `,
+        icon: 'success',
+        confirmButtonColor: '#059669',
+        confirmButtonText: 'View Packages',
+        customClass: {
+          popup: 'custom-swal-popup',
+          title: 'custom-swal-title',
+          htmlContainer: 'custom-swal-html',
+          confirmButton: 'custom-swal-confirm'
+        },
+        buttonsStyling: false
+      });
+      
+      router.push('/company/packages');
+    } catch (err) {
+      Swal.close();
+      setError(err.error || 'Failed to create package');
+      
+      // Show error message
+      await Swal.fire({
+        title: 'Creation Failed',
+        html: `
+          <div style="text-align: center; margin: 1rem 0;">
+            <p style="color: #ef4444; margin-bottom: 1rem;">${err.error || 'Failed to create package'}</p>
+            <p style="color: #6b7280; font-size: 0.9rem;">Please check your information and try again.</p>
+          </div>
+        `,
+        icon: 'error',
+        confirmButtonColor: '#ef4444',
+        confirmButtonText: 'Try Again',
+        customClass: {
+          popup: 'custom-swal-popup',
+          title: 'custom-swal-title',
+          htmlContainer: 'custom-swal-html',
+          confirmButton: 'custom-swal-confirm'
+        },
+        buttonsStyling: false
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const renderStepContent = () => {
+    switch (currentStep) {
+      case 1:
+        return (
+          <div className="create-package-step">
+            <div className="create-package-step-header">
+              <div className="create-package-step-icon">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <h3 className="create-package-step-title">Basic Information</h3>
+              <p className="create-package-step-description">
+                Start by providing the essential details about your Umrah package
+              </p>
+            </div>
+
+            <div className="create-package-form-section">
+              <div className="create-package-form-group">
+                <label className="create-package-form-label">
+                  <span>Package Title</span>
+                  <span className="create-package-required">*</span>
+                </label>
+                <div className="create-package-input-wrapper">
+                  <div className="create-package-input-icon">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a1.994 1.994 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                    </svg>
+                  </div>
+                  <input
+                    type="text"
+                    name="title"
+                    value={formData.title}
+                    onChange={handleChange}
+                    className="create-package-form-input"
+                    placeholder="e.g., Premium Umrah Package 2025"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="create-package-form-group">
+                <label className="create-package-form-label">
+                  <span>Package Description</span>
+                  <span className="create-package-required">*</span>
+                </label>
+                <div className="create-package-input-wrapper">
+                  <div className="create-package-input-icon">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                  </div>
+                  <textarea
+                    name="description"
+                    value={formData.description}
+                    onChange={handleChange}
+                    className="create-package-form-textarea"
+                    rows="4"
+                    placeholder="Describe your package, highlighting what makes it special..."
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="create-package-form-row">
+                <div className="create-package-form-group">
+                  <label className="create-package-form-label">
+                    <span>Adult Price ($)</span>
+                    <span className="create-package-required">*</span>
+                  </label>
+                  <div className="create-package-input-wrapper">
+                    <div className="create-package-input-icon">
+                      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
+                      </svg>
+                    </div>
+                    <input
+                      type="number"
+                      name="price"
+                      value={formData.price}
+                      onChange={handleChange}
+                      className="create-package-form-input"
+                      placeholder="0"
+                      min="0"
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div className="create-package-form-group">
+                  <label className="create-package-form-label">
+                    <span>Child Price ($)</span>
+                    <span className="create-package-required">*</span>
+                  </label>
+                  <div className="create-package-input-wrapper">
+                    <div className="create-package-input-icon">
+                      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
+                      </svg>
+                    </div>
+                    <input
+                      type="number"
+                      name="childPrice"
+                      value={formData.childPrice}
+                      onChange={handleChange}
+                      className="create-package-form-input"
+                      placeholder="0"
+                      min="0"
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div className="create-package-form-group">
+                  <label className="create-package-form-label">
+                    <span>Duration (days)</span>
+                    <span className="create-package-required">*</span>
+                  </label>
+                  <div className="create-package-input-wrapper">
+                    <div className="create-package-input-icon">
+                      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                      </svg>
+                    </div>
+                    <input
+                      type="number"
+                      name="duration"
+                      value={formData.duration}
+                      onChange={handleChange}
+                      className="create-package-form-input"
+                      placeholder="7"
+                      min="1"
+                      required
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+
+      case 2:
+        return (
+          <div className="create-package-step">
+            <div className="create-package-step-header">
+              <div className="create-package-step-icon">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+              </div>
+              <h3 className="create-package-step-title">Dates & Capacity</h3>
+              <p className="create-package-step-description">
+                Set your travel dates and how many pilgrims you can accommodate
+              </p>
+            </div>
+
+            <div className="create-package-form-section">
+              <div className="create-package-form-row">
+                <div className="create-package-form-group">
+                  <label className="create-package-form-label">
+                    <span>Departure Date</span>
+                    <span className="create-package-required">*</span>
+                  </label>
+                  <div className="create-package-input-wrapper">
+                    <div className="create-package-input-icon">
+                      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                      </svg>
+                    </div>
+                    <input
+                      type="date"
+                      name="departureDate"
+                      value={formData.departureDate}
+                      onChange={handleChange}
+                      className="create-package-form-input"
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div className="create-package-form-group">
+                  <label className="create-package-form-label">
+                    <span>Return Date</span>
+                    <span className="create-package-required">*</span>
+                  </label>
+                  <div className="create-package-input-wrapper">
+                    <div className="create-package-input-icon">
+                      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                      </svg>
+                    </div>
+                    <input
+                      type="date"
+                      name="returnDate"
+                      value={formData.returnDate}
+                      onChange={handleChange}
+                      className="create-package-form-input"
+                      required
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="create-package-form-row">
+                <div className="create-package-form-group">
+                  <label className="create-package-form-label">
+                    <span>Departure Airport</span>
+                    <span className="create-package-required">*</span>
+                  </label>
+                  <div className="create-package-input-wrapper">
+                    <div className="create-package-input-icon">
+                      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                      </svg>
+                    </div>
+                    <select
+                      name="departureAirport"
+                      value={formData.departureAirport}
+                      onChange={handleChange}
+                      className="create-package-form-select"
+                      required
+                    >
+                      <option value="">Select departure airport</option>
+                      {airports.map(airport => (
+                        <option key={airport.iata} value={airport.iata}>
+                          {airport.iata} - {airport.name}, {airport.city}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                <div className="create-package-form-group">
+                  <label className="create-package-form-label">
+                    <span>Arrival Airport</span>
+                    <span className="create-package-required">*</span>
+                  </label>
+                  <div className="create-package-input-wrapper">
+                    <div className="create-package-input-icon">
+                      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                      </svg>
+                    </div>
+                    <select
+                      name="arrivalAirport"
+                      value={formData.arrivalAirport}
+                      onChange={handleChange}
+                      className="create-package-form-select"
+                      required
+                    >
+                      <option value="">Select arrival airport</option>
+                      {airports.filter(airport => ['JED', 'RUH', 'DMM', 'MED'].includes(airport.iata)).map(airport => (
+                        <option key={airport.iata} value={airport.iata}>
+                          {airport.iata} - {airport.name}, {airport.city}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              <div className="create-package-form-row">
+                <div className="create-package-form-group">
+                  <label className="create-package-form-label">
+                    <span>Transit Airport (Optional)</span>
+                  </label>
+                  <div className="create-package-input-wrapper">
+                    <div className="create-package-input-icon">
+                      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+                      </svg>
+                    </div>
+                    <select
+                      name="transitAirport"
+                      value={formData.transitAirport}
+                      onChange={handleChange}
+                      className="create-package-form-select"
+                    >
+                      <option value="">No transit (Direct flight)</option>
+                      {airports.filter(airport => ['DXB', 'DOH', 'IST', 'CAI', 'KWI', 'AUH'].includes(airport.iata)).map(airport => (
+                        <option key={airport.iata} value={airport.iata}>
+                          {airport.iata} - {airport.name}, {airport.city}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                <div className="create-package-form-group"></div>
+              </div>
+
+              <div className="create-package-form-row">
+                <div className="create-package-form-group">
+                  <label className="create-package-form-label">
+                    <span>Total Seats</span>
+                    <span className="create-package-required">*</span>
+                  </label>
+                  <div className="create-package-input-wrapper">
+                    <div className="create-package-input-icon">
+                      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                      </svg>
+                    </div>
+                    <input
+                      type="number"
+                      name="totalSeats"
+                      value={formData.totalSeats}
+                      onChange={handleChange}
+                      className="create-package-form-input"
+                      placeholder="50"
+                      min="1"
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div className="create-package-form-group">
+                  <label className="create-package-form-label">
+                    <span>Available Seats</span>
+                    <span className="create-package-required">*</span>
+                  </label>
+                  <div className="create-package-input-wrapper">
+                    <div className="create-package-input-icon">
+                      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
+                      </svg>
+                    </div>
+                    <input
+                      type="number"
+                      name="availableSeats"
+                      value={formData.availableSeats}
+                      onChange={handleChange}
+                      className="create-package-form-input"
+                      placeholder="50"
+                      min="0"
+                      max={formData.totalSeats}
+                      required
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+
+      case 3:
+        return (
+          <div className="create-package-step">
+            <div className="create-package-step-header">
+              <div className="create-package-step-icon">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                </svg>
+              </div>
+              <h3 className="create-package-step-title">Accommodation & Travel</h3>
+              <p className="create-package-step-description">
+                Specify hotel details, transportation, and destination information
+              </p>
+            </div>
+
+            <div className="create-package-form-section">
+              <div className="create-package-form-row">
+                <div className="create-package-form-group">
+                  <label className="create-package-form-label">
+                    <span>Hotel Name</span>
+                    <span className="create-package-required">*</span>
+                  </label>
+                  <div className="create-package-input-wrapper">
+                    <div className="create-package-input-icon">
+                      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                      </svg>
+                    </div>
+                    <input
+                      type="text"
+                      name="hotelName"
+                      value={formData.hotelName}
+                      onChange={handleChange}
+                      className="create-package-form-input"
+                      placeholder="e.g., Madinah Hilton"
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div className="create-package-form-group">
+                  <label className="create-package-form-label">
+                    <span>Hotel Rating</span>
+                  </label>
+                  <div className="create-package-input-wrapper">
+                    <div className="create-package-input-icon">
+                      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+                      </svg>
+                    </div>
+                    <select
+                      name="hotelRating"
+                      value={formData.hotelRating}
+                      onChange={handleChange}
+                      className="create-package-form-select"
+                    >
+                      <option value="1">1 Star</option>
+                      <option value="2">2 Stars</option>
+                      <option value="3">3 Stars</option>
+                      <option value="4">4 Stars</option>
+                      <option value="5">5 Stars</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              <div className="create-package-form-row">
+                <div className="create-package-form-group">
+                  <label className="create-package-form-label">
+                    <span>Meal Plan</span>
+                  </label>
+                  <div className="create-package-input-wrapper">
+                    <div className="create-package-input-icon">
+                      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17M17 13v6a2 2 0 01-2 2H9a2 2 0 01-2-2v-6m8 0V9a2 2 0 00-2-2H9a2 2 0 00-2 2v4.01" />
+                      </svg>
+                    </div>
+                    <select
+                      name="mealPlan"
+                      value={formData.mealPlan}
+                      onChange={handleChange}
+                      className="create-package-form-select"
+                    >
+                      <option value="Breakfast">Breakfast</option>
+                      <option value="Half Board">Half Board</option>
+                      <option value="Full Board">Full Board</option>
+                      <option value="All Inclusive">All Inclusive</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="create-package-form-group">
+                  <label className="create-package-form-label">
+                    <span>Transportation</span>
+                  </label>
+                  <div className="create-package-input-wrapper">
+                    <div className="create-package-input-icon">
+                      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                      </svg>
+                    </div>
+                    <select
+                      name="transportation"
+                      value={formData.transportation}
+                      onChange={handleChange}
+                      className="create-package-form-select"
+                    >
+                      <option value="Flight">Flight</option>
+                      <option value="Bus">Bus</option>
+                      <option value="Train">Train</option>
+                      <option value="Private Car">Private Car</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              <div className="create-package-form-group">
+                <label className="create-package-form-label">
+                  <span>Country</span>
+                  <span className="create-package-required">*</span>
+                </label>
+                <div className="create-package-input-wrapper">
+                  <div className="create-package-input-icon">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                  </div>
+                  <select
+                    name="country"
+                    value={formData.country}
+                    onChange={handleChange}
+                    className="create-package-form-select"
+                    required
+                  >
+                    {countries.map(country => (
+                      <option key={country.code} value={country.name}>
+                        {country.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+
+      case 4:
+        return (
+          <div className="create-package-step">
+            <div className="create-package-step-header">
+              <div className="create-package-step-icon">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+                </svg>
+              </div>
+              <h3 className="create-package-step-title">Daily Itinerary</h3>
+              <p className="create-package-step-description">
+                Plan the daily activities and schedule for your pilgrims
+              </p>
+            </div>
+
+            <div className="create-package-form-section">
+              <div className="create-package-itinerary-list">
+                {formData.itinerary.map((item, index) => (
+                  <div key={index} className="create-package-itinerary-item">
+                    <div className="create-package-day-header">
+                      <div className="create-package-day-number">Day {item.day}</div>
+                      {formData.itinerary.length > 1 && (
+                        <button
+                          type="button"
+                          onClick={() => removeItineraryDay(index)}
+                          className="create-package-btn-remove"
+                        >
+                          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                          </svg>
+                        </button>
+                      )}
+                    </div>
+                    <div className="create-package-input-wrapper">
+                      <div className="create-package-input-icon">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                        </svg>
+                      </div>
+                      <textarea
+                        value={item.description}
+                        onChange={(e) => handleItineraryChange(index, 'description', e.target.value)}
+                        className="create-package-form-textarea"
+                        rows="3"
+                        placeholder="Describe the activities, visits, and schedule for this day..."
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+              
+              <button
+                type="button"
+                onClick={addItineraryDay}
+                className="create-package-btn-add"
+              >
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                </svg>
+                <span>Add Another Day</span>
+              </button>
+            </div>
+          </div>
+        );
+
+      case 5:
+        return (
+          <div className="create-package-step">
+            <div className="create-package-step-header">
+              <div className="create-package-step-icon">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <h3 className="create-package-step-title">Inclusions & Exclusions</h3>
+              <p className="create-package-step-description">
+                Specify what is and isn't included in your package
+              </p>
+            </div>
+
+            <div className="create-package-form-section">
+              <div className="create-package-inclusions-section">
+                <h4 className="create-package-section-title">
+                  <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                  What's Included
+                </h4>
+                <div className="create-package-list">
+                  {formData.inclusions.map((item, index) => (
+                    <div key={index} className="create-package-list-item">
+                      <div className="create-package-input-wrapper">
+                        <div className="create-package-input-icon">
+                          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                          </svg>
+                        </div>
+                        <input
+                          type="text"
+                          value={item}
+                          onChange={(e) => handleArrayChange('inclusions', index, e.target.value)}
+                          className="create-package-form-input"
+                          placeholder="e.g., Round-trip flights, Hotel accommodation..."
+                        />
+                      </div>
+                      {formData.inclusions.length > 1 && (
+                        <button
+                          type="button"
+                          onClick={() => removeArrayField('inclusions', index)}
+                          className="create-package-btn-remove"
+                        >
+                          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                          </svg>
+                        </button>
+                      )}
+                    </div>
+                  ))}
+                </div>
+                <button
+                  type="button"
+                  onClick={() => addArrayField('inclusions')}
+                  className="create-package-btn-add"
+                >
+                  <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                  </svg>
+                  <span>Add Inclusion</span>
+                </button>
+              </div>
+
+              <div className="create-package-exclusions-section">
+                <h4 className="create-package-section-title">
+                  <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                  What's Not Included
+                </h4>
+                <div className="create-package-list">
+                  {formData.exclusions.map((item, index) => (
+                    <div key={index} className="create-package-list-item">
+                      <div className="create-package-input-wrapper">
+                        <div className="create-package-input-icon">
+                          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                          </svg>
+                        </div>
+                        <input
+                          type="text"
+                          value={item}
+                          onChange={(e) => handleArrayChange('exclusions', index, e.target.value)}
+                          className="create-package-form-input"
+                          placeholder="e.g., Personal expenses, Visa fees..."
+                        />
+                      </div>
+                      {formData.exclusions.length > 1 && (
+                        <button
+                          type="button"
+                          onClick={() => removeArrayField('exclusions', index)}
+                          className="create-package-btn-remove"
+                        >
+                          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                          </svg>
+                        </button>
+                      )}
+                    </div>
+                  ))}
+                </div>
+                <button
+                  type="button"
+                  onClick={() => addArrayField('exclusions')}
+                  className="create-package-btn-add"
+                >
+                  <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                  </svg>
+                  <span>Add Exclusion</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        );
+
+      default:
+        return null;
+    }
+  };
+
+  return (
+    <ProtectedRoute allowedRoles={['company']}>
+      <Layout>
+        <div className="create-package-container">
+          <div className="create-package-background">
+            <div className="create-package-pattern"></div>
+            <div className="create-package-gradient"></div>
+          </div>
+          
+          <div className="create-package-content">
+            {/* Header */}
+            <div className="create-package-header">
+              <div className="create-package-breadcrumb">
+                <button
+                  type="button"
+                  onClick={() => router.back()}
+                  className="create-package-breadcrumb-link"
+                >
+                  <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 17l-5-5m0 0l5-5m-5 5h12" />
+                  </svg>
+                  <span>Back to Packages</span>
+                </button>
+              </div>
+              
+              <div className="create-package-title-section">
+                <div className="create-package-icon">
+                  <span>🕋</span>
+                </div>
+                <h1 className="create-package-title">Create New Package</h1>
+                <p className="create-package-subtitle">
+                  Design a memorable Umrah experience for your pilgrims
+                </p>
+              </div>
+            </div>
+
+            {/* Progress Indicator */}
+            <div className="create-package-progress">
+              <div className="create-package-progress-bar">
+                <div 
+                  className="create-package-progress-fill"
+                  style={{ width: `${(currentStep / totalSteps) * 100}%` }}
+                ></div>
+              </div>
+              <div className="create-package-progress-steps">
+                {[
+                  { number: 1, label: 'Basic Info' },
+                  { number: 2, label: 'Dates & Capacity' },
+                  { number: 3, label: 'Accommodation' },
+                  { number: 4, label: 'Itinerary' },
+                  { number: 5, label: 'Inclusions' }
+                ].map((step) => (
+                  <div
+                    key={step.number}
+                    className={`create-package-progress-step ${currentStep >= step.number ? 'active' : ''} ${currentStep === step.number ? 'current' : ''}`}
+                  >
+                    <span className="create-package-step-number">{step.number}</span>
+                    <span className="create-package-step-label">{step.label}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Main Form */}
+            <form 
+              onSubmit={handleSubmit} 
+              className="create-package-form"
+              onKeyDown={(e) => {
+                // Prevent form submission on Enter key except on the final step
+                if (e.key === 'Enter' && currentStep !== totalSteps) {
+                  e.preventDefault();
+                }
+                // Also prevent form submission when Enter is pressed in textareas
+                if (e.key === 'Enter' && e.target.tagName === 'TEXTAREA') {
+                  e.stopPropagation();
+                }
+              }}
+            >
+              <div className="create-package-card">
+                {error && (
+                  <div className="create-package-error">
+                    <div className="create-package-error-icon">
+                      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                    </div>
+                    <span className="create-package-error-text">{error}</span>
+                  </div>
+                )}
+
+                {renderStepContent()}
+
+                {/* Navigation */}
+                <div className="create-package-navigation">
+                  {currentStep > 1 && (
+                    <button 
+                      type="button" 
+                      className="create-package-btn-secondary"
+                      onClick={prevStep}
+                    >
+                      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 17l-5-5m0 0l5-5m-5 5h12" />
+                      </svg>
+                      <span>Previous</span>
+                    </button>
+                  )}
+
+                  {currentStep < totalSteps ? (
+                    <button 
+                      type="button" 
+                      className="create-package-btn-primary"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        nextStep();
+                      }}
+                      disabled={!isStepValid()}
+                    >
+                      <span>Continue</span>
+                      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                      </svg>
+                    </button>
+                  ) : (
+                    <button 
+                      type="submit" 
+                      className="create-package-btn-primary" 
+                      disabled={loading}
+                    >
+                      {loading ? (
+                        <div className="create-package-btn-loading">
+                          <div className="create-package-loading-spinner"></div>
+                          <span>Creating Package...</span>
+                        </div>
+                      ) : (
+                        <div className="create-package-btn-content">
+                          <span>Create Package</span>
+                          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                          </svg>
+                        </div>
+                      )}
+                    </button>
+                  )}
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+      </Layout>
+    </ProtectedRoute>
+  );
+}
