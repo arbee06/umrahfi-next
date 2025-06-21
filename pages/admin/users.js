@@ -3,6 +3,7 @@ import Layout from '@/components/Layout';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import adminService from '@/services/adminService';
 import Icon from '@/components/FontAwesome';
+import soundManager from '@/utils/soundUtils';
 import Swal from 'sweetalert2';
 
 export default function AdminUsers() {
@@ -152,6 +153,9 @@ export default function AdminUsers() {
     if (!result.isConfirmed) return;
     
     try {
+      // Play action sound
+      // soundManager.playAction();
+      
       await adminService.updateUser(userId, { isActive: !currentStatus });
       // Update the user in allUsers array
       setAllUsers(prevUsers => 
@@ -174,6 +178,7 @@ export default function AdminUsers() {
           popup: 'custom-swal-toast'
         }
       });
+      soundManager.playAction();
     } catch (error) {
       Swal.fire({
         title: 'Error!',

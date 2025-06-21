@@ -1,10 +1,12 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Layout from '@/components/Layout';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import packageService from '@/services/packageService';
+import packageTemplateService from '@/services/packageTemplateService';
 import { getAirports, formatAirportDisplay } from '@/utils/airports';
 import { getCountries } from '@/utils/countries';
+import Icon from '@/components/FontAwesome';
 import Swal from 'sweetalert2';
 
 export default function CreatePackage() {
@@ -12,9 +14,12 @@ export default function CreatePackage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [currentStep, setCurrentStep] = useState(1);
-  const totalSteps = 5;
+  const totalSteps = 6; // Increased to 6 steps to include images
   const [airports] = useState(() => getAirports());
   const [countries] = useState(() => getCountries());
+  const [templates, setTemplates] = useState({ inclusions: [], exclusions: [] });
+  const [uploadedImages, setUploadedImages] = useState([]);
+  const [uploadingImages, setUploadingImages] = useState(false);
   
   const [formData, setFormData] = useState({
     title: '',
@@ -37,8 +42,29 @@ export default function CreatePackage() {
     inclusions: [''],
     exclusions: [''],
     itinerary: [{ day: 1, description: '' }],
+    images: [],
     specialRequests: ''
   });
+
+  useEffect(() => {
+    fetchTemplates();
+  }, []);
+
+  const fetchTemplates = async () => {
+    try {
+      const [inclusionsResponse, exclusionsResponse] = await Promise.all([
+        packageTemplateService.getTemplates('inclusions'),
+        packageTemplateService.getTemplates('exclusions')
+      ]);
+      
+      setTemplates({
+        inclusions: inclusionsResponse.templates,
+        exclusions: exclusionsResponse.templates
+      });
+    } catch (error) {
+      console.error('Error fetching templates:', error);
+    }
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -99,6 +125,54 @@ export default function CreatePackage() {
     }));
   };
 
+  const applyTemplate = (type, templateId) => {
+    const template = templates[type].find(t => t.id === templateId);
+    if (template) {
+      setFormData(prev => ({
+        ...prev,
+        [type]: [...template.items]
+      }));
+    }
+  };
+
+  const handleImageUpload = async (e) => {
+    const files = Array.from(e.target.files);
+    if (files.length === 0) return;
+
+    setUploadingImages(true);
+    try {
+      const response = await packageTemplateService.uploadPackageImages(files);
+      setUploadedImages(prev => [...prev, ...response.images]);
+      setFormData(prev => ({
+        ...prev,
+        images: [...prev.images, ...response.images.map(img => img.path)]
+      }));
+      
+      Swal.fire({
+        title: 'Success!',
+        text: `${response.images.length} image(s) uploaded successfully`,
+        icon: 'success',
+        timer: 3000,
+        timerProgressBar: true,
+        toast: true,
+        position: 'top-end',
+        showConfirmButton: false
+      });
+    } catch (error) {
+      Swal.fire('Error', error.message || 'Failed to upload images', 'error');
+    } finally {
+      setUploadingImages(false);
+    }
+  };
+
+  const removeImage = (index) => {
+    setUploadedImages(prev => prev.filter((_, i) => i !== index));
+    setFormData(prev => ({
+      ...prev,
+      images: prev.images.filter((_, i) => i !== index)
+    }));
+  };
+
   const nextStep = () => {
     console.log('nextStep called, currentStep:', currentStep, 'totalSteps:', totalSteps);
     if (currentStep < totalSteps) {
@@ -123,7 +197,9 @@ export default function CreatePackage() {
       case 4:
         return formData.itinerary.some(item => item.description.trim());
       case 5:
-        return true;
+        return true; // Inclusions/exclusions step (optional)
+      case 6:
+        return true; // Images step (optional)
       default:
         return false;
     }
@@ -828,22 +904,64 @@ export default function CreatePackage() {
           <div className="create-package-step">
             <div className="create-package-step-header">
               <div className="create-package-step-icon">
-                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
+                <Icon icon="list-check" />
               </div>
               <h3 className="create-package-step-title">Inclusions & Exclusions</h3>
               <p className="create-package-step-description">
-                Specify what is and isn't included in your package
+                Specify what is and isn't included in your package or use templates
               </p>
             </div>
 
             <div className="create-package-form-section">
+              {/* Templates Section */}
+              {(templates.inclusions.length > 0 || templates.exclusions.length > 0) && (
+                <div className="package-creation-templates-section">
+                  <h4 className="package-creation-section-title">
+                    <Icon icon="bookmark" />
+                    Quick Templates
+                  </h4>
+                  <div className="package-creation-templates-grid">
+                    {templates.inclusions.length > 0 && (
+                      <div className="package-creation-template-category">
+                        <label>Inclusion Templates:</label>
+                        <select 
+                          onChange={(e) => e.target.value && applyTemplate('inclusions', parseInt(e.target.value))}
+                          className="package-creation-form-select"
+                          defaultValue=""
+                        >
+                          <option value="">Choose a template...</option>
+                          {templates.inclusions.map(template => (
+                            <option key={template.id} value={template.id}>
+                              {template.name} ({template.items.length} items)
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    )}
+                    {templates.exclusions.length > 0 && (
+                      <div className="package-creation-template-category">
+                        <label>Exclusion Templates:</label>
+                        <select 
+                          onChange={(e) => e.target.value && applyTemplate('exclusions', parseInt(e.target.value))}
+                          className="package-creation-form-select"
+                          defaultValue=""
+                        >
+                          <option value="">Choose a template...</option>
+                          {templates.exclusions.map(template => (
+                            <option key={template.id} value={template.id}>
+                              {template.name} ({template.items.length} items)
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
               <div className="create-package-inclusions-section">
                 <h4 className="create-package-section-title">
-                  <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
+                  <Icon icon="check-circle" />
                   What's Included
                 </h4>
                 <div className="create-package-list">
@@ -851,9 +969,7 @@ export default function CreatePackage() {
                     <div key={index} className="create-package-list-item">
                       <div className="create-package-input-wrapper">
                         <div className="create-package-input-icon">
-                          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                          </svg>
+                          <Icon icon="check" />
                         </div>
                         <input
                           type="text"
@@ -869,9 +985,7 @@ export default function CreatePackage() {
                           onClick={() => removeArrayField('inclusions', index)}
                           className="create-package-btn-remove"
                         >
-                          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                          </svg>
+                          <Icon icon="trash" />
                         </button>
                       )}
                     </div>
@@ -882,18 +996,14 @@ export default function CreatePackage() {
                   onClick={() => addArrayField('inclusions')}
                   className="create-package-btn-add"
                 >
-                  <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                  </svg>
+                  <Icon icon="plus" />
                   <span>Add Inclusion</span>
                 </button>
               </div>
 
               <div className="create-package-exclusions-section">
                 <h4 className="create-package-section-title">
-                  <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
+                  <Icon icon="times-circle" />
                   What's Not Included
                 </h4>
                 <div className="create-package-list">
@@ -901,9 +1011,7 @@ export default function CreatePackage() {
                     <div key={index} className="create-package-list-item">
                       <div className="create-package-input-wrapper">
                         <div className="create-package-input-icon">
-                          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                          </svg>
+                          <Icon icon="times" />
                         </div>
                         <input
                           type="text"
@@ -919,9 +1027,7 @@ export default function CreatePackage() {
                           onClick={() => removeArrayField('exclusions', index)}
                           className="create-package-btn-remove"
                         >
-                          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                          </svg>
+                          <Icon icon="trash" />
                         </button>
                       )}
                     </div>
@@ -932,11 +1038,107 @@ export default function CreatePackage() {
                   onClick={() => addArrayField('exclusions')}
                   className="create-package-btn-add"
                 >
-                  <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                  </svg>
+                  <Icon icon="plus" />
                   <span>Add Exclusion</span>
                 </button>
+              </div>
+            </div>
+          </div>
+        );
+
+      case 6:
+        return (
+          <div className="create-package-step">
+            <div className="create-package-step-header">
+              <div className="create-package-step-icon">
+                <Icon icon="images" />
+              </div>
+              <h3 className="create-package-step-title">Package Images</h3>
+              <p className="create-package-step-description">
+                Upload photos to showcase your package (optional)
+              </p>
+            </div>
+
+            <div className="package-creation-form-section">
+              <div className="package-image-upload-section">
+                <div className="package-image-upload-area">
+                  <input
+                    type="file"
+                    id="package-images"
+                    multiple
+                    accept="image/*"
+                    onChange={handleImageUpload}
+                    className="package-image-file-input"
+                    disabled={uploadingImages}
+                  />
+                  <label htmlFor="package-images" className="package-image-upload-label">
+                    <div className="package-image-upload-icon">
+                      <Icon icon={uploadingImages ? "spinner" : "camera"} spin={uploadingImages} />
+                    </div>
+                    <div className="package-image-upload-text">
+                      <h4>
+                        {uploadingImages ? 'Uploading images...' : 'Upload Package Images'}
+                      </h4>
+                      <p>Click to select or drag and drop images here</p>
+                      <span className="package-image-upload-info">
+                        Maximum 10 images, 5MB each (JPG, PNG, GIF, WebP)
+                      </span>
+                    </div>
+                  </label>
+                </div>
+
+                {uploadedImages.length > 0 && (
+                  <div className="package-image-preview-section">
+                    <h4 className="package-creation-section-title">
+                      <Icon icon="images" />
+                      Uploaded Images ({uploadedImages.length})
+                    </h4>
+                    <div className="package-image-grid">
+                      {uploadedImages.map((image, index) => (
+                        <div key={index} className="package-image-item">
+                          <div className="package-image-thumbnail">
+                            <img
+                              src={image.path}
+                              alt={image.originalname}
+                              className="package-image-preview"
+                            />
+                            <div className="package-image-overlay">
+                              <button
+                                type="button"
+                                onClick={() => removeImage(index)}
+                                className="package-image-remove"
+                                title="Remove image"
+                              >
+                                <Icon icon="trash" />
+                              </button>
+                            </div>
+                          </div>
+                          <div className="package-image-info">
+                            <span className="package-image-name">
+                              {image.originalname}
+                            </span>
+                            <span className="package-image-size">
+                              {(image.size / 1024 / 1024).toFixed(2)} MB
+                            </span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {uploadedImages.length === 0 && (
+                  <div className="package-image-tips">
+                    <h4>💡 Tips for great package photos:</h4>
+                    <ul>
+                      <li>Show the hotel exterior and key facilities</li>
+                      <li>Include photos of the holy sites and surroundings</li>
+                      <li>Capture transportation and tour highlights</li>
+                      <li>Use high-quality images with good lighting</li>
+                      <li>Ensure images are relevant to your package</li>
+                    </ul>
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -997,7 +1199,8 @@ export default function CreatePackage() {
                   { number: 2, label: 'Dates & Capacity' },
                   { number: 3, label: 'Accommodation' },
                   { number: 4, label: 'Itinerary' },
-                  { number: 5, label: 'Inclusions' }
+                  { number: 5, label: 'Inclusions' },
+                  { number: 6, label: 'Images' }
                 ].map((step) => (
                   <div
                     key={step.number}

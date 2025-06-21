@@ -17,6 +17,7 @@ export default async function handler(req, res) {
           country,
           departureAirport,
           arrivalAirport,
+          guests,
           status = 'active'
         } = req.query;
 
@@ -48,6 +49,12 @@ export default async function handler(req, res) {
 
         if (arrivalAirport) {
           where.arrivalAirport = arrivalAirport;
+        }
+
+        if (guests) {
+          where.availableSeats = {
+            [Op.gte]: Number(guests)
+          };
         }
 
         const offset = (page - 1) * limit;

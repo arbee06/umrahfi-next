@@ -3,6 +3,7 @@ import Layout from '@/components/Layout';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import packageService from '@/services/packageService';
 import Icon from '@/components/FontAwesome';
+import soundManager from '@/utils/soundUtils';
 import Swal from 'sweetalert2';
 
 export default function AdminPackages() {
@@ -107,7 +108,9 @@ export default function AdminPackages() {
     if (!result.isConfirmed) return;
     
     try {
-      // Note: We'll need to create this endpoint in packageService
+      // Play action sound
+      // soundManager.playAction();
+      
       await packageService.updatePackageStatus(packageId, newStatus);
       
       // Update the package in allPackages array
@@ -131,6 +134,7 @@ export default function AdminPackages() {
           popup: 'custom-swal-toast'
         }
       });
+      soundManager.playAction();
     } catch (error) {
       Swal.fire({
         title: 'Error!',

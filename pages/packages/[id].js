@@ -5,6 +5,7 @@ import Layout from '@/components/Layout';
 import { useAuth } from '@/utils/AuthContext';
 import { getAirportByCode } from '@/utils/airports';
 import packageService from '@/services/packageService';
+import Icon from '@/components/FontAwesome';
 
 export default function PackageDetails() {
   const router = useRouter();
@@ -12,6 +13,8 @@ export default function PackageDetails() {
   const { user, isAuthenticated } = useAuth();
   const [packageData, setPackageData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [selectedImage, setSelectedImage] = useState(null);
+  const [imageModalOpen, setImageModalOpen] = useState(false);
 
   useEffect(() => {
     if (!router.isReady) return;
@@ -47,6 +50,30 @@ export default function PackageDetails() {
       style: 'currency',
       currency: 'USD'
     }).format(price);
+  };
+
+  const openImageModal = (image) => {
+    setSelectedImage(image);
+    setImageModalOpen(true);
+  };
+
+  const closeImageModal = () => {
+    setSelectedImage(null);
+    setImageModalOpen(false);
+  };
+
+  const nextImage = () => {
+    if (!packageData.images || packageData.images.length === 0) return;
+    const currentIndex = packageData.images.indexOf(selectedImage);
+    const nextIndex = (currentIndex + 1) % packageData.images.length;
+    setSelectedImage(packageData.images[nextIndex]);
+  };
+
+  const prevImage = () => {
+    if (!packageData.images || packageData.images.length === 0) return;
+    const currentIndex = packageData.images.indexOf(selectedImage);
+    const prevIndex = currentIndex === 0 ? packageData.images.length - 1 : currentIndex - 1;
+    setSelectedImage(packageData.images[prevIndex]);
   };
 
   if (loading) {
@@ -130,6 +157,41 @@ export default function PackageDetails() {
               <p className="package-details-description">{packageData.description}</p>
             </div>
           </div>
+
+          {/* Image Gallery */}
+          {packageData.images && packageData.images.length > 0 && (
+            <div className="pkg-gallery">
+              <div className="pkg-gallery-header">
+                <h3 className="pkg-gallery-title">
+                  <Icon icon="images" />
+                  Package Photos ({packageData.images.length})
+                </h3>
+              </div>
+              <div className="pkg-gallery-grid">
+                {packageData.images.slice(0, 6).map((image, index) => (
+                  <div 
+                    key={index} 
+                    className="pkg-gallery-item"
+                    onClick={() => openImageModal(image)}
+                  >
+                    <img
+                      src={image}
+                      alt={`${packageData.title} - Photo ${index + 1}`}
+                      className="pkg-gallery-image"
+                    />
+                    <div className="pkg-gallery-overlay">
+                      <Icon icon="expand" />
+                    </div>
+                    {index === 5 && packageData.images.length > 6 && (
+                      <div className="pkg-gallery-more">
+                        <span>+{packageData.images.length - 6} more</span>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* Main Content Grid */}
           <div className="package-details-grid">
@@ -405,6 +467,67 @@ export default function PackageDetails() {
             </div>
           </div>
         </div>
+
+        {/* Image Modal */}
+        {imageModalOpen && selectedImage && (
+          <div className="pkg-image-modal" onClick={closeImageModal}>
+            <div className="pkg-image-modal-backdrop"></div>
+            <div className="pkg-image-modal-content" onClick={(e) => e.stopPropagation()}>
+              <div className="pkg-image-modal-header">
+                <h3 className="pkg-image-modal-title">
+                  {packageData.title} - Photos
+                </h3>
+                <button
+                  className="pkg-image-modal-close"
+                  onClick={closeImageModal}
+                >
+                  <Icon icon="times" />
+                </button>
+              </div>
+              
+              <div className="pkg-image-modal-body">
+                <img
+                  src={selectedImage}
+                  alt={`${packageData.title} - Gallery`}
+                  className="pkg-image-modal-image"
+                />
+                
+                {packageData.images && packageData.images.length > 1 && (
+                  <>
+                    <button
+                      className="pkg-image-modal-nav pkg-image-modal-prev"
+                      onClick={prevImage}
+                    >
+                      <Icon icon="chevron-left" />
+                    </button>
+                    <button
+                      className="pkg-image-modal-nav pkg-image-modal-next"
+                      onClick={nextImage}
+                    >
+                      <Icon icon="chevron-right" />
+                    </button>
+                  </>
+                )}
+              </div>
+              
+              <div className="pkg-image-modal-footer">
+                <div className="pkg-image-modal-counter">
+                  {packageData.images?.indexOf(selectedImage) + 1} of {packageData.images?.length}
+                </div>
+                <div className="pkg-image-modal-actions">
+                  <a
+                    href={selectedImage}
+                    download={`${packageData.title}-photo-${packageData.images?.indexOf(selectedImage) + 1}.jpg`}
+                    className="pkg-image-modal-download"
+                  >
+                    <Icon icon="download" />
+                    Download
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </Layout>
   );

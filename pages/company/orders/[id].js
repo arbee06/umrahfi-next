@@ -5,6 +5,7 @@ import Layout from '@/components/Layout';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import { useAuth } from '@/utils/AuthContext';
 import orderService from '@/services/orderService';
+import soundManager from '@/utils/soundUtils';
 import Swal from 'sweetalert2';
 
 export default function CompanyOrderDetails() {
@@ -95,6 +96,9 @@ export default function CompanyOrderDetails() {
 
     if (!result.isConfirmed) return;
     
+    // Play action sound
+    // soundManager.playAction();
+    
     setUpdating(true);
     
     // Show loading state
@@ -111,6 +115,8 @@ export default function CompanyOrderDetails() {
         Swal.showLoading();
       }
     });
+    soundManager.playAction();
+    
     
     try {
       // Prepare update data

@@ -79,7 +79,7 @@ export default function Layout({ children }) {
                     href="/packages" 
                     className={`${styles.navLink} ${isActive('/packages') ? styles.navLinkActive : ''}`}
                   >
-                    <span className={styles.navLinkText}>Packages</span>
+                    <span className={styles.navLinkText}>Browse</span>
                     <span className={styles.navLinkIndicator}></span>
                   </Link>
                     {user.role === 'customer' && (
@@ -122,6 +122,13 @@ export default function Layout({ children }) {
                           className={`${styles.navLink} ${isActive('/company/orders') ? styles.navLinkActive : ''}`}
                         >
                           <span className={styles.navLinkText}>Orders</span>
+                          <span className={styles.navLinkIndicator}></span>
+                        </Link>
+                        <Link 
+                          href="/company/templates"
+                          className={`${styles.navLink} ${isActive('/company/templates') ? styles.navLinkActive : ''}`}
+                        >
+                          <span className={styles.navLinkText}>Templates</span>
                           <span className={styles.navLinkIndicator}></span>
                         </Link>
                       </>

@@ -12,6 +12,9 @@
       "Bash(npm run sync-db:*)",
       "Bash(ls:*)",
       "Bash(mv:*)",
+      "Bash(mkdir:*)",
+      "Bash(ls:*)",
+      "Bash(mv:*)",
       "Bash(mkdir:*)"
     ],
     "deny": []

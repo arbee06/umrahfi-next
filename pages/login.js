@@ -4,6 +4,7 @@ import { useRouter } from 'next/router';
 import Link from 'next/link';
 import Layout from '@/components/Layout';
 import { useAuth } from '@/utils/AuthContext';
+import soundManager from '@/utils/soundUtils';
 import Icon from '@/components/FontAwesome';
 
 export default function Login() {
@@ -31,6 +32,9 @@ export default function Login() {
 
     try {
       await login(formData);
+      // Play success sound on successful login
+      // soundManager.playAction();
+      soundManager.playLogin();
     } catch (err) {
       setError(err.error || 'Login failed');
     } finally {
@@ -45,6 +49,8 @@ export default function Login() {
       customer: { email: 'ahmed@example.com', password: 'password123' }
     };
     
+    // Play sound when demo account is selected
+    soundManager.playAction(0.3); // Lower volume for less important action
     setFormData(demoAccounts[type]);
   };
 

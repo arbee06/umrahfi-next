@@ -600,3 +600,6 @@ p {
   outline: 2px solid var(--primary);
   outline-offset: 2px;
 }
+/* Template and Package Gallery Styles */
+@import url("./template-styles.css");
+@import url("./package-details-gallery.css");
