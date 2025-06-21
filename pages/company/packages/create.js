@@ -349,9 +349,7 @@ export default function CreatePackage() {
           <div className="create-package-step">
             <div className="create-package-step-header">
               <div className="create-package-step-icon">
-                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
+                <Icon icon="info-circle" />
               </div>
               <h3 className="create-package-step-title">Basic Information</h3>
               <p className="create-package-step-description">
@@ -367,9 +365,7 @@ export default function CreatePackage() {
                 </label>
                 <div className="create-package-input-wrapper">
                   <div className="create-package-input-icon">
-                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a1.994 1.994 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
-                    </svg>
+                    <Icon icon="tag" />
                   </div>
                   <input
                     type="text"
@@ -390,9 +386,7 @@ export default function CreatePackage() {
                 </label>
                 <div className="create-package-input-wrapper">
                   <div className="create-package-input-icon">
-                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                    </svg>
+                    <Icon icon="file-alt" />
                   </div>
                   <textarea
                     name="description"
@@ -414,9 +408,7 @@ export default function CreatePackage() {
                   </label>
                   <div className="create-package-input-wrapper">
                     <div className="create-package-input-icon">
-                      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
-                      </svg>
+                      <Icon icon="dollar-sign" />
                     </div>
                     <input
                       type="number"
@@ -438,9 +430,7 @@ export default function CreatePackage() {
                   </label>
                   <div className="create-package-input-wrapper">
                     <div className="create-package-input-icon">
-                      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
-                      </svg>
+                      <Icon icon="dollar-sign" />
                     </div>
                     <input
                       type="number"
@@ -462,9 +452,7 @@ export default function CreatePackage() {
                   </label>
                   <div className="create-package-input-wrapper">
                     <div className="create-package-input-icon">
-                      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                      </svg>
+                      <Icon icon="calendar" />
                     </div>
                     <input
                       type="number"
@@ -488,9 +476,7 @@ export default function CreatePackage() {
           <div className="create-package-step">
             <div className="create-package-step-header">
               <div className="create-package-step-icon">
-                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                </svg>
+                <Icon icon="calendar-alt" />
               </div>
               <h3 className="create-package-step-title">Dates & Capacity</h3>
               <p className="create-package-step-description">
@@ -507,9 +493,7 @@ export default function CreatePackage() {
                   </label>
                   <div className="create-package-input-wrapper">
                     <div className="create-package-input-icon">
-                      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                      </svg>
+                      <Icon icon="calendar" />
                     </div>
                     <input
                       type="date"
@@ -529,9 +513,7 @@ export default function CreatePackage() {
                   </label>
                   <div className="create-package-input-wrapper">
                     <div className="create-package-input-icon">
-                      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                      </svg>
+                      <Icon icon="calendar" />
                     </div>
                     <input
                       type="date"
@@ -553,9 +535,7 @@ export default function CreatePackage() {
                   </label>
                   <div className="create-package-input-wrapper">
                     <div className="create-package-input-icon">
-                      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
-                      </svg>
+                      <Icon icon="plane" />
                     </div>
                     <select
                       name="departureAirport"
@@ -581,9 +561,7 @@ export default function CreatePackage() {
                   </label>
                   <div className="create-package-input-wrapper">
                     <div className="create-package-input-icon">
-                      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
-                      </svg>
+                      <Icon icon="plane" />
                     </div>
                     <select
                       name="arrivalAirport"
@@ -610,9 +588,7 @@ export default function CreatePackage() {
                   </label>
                   <div className="create-package-input-wrapper">
                     <div className="create-package-input-icon">
-                      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
-                      </svg>
+                      <Icon icon="exchange-alt" />
                     </div>
                     <select
                       name="transitAirport"
@@ -641,9 +617,7 @@ export default function CreatePackage() {
                   </label>
                   <div className="create-package-input-wrapper">
                     <div className="create-package-input-icon">
-                      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                      </svg>
+                      <Icon icon="users" />
                     </div>
                     <input
                       type="number"
@@ -665,9 +639,7 @@ export default function CreatePackage() {
                   </label>
                   <div className="create-package-input-wrapper">
                     <div className="create-package-input-icon">
-                      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
-                      </svg>
+                      <Icon icon="user-check" />
                     </div>
                     <input
                       type="number"
@@ -692,9 +664,7 @@ export default function CreatePackage() {
           <div className="create-package-step">
             <div className="create-package-step-header">
               <div className="create-package-step-icon">
-                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                </svg>
+                <Icon icon="hotel" />
               </div>
               <h3 className="create-package-step-title">Accommodation & Travel</h3>
               <p className="create-package-step-description">
@@ -711,9 +681,7 @@ export default function CreatePackage() {
                   </label>
                   <div className="create-package-input-wrapper">
                     <div className="create-package-input-icon">
-                      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                      </svg>
+                      <Icon icon="hotel" />
                     </div>
                     <input
                       type="text"
@@ -733,9 +701,7 @@ export default function CreatePackage() {
                   </label>
                   <div className="create-package-input-wrapper">
                     <div className="create-package-input-icon">
-                      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
-                      </svg>
+                      <Icon icon="star" />
                     </div>
                     <select
                       name="hotelRating"
@@ -760,9 +726,7 @@ export default function CreatePackage() {
                   </label>
                   <div className="create-package-input-wrapper">
                     <div className="create-package-input-icon">
-                      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17M17 13v6a2 2 0 01-2 2H9a2 2 0 01-2-2v-6m8 0V9a2 2 0 00-2-2H9a2 2 0 00-2 2v4.01" />
-                      </svg>
+                      <Icon icon="utensils" />
                     </div>
                     <select
                       name="mealPlan"
@@ -784,9 +748,7 @@ export default function CreatePackage() {
                   </label>
                   <div className="create-package-input-wrapper">
                     <div className="create-package-input-icon">
-                      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
-                      </svg>
+                      <Icon icon="plane" />
                     </div>
                     <select
                       name="transportation"
@@ -810,10 +772,7 @@ export default function CreatePackage() {
                 </label>
                 <div className="create-package-input-wrapper">
                   <div className="create-package-input-icon">
-                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                    </svg>
+                    <Icon icon="map-marker-alt" />
                   </div>
                   <select
                     name="country"
@@ -839,9 +798,7 @@ export default function CreatePackage() {
           <div className="create-package-step">
             <div className="create-package-step-header">
               <div className="create-package-step-icon">
-                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
-                </svg>
+                <Icon icon="clipboard-list" />
               </div>
               <h3 className="create-package-step-title">Daily Itinerary</h3>
               <p className="create-package-step-description">
@@ -861,17 +818,13 @@ export default function CreatePackage() {
                           onClick={() => removeItineraryDay(index)}
                           className="create-package-btn-remove"
                         >
-                          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                          </svg>
+                          <Icon icon="trash" />
                         </button>
                       )}
                     </div>
                     <div className="create-package-input-wrapper">
                       <div className="create-package-input-icon">
-                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                        </svg>
+                        <Icon icon="edit" />
                       </div>
                       <textarea
                         value={item.description}
@@ -890,9 +843,7 @@ export default function CreatePackage() {
                 onClick={addItineraryDay}
                 className="create-package-btn-add"
               >
-                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                </svg>
+                <Icon icon="plus" />
                 <span>Add Another Day</span>
               </button>
             </div>
@@ -1167,9 +1118,7 @@ export default function CreatePackage() {
                   onClick={() => router.back()}
                   className="create-package-breadcrumb-link"
                 >
-                  <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 17l-5-5m0 0l5-5m-5 5h12" />
-                  </svg>
+                  <Icon icon="arrow-left" />
                   <span>Back to Packages</span>
                 </button>
               </div>
@@ -1232,9 +1181,7 @@ export default function CreatePackage() {
                 {error && (
                   <div className="create-package-error">
                     <div className="create-package-error-icon">
-                      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                      </svg>
+                      <Icon icon="exclamation-circle" />
                     </div>
                     <span className="create-package-error-text">{error}</span>
                   </div>
@@ -1250,9 +1197,7 @@ export default function CreatePackage() {
                       className="create-package-btn-secondary"
                       onClick={prevStep}
                     >
-                      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 17l-5-5m0 0l5-5m-5 5h12" />
-                      </svg>
+                      <Icon icon="arrow-left" />
                       <span>Previous</span>
                     </button>
                   )}
@@ -1269,9 +1214,7 @@ export default function CreatePackage() {
                       disabled={!isStepValid()}
                     >
                       <span>Continue</span>
-                      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                      </svg>
+                      <Icon icon="arrow-right" />
                     </button>
                   ) : (
                     <button 
@@ -1287,9 +1230,7 @@ export default function CreatePackage() {
                       ) : (
                         <div className="create-package-btn-content">
                           <span>Create Package</span>
-                          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                          </svg>
+                          <Icon icon="check" />
                         </div>
                       )}
                     </button>

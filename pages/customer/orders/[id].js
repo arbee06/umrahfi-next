@@ -341,9 +341,9 @@ export default function OrderDetails() {
                   <span className="status-icon">{statusBadge.icon}</span>
                   <span>{statusBadge.text}</span>
                 </div>
-                <div className={`order-details-payment-badge ${paymentBadge.class}`}>
+                {/* <div className={`order-details-payment-badge ${paymentBadge.class}`}>
                   {paymentBadge.text}
-                </div>
+                </div> */}
               </div>
             </div>
           </div>

@@ -1,62 +1,29 @@
-/* Company Template Management Styles */
+/* Company Template Management Styles - Same theme as company packages */
 
-/* Main container */
+/* Main Container */
 .company-template-management-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 2rem;
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
   min-height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  position: relative;
-  overflow: hidden;
 }
 
-.company-template-management-background {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  z-index: 0;
-}
-
-.company-template-management-pattern {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-image: 
-    radial-gradient(circle at 25% 25%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
-    radial-gradient(circle at 75% 75%, rgba(255, 255, 255, 0.1) 0%, transparent 50%);
-  background-size: 200px 200px;
-  animation: float 20s ease-in-out infinite;
-}
-
-.company-template-management-gradient {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(45deg, rgba(59, 130, 246, 0.1) 0%, rgba(147, 51, 234, 0.1) 100%);
-}
-
-/* Header */
+/* Header Section */
 .company-template-management-header {
-  position: relative;
-  z-index: 10;
-  padding: 2rem 0;
+  background: linear-gradient(135deg, #1e293b 0%, #334155 50%, #475569 100%);
+  border-radius: 2rem;
+  padding: 3rem;
+  color: white;
+  margin-bottom: 2rem;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
 }
 
 .company-template-management-header-content {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 1rem;
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
-}
-
-.company-template-management-header-text {
-  flex: 1;
+  align-items: flex-end;
+  gap: 2rem;
 }
 
 .company-template-management-breadcrumb {
@@ -69,83 +36,84 @@
 }
 
 .company-template-management-title {
-  font-size: 2.5rem;
+  font-size: clamp(2.5rem, 5vw, 4rem);
   font-weight: 800;
-  color: white;
-  margin: 0 0 0.5rem 0;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  margin: 0 0 1rem 0;
+  line-height: 1.1;
+  background: linear-gradient(135deg, #ffffff 0%, #e2e8f0 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 .company-template-management-subtitle {
-  font-size: 1.125rem;
-  color: rgba(255, 255, 255, 0.9);
+  font-size: 1.25rem;
+  color: rgba(255, 255, 255, 0.8);
   margin: 0;
-  max-width: 600px;
+  font-weight: 400;
+  line-height: 1.6;
 }
 
 .company-template-management-create-btn {
-  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
   color: white;
-  border: none;
-  border-radius: 0.75rem;
-  padding: 1rem 1.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 1rem 2rem;
+  border-radius: 1rem;
   font-weight: 600;
+  font-size: 1rem;
   cursor: pointer;
-  transition: all 0.2s;
-  display: flex;
+  transition: all 0.3s ease;
+  text-decoration: none;
+  display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
 }
 
 .company-template-management-create-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
   transform: translateY(-2px);
-  box-shadow: 0 10px 25px rgba(16, 185, 129, 0.3);
 }
 
-/* Content area */
-.company-template-management-content {
-  position: relative;
-  z-index: 10;
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 1rem 2rem 1rem;
-}
-
-/* Filters */
+/* Filter Section */
 .company-template-management-filters {
   background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(10px);
-  border-radius: 1rem;
-  padding: 1.5rem;
+  backdrop-filter: blur(20px);
+  border-radius: 2rem;
+  padding: 2rem;
   margin-bottom: 2rem;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .company-template-management-filter-item {
   display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  max-width: 300px;
+  align-items: center;
+  gap: 1.5rem;
 }
 
 .company-template-management-filter-label {
+  font-weight: 600;
+  color: #374151;
+  font-size: 1rem;
+  white-space: nowrap;
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  font-weight: 600;
-  color: #374151;
-  font-size: 0.875rem;
 }
 
 .company-template-management-select {
-  padding: 0.75rem;
-  border: 1px solid #d1d5db;
-  border-radius: 0.5rem;
-  font-size: 0.875rem;
+  padding: 0.75rem 1rem;
+  border: 2px solid #e5e7eb;
+  border-radius: 1rem;
   background: white;
+  font-size: 0.875rem;
+  color: #374151;
   cursor: pointer;
-  transition: border-color 0.2s;
+  transition: all 0.3s ease;
+  font-family: inherit;
+  min-width: 180px;
 }
 
 .company-template-management-select:focus {
@@ -154,25 +122,36 @@
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
-/* Grid and cards */
+/* Content Area */
+.company-template-management-content {
+  background: white;
+  border-radius: 2rem;
+  padding: 2rem;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e5e7eb;
+}
+
+/* Grid Layout */
 .company-template-management-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
   gap: 1.5rem;
 }
 
+/* Template Cards */
 .company-template-management-card {
   background: white;
-  border-radius: 1rem;
+  border: 2px solid #e5e7eb;
+  border-radius: 1.5rem;
   overflow: hidden;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-  transition: all 0.2s;
-  border: 1px solid #e5e7eb;
+  transition: all 0.3s ease;
+  position: relative;
 }
 
 .company-template-management-card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.15);
+  border-color: #3b82f6;
 }
 
 .company-template-management-card-header {
@@ -180,34 +159,40 @@
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
+  gap: 1rem;
 }
 
 .company-template-management-status-badge {
-  padding: 0.375rem 0.75rem;
-  border-radius: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: 1.5rem;
   font-size: 0.75rem;
-  font-weight: 600;
-  display: flex;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+  display: inline-flex;
   align-items: center;
   gap: 0.25rem;
-  text-transform: capitalize;
 }
 
 .company-template-management-status-badge.inclusions {
-  background: #dcfce7;
-  color: #16a34a;
+  background: rgba(16, 185, 129, 0.1);
+  color: #065f46;
+  border: 1px solid rgba(16, 185, 129, 0.3);
 }
 
 .company-template-management-status-badge.exclusions {
-  background: #fee2e2;
-  color: #dc2626;
+  background: rgba(239, 68, 68, 0.1);
+  color: #991b1b;
+  border: 1px solid rgba(239, 68, 68, 0.3);
 }
 
 .company-template-management-default-badge {
-  background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
-  color: white;
+  background: rgba(245, 158, 11, 0.1);
+  color: #92400e;
+  border: 1px solid rgba(245, 158, 11, 0.3);
   padding: 0.25rem 0.5rem;
-  border-radius: 0.375rem;
+  border-radius: 0.75rem;
   font-size: 0.75rem;
   font-weight: 600;
   display: flex;
@@ -228,6 +213,7 @@
   font-weight: 700;
   color: #1f2937;
   margin: 0 0 0.5rem 0;
+  line-height: 1.3;
 }
 
 .company-template-management-package-description {
@@ -239,6 +225,8 @@
 
 .company-template-management-items-preview {
   margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid #e5e7eb;
 }
 
 .company-template-management-items-count {
@@ -247,7 +235,7 @@
   gap: 0.5rem;
   font-size: 0.875rem;
   color: #6b7280;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.75rem;
   font-weight: 500;
 }
 
@@ -259,17 +247,19 @@
 .company-template-management-item-preview {
   margin-bottom: 0.25rem;
   padding-left: 0.5rem;
+  line-height: 1.4;
 }
 
 .company-template-management-items-more {
   color: #6b7280;
   font-style: italic;
-  margin-top: 0.25rem;
+  margin-top: 0.5rem;
   padding-left: 0.5rem;
+  font-size: 0.8rem;
 }
 
 .company-template-management-card-footer {
-  padding: 1rem 1.5rem 1.5rem 1.5rem;
+  padding: 0 1.5rem 1.5rem 1.5rem;
   display: flex;
   gap: 0.75rem;
 }
@@ -277,16 +267,22 @@
 .company-template-management-action-btn {
   flex: 1;
   padding: 0.75rem 1rem;
-  border-radius: 0.5rem;
-  font-weight: 600;
+  border-radius: 0.75rem;
+  font-weight: 500;
   font-size: 0.875rem;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.2s ease;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
   border: none;
+  text-decoration: none;
+  min-width: 60px;
+}
+
+.company-template-management-action-btn:hover {
+  transform: translateY(-1px);
 }
 
 .company-template-management-action-btn.activate {
@@ -296,7 +292,6 @@
 
 .company-template-management-action-btn.activate:hover {
   background: #2563eb;
-  transform: translateY(-1px);
 }
 
 .company-template-management-action-btn.deactivate {
@@ -306,57 +301,64 @@
 
 .company-template-management-action-btn.deactivate:hover {
   background: #dc2626;
-  transform: translateY(-1px);
 }
 
-/* Loading and empty states */
+/* Loading State */
 .company-template-management-loading-state {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 4rem;
+  padding: 4rem 2rem;
   color: #6b7280;
+  font-size: 1.1rem;
 }
 
 .company-template-management-loading-spinner {
-  width: 2rem;
-  height: 2rem;
-  border: 2px solid #e5e7eb;
-  border-top: 2px solid #3b82f6;
+  width: 3rem;
+  height: 3rem;
+  border: 3px solid #e5e7eb;
+  border-top: 3px solid #3b82f6;
   border-radius: 50%;
   animation: spin 1s linear infinite;
-  margin-bottom: 1rem;
-}
-
-.company-template-management-empty-state {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 4rem;
-  text-align: center;
-}
-
-.company-template-management-empty-icon {
-  font-size: 4rem;
-  color: #d1d5db;
-  margin-bottom: 1rem;
-}
-
-.company-template-management-empty-state h3 {
-  font-size: 1.5rem;
-  font-weight: 600;
-  color: #374151;
-  margin: 0 0 0.5rem 0;
-}
-
-.company-template-management-empty-state p {
-  color: #6b7280;
   margin-bottom: 1.5rem;
 }
 
-/* Modal styles */
+/* Empty State */
+.company-template-management-empty-state {
+  text-align: center;
+  padding: 4rem 2rem;
+  color: #6b7280;
+}
+
+.company-template-management-empty-icon {
+  width: 5rem;
+  height: 5rem;
+  margin: 0 auto 2rem auto;
+  color: #d1d5db;
+  background: #f3f4f6;
+  border-radius: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+}
+
+.company-template-management-empty-state h3 {
+  font-size: 1.75rem;
+  font-weight: 800;
+  color: #1f2937;
+  margin-bottom: 1rem;
+}
+
+.company-template-management-empty-state p {
+  font-size: 1.125rem;
+  color: #6b7280;
+  margin-bottom: 2rem;
+  line-height: 1.6;
+}
+
+/* Modal Styles */
 .company-template-management-modal {
   position: fixed;
   top: 0;
@@ -382,28 +384,29 @@
 
 .company-template-management-modal-content {
   background: white;
-  border-radius: 1rem;
+  border-radius: 2rem;
   max-width: 600px;
   width: 90vw;
   max-height: 80vh;
   overflow-y: auto;
   z-index: 1001;
   position: relative;
-  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .company-template-management-modal-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 1.5rem;
-  border-bottom: 1px solid #e5e7eb;
+  padding: 2rem 2rem 0 2rem;
   background: #f9fafb;
+  border-radius: 2rem 2rem 0 0;
 }
 
 .company-template-management-modal-title {
-  font-size: 1.25rem;
-  font-weight: 600;
+  font-size: 1.5rem;
+  font-weight: 800;
   color: #1f2937;
   margin: 0;
 }
@@ -412,10 +415,10 @@
   background: #ef4444;
   color: white;
   border: none;
-  border-radius: 0.5rem;
-  padding: 0.5rem;
+  border-radius: 0.75rem;
+  padding: 0.75rem;
   cursor: pointer;
-  transition: background-color 0.2s;
+  transition: all 0.2s ease;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -423,6 +426,7 @@
 
 .company-template-management-modal-close:hover {
   background: #dc2626;
+  transform: translateY(-1px);
 }
 
 .company-template-management-modal-close svg {
@@ -430,20 +434,20 @@
   height: 1.25rem;
 }
 
-/* Form styles */
+/* Form Styles */
 .company-template-management-form {
-  padding: 1.5rem;
+  padding: 2rem;
 }
 
 .company-template-management-form-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 1rem;
-  margin-bottom: 1rem;
+  margin-bottom: 1.5rem;
 }
 
 .company-template-management-form-group {
-  margin-bottom: 1rem;
+  margin-bottom: 1.5rem;
 }
 
 .company-template-management-form-group label {
@@ -451,17 +455,21 @@
   margin-bottom: 0.5rem;
   font-weight: 600;
   color: #374151;
+  font-size: 0.875rem;
 }
 
 .company-template-management-form-group input,
 .company-template-management-form-group textarea,
 .company-template-management-form-group select {
   width: 100%;
-  padding: 0.75rem;
-  border: 1px solid #d1d5db;
-  border-radius: 0.5rem;
+  padding: 0.75rem 1rem;
+  border: 2px solid #e5e7eb;
+  border-radius: 1rem;
   font-size: 0.875rem;
-  transition: border-color 0.2s;
+  color: #374151;
+  transition: all 0.3s ease;
+  background: white;
+  font-family: inherit;
 }
 
 .company-template-management-form-group input:focus,
@@ -473,16 +481,16 @@
 }
 
 .company-template-management-items-editor {
-  border: 1px solid #e5e7eb;
-  border-radius: 0.5rem;
-  padding: 1rem;
+  border: 2px solid #e5e7eb;
+  border-radius: 1rem;
+  padding: 1.5rem;
   background: #f9fafb;
 }
 
 .company-template-management-item-input {
   display: flex;
-  gap: 0.5rem;
-  margin-bottom: 0.5rem;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
   align-items: center;
 }
 
@@ -495,27 +503,29 @@
   background: #ef4444;
   color: white;
   border: none;
-  border-radius: 0.375rem;
-  padding: 0.5rem;
+  border-radius: 0.75rem;
+  padding: 0.75rem;
   cursor: pointer;
-  transition: background-color 0.2s;
+  transition: all 0.2s ease;
   display: flex;
   align-items: center;
   justify-content: center;
+  min-width: 44px;
 }
 
 .company-template-management-remove-item:hover {
   background: #dc2626;
+  transform: translateY(-1px);
 }
 
 .company-template-management-add-item {
   background: #10b981;
   color: white;
   border: none;
-  border-radius: 0.375rem;
+  border-radius: 0.75rem;
   padding: 0.75rem 1rem;
   cursor: pointer;
-  transition: background-color 0.2s;
+  transition: all 0.2s ease;
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -526,54 +536,88 @@
 
 .company-template-management-add-item:hover {
   background: #059669;
+  transform: translateY(-1px);
 }
 
 .company-template-management-checkbox-label {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.75rem;
   cursor: pointer;
+  padding: 1rem;
+  background: #f3f4f6;
+  border-radius: 1rem;
+  border: 2px solid #e5e7eb;
+  transition: all 0.2s ease;
+}
+
+.company-template-management-checkbox-label:hover {
+  background: #e5e7eb;
 }
 
 .company-template-management-checkbox-label input[type="checkbox"] {
   width: auto;
   margin: 0;
+  transform: scale(1.2);
 }
 
 .company-template-management-form-actions {
   display: flex;
   gap: 1rem;
   justify-content: flex-end;
-  padding-top: 1rem;
-  border-top: 1px solid #e5e7eb;
+  padding-top: 1.5rem;
+  border-top: 2px solid #e5e7eb;
+  margin-top: 1rem;
 }
 
 /* Animations */
 @keyframes spin {
-  to {
-    transform: rotate(360deg);
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+  .company-template-management-container {
+    padding: 1.5rem;
+  }
+  
+  .company-template-management-header {
+    padding: 2rem;
   }
 }
 
-@keyframes float {
-  0%, 100% {
-    transform: translateY(0px);
-  }
-  50% {
-    transform: translateY(-20px);
-  }
-}
-
-/* Responsive design */
 @media (max-width: 768px) {
-  .company-template-management-title {
-    font-size: 2rem;
+  .company-template-management-container {
+    padding: 1rem;
+  }
+  
+  .company-template-management-header {
+    padding: 1.5rem;
   }
   
   .company-template-management-header-content {
     flex-direction: column;
-    gap: 1rem;
+    align-items: flex-start;
+    gap: 1.5rem;
+  }
+  
+  .company-template-management-title {
+    font-size: 2rem;
+  }
+  
+  .company-template-management-filters {
+    padding: 1.5rem;
+  }
+  
+  .company-template-management-filter-item {
+    flex-direction: column;
     align-items: stretch;
+    gap: 1rem;
+  }
+  
+  .company-template-management-select {
+    min-width: auto;
   }
   
   .company-template-management-grid {
@@ -591,5 +635,76 @@
   .company-template-management-modal-content {
     width: 95vw;
     max-height: 90vh;
+  }
+  
+  .company-template-management-form {
+    padding: 1.5rem;
+  }
+  
+  .company-template-management-modal-header {
+    padding: 1.5rem 1.5rem 0 1.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .company-template-management-container {
+    padding: 0.75rem;
+  }
+  
+  .company-template-management-header {
+    padding: 1rem;
+  }
+  
+  .company-template-management-title {
+    font-size: 1.5rem;
+  }
+  
+  .company-template-management-filters {
+    padding: 1rem;
+  }
+  
+  .company-template-management-content {
+    padding: 1rem;
+  }
+  
+  .company-template-management-form {
+    padding: 1rem;
+  }
+  
+  .company-template-management-modal-header {
+    padding: 1rem 1rem 0 1rem;
+  }
+}
+
+/* Focus states for accessibility */
+.company-template-management-select:focus-visible,
+.company-template-management-action-btn:focus-visible,
+.company-template-management-create-btn:focus-visible,
+.company-template-management-modal-close:focus-visible,
+.company-template-management-add-item:focus-visible,
+.company-template-management-remove-item:focus-visible {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .company-template-management-loading-spinner {
+    animation: none;
+  }
+  
+  .company-template-management-create-btn:hover,
+  .company-template-management-action-btn:hover,
+  .company-template-management-modal-close:hover,
+  .company-template-management-add-item:hover,
+  .company-template-management-remove-item:hover,
+  .company-template-management-card:hover {
+    transform: none;
+  }
+  
+  .company-template-management-action-btn,
+  .company-template-management-card,
+  .company-template-management-select {
+    transition: none;
   }
 }

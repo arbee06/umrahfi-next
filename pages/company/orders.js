@@ -13,6 +13,7 @@ export default function CompanyOrders() {
   const [filter, setFilter] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState('newest');
+  const [processingOrders, setProcessingOrders] = useState(new Set());
 
   useEffect(() => {
     fetchOrders();
@@ -86,6 +87,9 @@ export default function CompanyOrders() {
 
     if (!result.isConfirmed) return;
     
+    // Add order to processing set to show loading state
+    setProcessingOrders(prev => new Set(prev).add(orderId));
+    
     try {
       await orderService.updateOrder(orderId, { status: newStatus });
       
@@ -129,6 +133,13 @@ export default function CompanyOrders() {
           confirmButton: 'custom-swal-confirm'
         },
         buttonsStyling: false
+      });
+    } finally {
+      // Remove order from processing set
+      setProcessingOrders(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(orderId);
+        return newSet;
       });
     }
   };
@@ -340,16 +351,36 @@ export default function CompanyOrders() {
                             <button
                               onClick={() => handleStatusUpdate(order.id, 'confirmed')}
                               className="company-orders-action-btn-confirm"
+                              disabled={processingOrders.has(order.id)}
                             >
-                              <Icon icon="check" />
-                              Confirm
+                              {processingOrders.has(order.id) ? (
+                                <div className="company-orders-btn-loading">
+                                  <Icon icon="spinner" spin className="company-orders-loading-spinner" />
+                                  {/* <span>Processing...</span> */}
+                                </div>
+                              ) : (
+                                <>
+                                  <Icon icon="check" />
+                                  Confirm
+                                </>
+                              )}
                             </button>
                             <button
                               onClick={() => handleStatusUpdate(order.id, 'cancelled')}
                               className="company-orders-action-btn-cancel"
+                              disabled={processingOrders.has(order.id)}
                             >
-                              <Icon icon="times" />
-                              Cancel
+                              {processingOrders.has(order.id) ? (
+                                <div className="company-orders-btn-loading">
+                                  <Icon icon="spinner" spin className="company-orders-loading-spinner" />
+                                  {/* <span>Processing...</span> */}
+                                </div>
+                              ) : (
+                                <>
+                                  <Icon icon="times" />
+                                  Cancel
+                                </>
+                              )}
                             </button>
                           </div>
                         )}
@@ -358,9 +389,19 @@ export default function CompanyOrders() {
                           <button
                             onClick={() => handleStatusUpdate(order.id, 'completed')}
                             className="company-orders-action-btn-complete"
+                            disabled={processingOrders.has(order.id)}
                           >
-                            <Icon icon="check-circle" />
-                            Complete
+                            {processingOrders.has(order.id) ? (
+                              <div className="company-orders-btn-loading">
+                                <Icon icon="spinner" spin className="company-orders-loading-spinner" />
+                                <span>Processing...</span>
+                              </div>
+                            ) : (
+                              <>
+                                <Icon icon="check-circle" />
+                                Complete
+                              </>
+                            )}
                           </button>
                         )}
                       </div>

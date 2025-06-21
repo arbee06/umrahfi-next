@@ -191,12 +191,12 @@ export default function PackageTemplates() {
           <div className="company-template-management-header">
             <div className="company-template-management-header-content">
               <div className="company-template-management-header-text">
-                <div className="company-template-management-breadcrumb">
+                {/* <div className="company-template-management-breadcrumb">
                   <Icon icon="building" />
                   <span>Company</span>
                   <Icon icon="chevron-right" />
                   <span>Package Templates</span>
-                </div>
+                </div> */}
                 <h1 className="company-template-management-title">Package Templates</h1>
                 <p className="company-template-management-subtitle">
                   Create and manage reusable templates for package inclusions and exclusions
@@ -259,7 +259,7 @@ export default function PackageTemplates() {
                   <div key={template.id} className="company-template-management-card">
                     <div className="company-template-management-card-header">
                       <div className={`company-template-management-status-badge ${template.type}`}>
-                        <Icon icon={template.type === 'inclusions' ? 'check-circle' : 'times-circle'} />
+                        <Icon icon={template.type === 'inclusions' ? 'check-circle' : 'times'} />
                         {template.type}
                       </div>
                       {template.isDefault && (

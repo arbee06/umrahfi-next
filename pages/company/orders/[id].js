@@ -15,6 +15,7 @@ export default function CompanyOrderDetails() {
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
+  const [processing, setProcessing] = useState(false);
   const [imageModalOpen, setImageModalOpen] = useState(false);
   const [selectedImage, setSelectedImage] = useState(null);
   const [imageModalTitle, setImageModalTitle] = useState('Image');
@@ -100,6 +101,7 @@ export default function CompanyOrderDetails() {
     // soundManager.playAction();
     
     setUpdating(true);
+    setProcessing(true);
     
     // Show loading state
     Swal.fire({
@@ -190,6 +192,7 @@ export default function CompanyOrderDetails() {
       });
     } finally {
       setUpdating(false);
+      setProcessing(false);
     }
   };
 
@@ -314,9 +317,9 @@ export default function CompanyOrderDetails() {
                     <span className="status-icon">{statusBadge.icon}</span>
                     <span>{statusBadge.text}</span>
                   </div>
-                  <div className={`company-order-details-payment-badge ${paymentBadge.class}`}>
+                  {/* <div className={`company-order-details-payment-badge ${paymentBadge.class}`}>
                     {paymentBadge.text}
-                  </div>
+                  </div> */}
                 </div>
               </div>
               
@@ -326,23 +329,45 @@ export default function CompanyOrderDetails() {
                   <>
                     <button
                       onClick={() => handleStatusUpdate('confirmed')}
-                      disabled={updating}
+                      disabled={processing}
                       className="company-order-details-btn-confirm"
                     >
-                      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                      </svg>
-                      {updating ? 'Processing...' : 'Confirm Order'}
+                      {processing ? (
+                        <div className="company-order-details-btn-loading">
+                          <svg className="company-order-details-loading-spinner" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                          </svg>
+                          <span>Processing...</span>
+                        </div>
+                      ) : (
+                        <>
+                          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                          </svg>
+                          Confirm Order
+                        </>
+                      )}
                     </button>
                     <button
                       onClick={() => handleStatusUpdate('cancelled')}
-                      disabled={updating}
+                      disabled={processing}
                       className="company-order-details-btn-cancel"
                     >
-                      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                      </svg>
-                      Cancel Order
+                      {processing ? (
+                        <div className="company-order-details-btn-loading">
+                          <svg className="company-order-details-loading-spinner" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                          </svg>
+                          <span>Processing...</span>
+                        </div>
+                      ) : (
+                        <>
+                          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                          </svg>
+                          Cancel Order
+                        </>
+                      )}
                     </button>
                   </>
                 )}
@@ -350,13 +375,24 @@ export default function CompanyOrderDetails() {
                 {order.status === 'confirmed' && (
                   <button
                     onClick={() => handleStatusUpdate('completed')}
-                    disabled={updating}
+                    disabled={processing}
                     className="company-order-details-btn-complete"
                   >
-                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    Mark as Completed
+                    {processing ? (
+                      <div className="company-order-details-btn-loading">
+                        <svg className="company-order-details-loading-spinner" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                        </svg>
+                        <span>Processing...</span>
+                      </div>
+                    ) : (
+                      <>
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        Mark as Completed
+                      </>
+                    )}
                   </button>
                 )}
               </div>
