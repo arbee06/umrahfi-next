@@ -1626,6 +1626,533 @@
   outline-offset: 2px;
 }
 
+/* Passport Upload Styles */
+.customer-book-passport-upload {
+  margin-top: 0.5rem;
+}
+
+.customer-book-passport-upload-label {
+  display: block;
+  border: 2px dashed #e5e7eb;
+  border-radius: 12px;
+  padding: 1.5rem;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background: #f9fafb;
+  position: relative;
+  overflow: hidden;
+}
+
+.customer-book-passport-upload-label:hover {
+  border-color: #10b981;
+  background: #f0fdf4;
+}
+
+/* AI Extraction Loader */
+.customer-book-passport-extracting {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+  padding: 1rem;
+}
+
+.passport-ai-loader {
+  position: relative;
+  width: 120px;
+  height: 120px;
+}
+
+.ai-scanner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%);
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(16, 185, 129, 0.2);
+}
+
+.scanner-line {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, transparent, #10b981, transparent);
+  animation: scan 2s ease-in-out infinite;
+  box-shadow: 0 0 10px rgba(16, 185, 129, 0.5);
+}
+
+@keyframes scan {
+  0% {
+    top: 0;
+    opacity: 0;
+  }
+  5% {
+    opacity: 1;
+  }
+  95% {
+    opacity: 1;
+  }
+  100% {
+    top: 100%;
+    opacity: 0;
+  }
+}
+
+.passport-icon {
+  width: 50px;
+  height: 50px;
+  color: #10b981;
+  z-index: 1;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 0.8;
+  }
+  50% {
+    transform: scale(1.05);
+    opacity: 1;
+  }
+}
+
+.ai-particles {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.particle {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  background: #10b981;
+  border-radius: 50%;
+  opacity: 0;
+}
+
+.particle:nth-child(1) {
+  top: 20%;
+  left: 20%;
+  animation: particle-float 3s ease-in-out infinite;
+}
+
+.particle:nth-child(2) {
+  top: 20%;
+  right: 20%;
+  animation: particle-float 3s ease-in-out infinite 0.5s;
+}
+
+.particle:nth-child(3) {
+  bottom: 20%;
+  left: 20%;
+  animation: particle-float 3s ease-in-out infinite 1s;
+}
+
+.particle:nth-child(4) {
+  bottom: 20%;
+  right: 20%;
+  animation: particle-float 3s ease-in-out infinite 1.5s;
+}
+
+@keyframes particle-float {
+  0% {
+    transform: translate(0, 0) scale(0);
+    opacity: 0;
+  }
+  20% {
+    transform: translate(0, -10px) scale(1);
+    opacity: 1;
+  }
+  80% {
+    transform: translate(0, -30px) scale(0.5);
+    opacity: 0.5;
+  }
+  100% {
+    transform: translate(0, -40px) scale(0);
+    opacity: 0;
+  }
+}
+
+.passport-extracting-text {
+  text-align: center;
+}
+
+.passport-extracting-text h4 {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #065f46;
+  margin: 0 0 0.5rem 0;
+  background: linear-gradient(135deg, #059669, #10b981);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.passport-extracting-text p {
+  font-size: 0.875rem;
+  color: #6b7280;
+  margin: 0;
+}
+
+.extraction-progress {
+  width: 200px;
+  height: 6px;
+  background: #e5e7eb;
+  border-radius: 3px;
+  overflow: hidden;
+  position: relative;
+}
+
+.progress-bar-ai {
+  width: 100%;
+  height: 100%;
+  background: #f3f4f6;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.progress-fill-ai {
+  height: 100%;
+  background: linear-gradient(90deg, #10b981, #059669, #10b981);
+  background-size: 200% 100%;
+  border-radius: 3px;
+  animation: progress-ai 3s ease-in-out infinite, shimmer 1.5s linear infinite;
+}
+
+@keyframes progress-ai {
+  0% {
+    width: 0%;
+  }
+  50% {
+    width: 75%;
+  }
+  100% {
+    width: 100%;
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+.customer-book-passport-upload-success {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.customer-book-passport-upload-success svg {
+  width: 2rem;
+  height: 2rem;
+  color: #10b981;
+}
+
+.customer-book-passport-upload-success span {
+  color: #065f46;
+  font-weight: 600;
+}
+
+.customer-book-passport-view-btn {
+  background: #10b981;
+  color: white;
+  border: none;
+  padding: 0.25rem 0.75rem;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-top: 0.25rem;
+}
+
+.customer-book-passport-view-btn:hover {
+  background: #059669;
+  transform: translateY(-1px);
+}
+
+.customer-book-passport-error {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+  color: #dc2626;
+  font-size: 0.875rem;
+}
+
+.customer-book-passport-error svg {
+  width: 1rem;
+  height: 1rem;
+  flex-shrink: 0;
+}
+
+/* Field Error Styles */
+.customer-book-field-error {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  margin-top: 0.375rem;
+  color: #dc2626;
+  font-size: 0.875rem;
+}
+
+.customer-book-field-error svg {
+  width: 1rem;
+  height: 1rem;
+  flex-shrink: 0;
+}
+
+.customer-book-form-input.error {
+  border-color: #dc2626;
+  background-color: #fef2f2;
+}
+
+.customer-book-form-input.error:focus {
+  border-color: #dc2626;
+  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1);
+}
+
+/* Visa Upload Styles */
+.customer-book-visa-upload {
+  margin-top: 0.5rem;
+}
+
+.customer-book-visa-upload-label {
+  display: block;
+  border: 2px dashed #e5e7eb;
+  border-radius: 12px;
+  padding: 1.5rem;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background: #f9fafb;
+  position: relative;
+  overflow: hidden;
+}
+
+.customer-book-visa-upload-label:hover {
+  border-color: #3b82f6;
+  background: #eff6ff;
+}
+
+.customer-book-visa-extracting {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+  padding: 1rem;
+}
+
+.visa-ai-loader {
+  position: relative;
+  width: 120px;
+  height: 120px;
+}
+
+.visa-ai-loader .ai-scanner {
+  background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+  box-shadow: 0 10px 30px rgba(59, 130, 246, 0.2);
+}
+
+.visa-icon {
+  width: 50px;
+  height: 50px;
+  color: #3b82f6;
+  z-index: 1;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+.visa-extracting-text h4 {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #1e40af;
+  margin: 0 0 0.5rem 0;
+  background: linear-gradient(135deg, #2563eb, #3b82f6);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.customer-book-visa-upload-success {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.customer-book-visa-upload-success svg {
+  width: 2rem;
+  height: 2rem;
+  color: #3b82f6;
+}
+
+.customer-book-visa-upload-success span {
+  color: #1e40af;
+  font-weight: 600;
+}
+
+.customer-book-visa-view-btn {
+  background: #3b82f6;
+  color: white;
+  border: none;
+  padding: 0.25rem 0.75rem;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-top: 0.25rem;
+}
+
+.customer-book-visa-view-btn:hover {
+  background: #2563eb;
+  transform: translateY(-1px);
+}
+
+.customer-book-visa-error {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+  color: #dc2626;
+  font-size: 0.875rem;
+}
+
+.customer-book-visa-error svg {
+  width: 1rem;
+  height: 1rem;
+  flex-shrink: 0;
+}
+
+/* Assistance Section Styles */
+.customer-book-assistance-section {
+  margin-top: 1.5rem;
+  padding: 1.5rem;
+  background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+  border: 1px solid #0ea5e9;
+  border-radius: 12px;
+  position: relative;
+}
+
+.customer-book-assistance-section::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #0ea5e9, #3b82f6, #6366f1);
+  border-radius: 12px 12px 0 0;
+}
+
+.customer-book-assistance-title {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #0c4a6e;
+  margin: 0 0 0.75rem 0;
+}
+
+.customer-book-assistance-title svg {
+  width: 1.5rem;
+  height: 1.5rem;
+  color: #0ea5e9;
+}
+
+.customer-book-assistance-description {
+  color: #0369a1;
+  font-size: 0.9rem;
+  margin: 0 0 1rem 0;
+  line-height: 1.5;
+}
+
+.customer-book-assistance-option {
+  margin: 0.75rem 0;
+}
+
+.customer-book-assistance-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  cursor: pointer;
+  padding: 0.75rem;
+  background: white;
+  border-radius: 8px;
+  border: 1px solid #e0f2fe;
+  transition: all 0.2s ease;
+}
+
+.customer-book-assistance-checkbox:hover {
+  background: #f8fafc;
+  border-color: #0ea5e9;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(14, 165, 233, 0.15);
+}
+
+.customer-book-assistance-checkbox input[type="checkbox"] {
+  display: none;
+}
+
+.customer-book-checkmark {
+  position: relative;
+  width: 1.25rem;
+  height: 1.25rem;
+  border: 2px solid #cbd5e1;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.customer-book-assistance-checkbox input[type="checkbox"]:checked + .customer-book-checkmark {
+  background: #0ea5e9;
+  border-color: #0ea5e9;
+}
+
+.customer-book-assistance-checkbox input[type="checkbox"]:checked + .customer-book-checkmark::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 6px;
+  width: 4px;
+  height: 8px;
+  border: solid white;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+.customer-book-assistance-details {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  flex: 1;
+}
+
+.customer-book-assistance-name {
+  font-weight: 600;
+  color: #0c4a6e;
+}
+
+.customer-book-assistance-fee {
+  font-size: 0.875rem;
+  color: #0369a1;
+  font-weight: 500;
+}
+
 /* High contrast mode support */
 @media (prefers-contrast: high) {
   .customer-book-package-summary,
@@ -1636,8 +2163,30 @@
   .customer-book-payment-label,
   .customer-book-bank-account,
   .customer-book-file-upload-label,
-  .customer-book-travelers-selector-wrapper {
+  .customer-book-travelers-selector-wrapper,
+  .customer-book-passport-upload-label {
     border: 2px solid var(--gray-900);
+  }
+}
+
+/* Mobile responsive for passport loader */
+@media (max-width: 768px) {
+  .passport-ai-loader {
+    width: 100px;
+    height: 100px;
+  }
+  
+  .passport-icon {
+    width: 40px;
+    height: 40px;
+  }
+  
+  .passport-extracting-text h4 {
+    font-size: 1rem;
+  }
+  
+  .extraction-progress {
+    width: 180px;
   }
   
   .customer-book-form-input,

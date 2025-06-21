@@ -1,0 +1,28 @@
+-- Create passports table
+CREATE TABLE IF NOT EXISTS passports (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    order_id INT NOT NULL,
+    passenger_name VARCHAR(255) NOT NULL,
+    passport_type VARCHAR(50),
+    country_code VARCHAR(10),
+    passport_number VARCHAR(50),
+    surname VARCHAR(100),
+    given_names VARCHAR(100),
+    nationality VARCHAR(50),
+    date_of_birth DATE,
+    place_of_birth VARCHAR(100),
+    sex VARCHAR(10),
+    date_of_issue DATE,
+    date_of_expiry DATE,
+    issuing_authority VARCHAR(100),
+    personal_number VARCHAR(50),
+    additional_info TEXT,
+    mrz_line1 VARCHAR(100),
+    mrz_line2 VARCHAR(100),
+    file_hash VARCHAR(64),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE,
+    INDEX idx_order_id (order_id),
+    INDEX idx_passport_number (passport_number)
+);

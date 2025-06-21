@@ -135,6 +135,26 @@ const Package = sequelize.define('Package', {
   status: {
     type: DataTypes.ENUM('active', 'inactive', 'soldout'),
     defaultValue: 'active'
+  },
+  includesPassportAssistance: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: false,
+    field: 'includes_passport_assistance'
+  },
+  includesVisaAssistance: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: false,
+    field: 'includes_visa_assistance'
+  },
+  passportAssistanceFee: {
+    type: DataTypes.DECIMAL(10, 2),
+    defaultValue: 0.00,
+    field: 'passport_assistance_fee'
+  },
+  visaAssistanceFee: {
+    type: DataTypes.DECIMAL(10, 2),
+    defaultValue: 0.00,
+    field: 'visa_assistance_fee'
   }
 }, {
   tableName: 'packages',

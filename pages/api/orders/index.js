@@ -1,4 +1,4 @@
-import { Order, Package, User } from '@/models';
+import { Order, Package, User, Passport, Visa } from '@/models';
 import { authMiddleware } from '@/middleware/auth';
 
 export default async function handler(req, res) {
@@ -129,6 +129,47 @@ export default async function handler(req, res) {
         };
 
         const order = await Order.create(orderData);
+
+        // Save passport data if available
+        if (travelers && travelers.length > 0) {
+          for (const traveler of travelers) {
+            if (traveler.passportData) {
+              const passportData = traveler.passportData;
+              await Passport.create({
+                orderId: order.id,
+                passengerName: traveler.name,
+                passportType: passportData.passport_type,
+                countryCode: passportData.country_code,
+                passportNumber: passportData.passport_number,
+                surname: passportData.surname,
+                givenNames: passportData.given_names,
+                nationality: passportData.nationality,
+                dateOfBirth: passportData.date_of_birth ? new Date(passportData.date_of_birth.split('/').reverse().join('-')) : null,
+                placeOfBirth: passportData.place_of_birth,
+                sex: passportData.sex,
+                dateOfIssue: passportData.date_of_issue ? new Date(passportData.date_of_issue.split('/').reverse().join('-')) : null,
+                dateOfExpiry: passportData.date_of_expiry ? new Date(passportData.date_of_expiry.split('/').reverse().join('-')) : null,
+                issuingAuthority: passportData.issuing_authority,
+                personalNumber: passportData.personal_number,
+                additionalInfo: passportData.additional_info,
+                mrzLine1: passportData.mrz_line1,
+                mrzLine2: passportData.mrz_line2,
+                fileHash: passportData.file_hash,
+                imagePath: passportData.image_path
+              });
+            }
+
+            // Save visa data if available
+            if (traveler.visaFileInfo) {
+              await Visa.create({
+                orderId: order.id,
+                passengerName: traveler.name,
+                fileHash: traveler.visaFileInfo.file_hash,
+                imagePath: traveler.visaFileInfo.image_path
+              });
+            }
+          }
+        }
 
         // Update available seats
         packageData.availableSeats -= numberOfTravelers;

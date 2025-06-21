@@ -1,4 +1,4 @@
-import { Order, Package, User } from '@/models';
+import { Order, Package, User, Passport, Visa } from '@/models';
 import { authMiddleware } from '@/middleware/auth';
 
 export default async function handler(req, res) {
@@ -25,6 +25,14 @@ export default async function handler(req, res) {
               model: User,
               as: 'company',
               attributes: ['id', 'companyName', 'email', 'phone']
+            },
+            {
+              model: Passport,
+              as: 'passports'
+            },
+            {
+              model: Visa,
+              as: 'visas'
             }
           ]
         });

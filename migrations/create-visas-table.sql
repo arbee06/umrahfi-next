@@ -1,0 +1,26 @@
+-- Create visas table
+CREATE TABLE IF NOT EXISTS visas (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    order_id INT NOT NULL,
+    passenger_name VARCHAR(255) NOT NULL,
+    visa_type VARCHAR(50),
+    visa_number VARCHAR(100),
+    issuing_country VARCHAR(100),
+    issuing_authority VARCHAR(100),
+    date_of_issue DATE,
+    date_of_expiry DATE,
+    valid_from DATE,
+    valid_until DATE,
+    number_of_entries VARCHAR(50),
+    duration_of_stay VARCHAR(50),
+    purpose VARCHAR(100),
+    place_of_issue VARCHAR(100),
+    additional_info TEXT,
+    file_hash VARCHAR(64),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE,
+    INDEX idx_order_id (order_id),
+    INDEX idx_visa_number (visa_number),
+    INDEX idx_expiry_date (date_of_expiry)
+);

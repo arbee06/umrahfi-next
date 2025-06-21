@@ -499,6 +499,53 @@
   }
 }
 
+/* Passport Styles */
+.traveler-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.passport-view-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.375rem 0.75rem;
+  background: #10b981;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.passport-view-btn:hover {
+  background: #059669;
+  transform: translateY(-1px);
+}
+
+.passport-view-btn svg {
+  width: 1rem;
+  height: 1rem;
+}
+
+.passport-status {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+  color: #059669;
+  font-size: 0.875rem;
+}
+
+.passport-status svg {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
 @media (max-width: 480px) {
   .order-details-title {
     font-size: 1.5rem;

@@ -35,6 +35,93 @@ export default function OrderDetails() {
     }
   };
 
+  const viewPassportDetails = (passportData) => {
+    Swal.fire({
+      title: '🛂 Passport Information',
+      html: `
+        <div style="text-align: left; margin: 1rem 0; max-height: 400px; overflow-y: auto;">
+          <div style="display: grid; gap: 1rem; font-size: 0.95rem;">
+            <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 0.5rem; padding: 0.75rem; background: #f3f4f6; border-radius: 0.5rem;">
+              <strong>Full Name:</strong>
+              <span>${passportData.givenNames || ''} ${passportData.surname || ''}</span>
+            </div>
+            ${passportData.passportType ? `
+            <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 0.5rem;">
+              <strong>Passport Type:</strong>
+              <span>${passportData.passportType}</span>
+            </div>` : ''}
+            ${passportData.passportNumber ? `
+            <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 0.5rem;">
+              <strong>Passport Number:</strong>
+              <span style="font-family: monospace;">${passportData.passportNumber}</span>
+            </div>` : ''}
+            ${passportData.nationality ? `
+            <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 0.5rem;">
+              <strong>Nationality:</strong>
+              <span>${passportData.nationality}</span>
+            </div>` : ''}
+            ${passportData.dateOfBirth ? `
+            <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 0.5rem;">
+              <strong>Date of Birth:</strong>
+              <span>${new Date(passportData.dateOfBirth).toLocaleDateString()}</span>
+            </div>` : ''}
+            ${passportData.placeOfBirth ? `
+            <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 0.5rem;">
+              <strong>Place of Birth:</strong>
+              <span>${passportData.placeOfBirth}</span>
+            </div>` : ''}
+            ${passportData.sex ? `
+            <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 0.5rem;">
+              <strong>Gender:</strong>
+              <span>${passportData.sex === 'M' ? 'Male' : 'Female'}</span>
+            </div>` : ''}
+            ${passportData.dateOfIssue ? `
+            <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 0.5rem;">
+              <strong>Issue Date:</strong>
+              <span>${new Date(passportData.dateOfIssue).toLocaleDateString()}</span>
+            </div>` : ''}
+            ${passportData.dateOfExpiry ? `
+            <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 0.5rem; padding: 0.75rem; background: ${new Date(passportData.dateOfExpiry) < new Date() ? '#fef2f2' : '#f0fdf4'}; border-radius: 0.5rem;">
+              <strong>Expiry Date:</strong>
+              <span style="color: ${new Date(passportData.dateOfExpiry) < new Date() ? '#dc2626' : '#059669'}; font-weight: 600;">
+                ${new Date(passportData.dateOfExpiry).toLocaleDateString()}
+                ${new Date(passportData.dateOfExpiry) < new Date() ? ' (EXPIRED)' : ''}
+              </span>
+            </div>` : ''}
+            ${passportData.issuingAuthority ? `
+            <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 0.5rem;">
+              <strong>Issuing Authority:</strong>
+              <span>${passportData.issuingAuthority}</span>
+            </div>` : ''}
+            ${passportData.countryCode ? `
+            <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 0.5rem;">
+              <strong>Country Code:</strong>
+              <span>${passportData.countryCode}</span>
+            </div>` : ''}
+          </div>
+          ${passportData.mrzLine1 || passportData.mrzLine2 ? `
+          <div style="margin-top: 1.5rem; padding: 1rem; background: #1e293b; border-radius: 0.5rem;">
+            <h4 style="color: #60a5fa; margin: 0 0 0.5rem 0; font-size: 0.9rem;">Machine Readable Zone (MRZ)</h4>
+            <div style="font-family: monospace; color: #f1f5f9; font-size: 0.85rem; line-height: 1.5;">
+              ${passportData.mrzLine1 ? `<div>${passportData.mrzLine1}</div>` : ''}
+              ${passportData.mrzLine2 ? `<div>${passportData.mrzLine2}</div>` : ''}
+            </div>
+          </div>` : ''}
+        </div>
+      `,
+      width: '600px',
+      confirmButtonColor: '#059669',
+      confirmButtonText: 'Close',
+      customClass: {
+        popup: 'custom-swal-popup',
+        title: 'custom-swal-title',
+        htmlContainer: 'custom-swal-html',
+        confirmButton: 'custom-swal-confirm'
+      },
+      buttonsStyling: false
+    });
+  };
+
   const handleCancelBooking = async () => {
     if (!order) return;
     
@@ -301,23 +388,47 @@ export default function OrderDetails() {
                 </div>
                 <div className="order-details-card-content">
                   <div className="travelers-list">
-                    {order.travelers && order.travelers.map((traveler, index) => (
-                      <div key={index} className="traveler-item">
-                        <div className="traveler-number">Traveler {index + 1}</div>
-                        <div className="traveler-info">
-                          <div className="traveler-name">{traveler.name}</div>
-                          <div className="traveler-details">
-                            <span>Passport: {traveler.passportNumber}</span>
-                            <span className="separator">•</span>
-                            <span>Gender: {traveler.gender}</span>
-                            <span className="separator">•</span>
-                            <span>Age: {traveler.age}</span>
-                            <span className="separator">•</span>
-                            <span>Type: {traveler.isChild ? 'Child' : 'Adult'}</span>
+                    {order.travelers && order.travelers.map((traveler, index) => {
+                      const passportData = order.passports?.find(p => p.passengerName === traveler.name);
+                      return (
+                        <div key={index} className="traveler-item">
+                          <div className="traveler-header">
+                            <div className="traveler-number">Traveler {index + 1}</div>
+                            {passportData && (
+                              <button 
+                                className="passport-view-btn"
+                                onClick={() => viewPassportDetails(passportData)}
+                              >
+                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2M15 11h3m-3 4h2" />
+                                </svg>
+                                View Passport
+                              </button>
+                            )}
+                          </div>
+                          <div className="traveler-info">
+                            <div className="traveler-name">{traveler.name}</div>
+                            <div className="traveler-details">
+                              <span>Passport: {traveler.passportNumber}</span>
+                              <span className="separator">•</span>
+                              <span>Gender: {traveler.gender}</span>
+                              <span className="separator">•</span>
+                              <span>DOB: {traveler.dateOfBirth ? new Date(traveler.dateOfBirth).toLocaleDateString() : 'N/A'}</span>
+                              <span className="separator">•</span>
+                              <span>Type: {traveler.isChild ? 'Child' : 'Adult'}</span>
+                            </div>
+                            {passportData && (
+                              <div className="passport-status">
+                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                <span>Passport data available</span>
+                              </div>
+                            )}
                           </div>
                         </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 </div>
               </div>

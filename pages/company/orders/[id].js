@@ -16,6 +16,7 @@ export default function CompanyOrderDetails() {
   const [updating, setUpdating] = useState(false);
   const [imageModalOpen, setImageModalOpen] = useState(false);
   const [selectedImage, setSelectedImage] = useState(null);
+  const [imageModalTitle, setImageModalTitle] = useState('Image');
 
   useEffect(() => {
     if (!router.isReady) return;
@@ -223,14 +224,16 @@ export default function CompanyOrderDetails() {
     return badges[status] || badges.pending;
   };
 
-  const openImageModal = (imageSrc) => {
+  const openImageModal = (imageSrc, title = 'Image') => {
     setSelectedImage(imageSrc);
+    setImageModalTitle(title);
     setImageModalOpen(true);
   };
 
   const closeImageModal = () => {
     setImageModalOpen(false);
     setSelectedImage(null);
+    setImageModalTitle('Image');
   };
 
   const getPaymentMethodBadge = (method) => {
@@ -442,28 +445,157 @@ export default function CompanyOrderDetails() {
                 </div>
                 <div className="company-order-details-card-content">
                   <div className="company-order-travelers-list">
-                    {order.travelers && order.travelers.map((traveler, index) => (
-                      <div key={index} className="company-order-traveler-item">
-                        <div className="company-order-traveler-number">#{index + 1}</div>
-                        <div className="company-order-traveler-info">
-                          <div className="company-order-traveler-name">{traveler.name}</div>
-                          <div className="company-order-traveler-details">
-                            <span className="company-order-traveler-detail">
-                              <strong>Passport:</strong> {traveler.passportNumber}
-                            </span>
-                            <span className="company-order-traveler-detail">
-                              <strong>Gender:</strong> {traveler.gender}
-                            </span>
-                            <span className="company-order-traveler-detail">
-                              <strong>Age:</strong> {traveler.age}
-                            </span>
-                            <span className="company-order-traveler-detail">
-                              <strong>Type:</strong> {traveler.isChild ? 'Child' : 'Adult'}
-                            </span>
+                    {order.travelers && order.travelers.map((traveler, index) => {
+                      // Find matching passport and visa data for this traveler
+                      const passportData = order.passports?.find(p => p.passengerName === traveler.name);
+                      const visaData = order.visas?.find(v => v.passengerName === traveler.name);
+                      
+                      return (
+                        <div key={index} className="company-order-traveler-item">
+                          <div className="company-order-traveler-number">#{index + 1}</div>
+                          <div className="company-order-traveler-info">
+                            <div className="company-order-traveler-header">
+                              <div className="company-order-traveler-name">{traveler.name}</div>
+                              <div className="company-order-traveler-type-badge">
+                                {traveler.isChild ? 'Child' : 'Adult'}
+                              </div>
+                            </div>
+                            <div className="company-order-traveler-details">
+                              <span className="company-order-traveler-detail">
+                                <strong>Passport:</strong> {traveler.passportNumber || passportData?.passportNumber || 'Not provided'}
+                              </span>
+                              <span className="company-order-traveler-detail">
+                                <strong>Gender:</strong> {traveler.gender}
+                              </span>
+                              <span className="company-order-traveler-detail">
+                                <strong>Date of Birth:</strong> {traveler.dateOfBirth || passportData?.dateOfBirth || 'Not provided'}
+                              </span>
+                            </div>
+                            
+                            {/* Document Status */}
+                            <div className="company-order-traveler-documents">
+                              <div className="company-order-document-status">
+                                <div className="company-order-document-item">
+                                  <div className="company-order-document-icon">
+                                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                    </svg>
+                                  </div>
+                                  <div className="company-order-document-info">
+                                    <span className="company-order-document-label">Passport Document</span>
+                                    <div className={`company-order-document-status-badge ${passportData ? 'uploaded' : 'not-uploaded'}`}>
+                                      {passportData ? (
+                                        <>
+                                          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                          </svg>
+                                          <span>Uploaded</span>
+                                        </>
+                                      ) : (
+                                        <>
+                                          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                          </svg>
+                                          <span>Not Uploaded</span>
+                                        </>
+                                      )}
+                                    </div>
+                                  </div>
+                                  {passportData && (
+                                    <button 
+                                      className="company-order-document-view-btn"
+                                      onClick={() => {
+                                        if (passportData.imagePath) {
+                                          openImageModal(passportData.imagePath, `${traveler.name} - Passport Document`);
+                                        } else {
+                                          alert('Image not available');
+                                        }
+                                      }}
+                                    >
+                                      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                      </svg>
+                                      View
+                                    </button>
+                                  )}
+                                </div>
+                                
+                                <div className="company-order-document-item">
+                                  <div className="company-order-document-icon">
+                                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                    </svg>
+                                  </div>
+                                  <div className="company-order-document-info">
+                                    <span className="company-order-document-label">Visa Document</span>
+                                    <div className={`company-order-document-status-badge ${visaData ? 'uploaded' : 'not-uploaded'}`}>
+                                      {visaData ? (
+                                        <>
+                                          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                          </svg>
+                                          <span>Uploaded</span>
+                                        </>
+                                      ) : (
+                                        <>
+                                          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                          </svg>
+                                          <span>Not Uploaded</span>
+                                        </>
+                                      )}
+                                    </div>
+                                  </div>
+                                  {visaData && (
+                                    <button 
+                                      className="company-order-document-view-btn"
+                                      onClick={() => {
+                                        if (visaData.imagePath) {
+                                          openImageModal(visaData.imagePath, `${traveler.name} - Visa Document`);
+                                        } else {
+                                          alert('Image not available');
+                                        }
+                                      }}
+                                    >
+                                      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                      </svg>
+                                      View
+                                    </button>
+                                  )}
+                                </div>
+                              </div>
+                              
+                              {/* Assistance Requests */}
+                              {(traveler.needsPassportAssistance || traveler.needsVisaAssistance) && (
+                                <div className="company-order-assistance-requests">
+                                  <div className="company-order-assistance-title">
+                                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                    <span>Assistance Requested</span>
+                                  </div>
+                                  <div className="company-order-assistance-list">
+                                    {traveler.needsPassportAssistance && (
+                                      <div className="company-order-assistance-item">
+                                        <span>🛂 Passport assistance</span>
+                                      </div>
+                                    )}
+                                    {traveler.needsVisaAssistance && (
+                                      <div className="company-order-assistance-item">
+                                        <span>📋 Visa assistance</span>
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
+                              )}
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 </div>
               </div>
@@ -529,12 +661,12 @@ export default function CompanyOrderDetails() {
                               src={order.paymentReceiptPath}
                               alt="Payment Receipt"
                               className="company-order-receipt-image"
-                              onClick={() => openImageModal(order.paymentReceiptPath)}
+                              onClick={() => openImageModal(order.paymentReceiptPath, 'Payment Receipt')}
                             />
                             <div className="company-order-receipt-overlay">
                               <button
                                 className="company-order-receipt-view-btn"
-                                onClick={() => openImageModal(order.paymentReceiptPath)}
+                                onClick={() => openImageModal(order.paymentReceiptPath, 'Payment Receipt')}
                               >
                                 <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -675,7 +807,7 @@ export default function CompanyOrderDetails() {
               <div className="company-order-image-modal-backdrop"></div>
               <div className="company-order-image-modal-content" onClick={(e) => e.stopPropagation()}>
                 <div className="company-order-image-modal-header">
-                  <h3 className="company-order-image-modal-title">Payment Receipt</h3>
+                  <h3 className="company-order-image-modal-title">{imageModalTitle}</h3>
                   <button
                     className="company-order-image-modal-close"
                     onClick={closeImageModal}
@@ -688,20 +820,20 @@ export default function CompanyOrderDetails() {
                 <div className="company-order-image-modal-body">
                   <img
                     src={selectedImage}
-                    alt="Payment Receipt"
+                    alt={imageModalTitle}
                     className="company-order-image-modal-image"
                   />
                 </div>
                 <div className="company-order-image-modal-footer">
                   <a
                     href={selectedImage}
-                    download={order?.paymentReceiptOriginalName || 'payment-receipt.jpg'}
+                    download={imageModalTitle === 'Payment Receipt' ? (order?.paymentReceiptOriginalName || 'payment-receipt.jpg') : `${imageModalTitle.toLowerCase().replace(/\s+/g, '-')}.jpg`}
                     className="company-order-image-modal-download"
                   >
                     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                     </svg>
-                    Download Receipt
+                    Download {imageModalTitle === 'Payment Receipt' ? 'Receipt' : 'Document'}
                   </a>
                   <button
                     className="company-order-image-modal-close-btn"

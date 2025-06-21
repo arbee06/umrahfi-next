@@ -29,7 +29,15 @@ export default function BookPackage() {
       passportNumber: '',
       dateOfBirth: '',
       gender: 'male',
-      isChild: false
+      isChild: false,
+      passportData: null,
+      uploadingPassport: false,
+      passportError: null,
+      visaData: null,
+      uploadingVisa: false,
+      visaError: null,
+      needsPassportAssistance: false,
+      needsVisaAssistance: false
     }],
     specialRequests: '',
     paymentMethod: 'credit_card',
@@ -74,7 +82,15 @@ export default function BookPackage() {
           passportNumber: '',
           dateOfBirth: '',
           gender: 'male',
-          isChild: false
+          isChild: false,
+          passportData: null,
+          uploadingPassport: false,
+          passportError: null,
+          visaData: null,
+          uploadingVisa: false,
+          visaError: null,
+          needsPassportAssistance: false,
+          needsVisaAssistance: false
         });
       }
       
@@ -85,7 +101,15 @@ export default function BookPackage() {
           passportNumber: '',
           dateOfBirth: '',
           gender: 'male',
-          isChild: true
+          isChild: true,
+          passportData: null,
+          uploadingPassport: false,
+          passportError: null,
+          visaData: null,
+          uploadingVisa: false,
+          visaError: null,
+          needsPassportAssistance: false,
+          needsVisaAssistance: false
         });
       }
       
@@ -119,8 +143,676 @@ export default function BookPackage() {
 
   const handleTravelerChange = (index, field, value) => {
     const updatedTravelers = [...bookingData.travelers];
+    
+    // Check for duplicate passport number when manually entering
+    if (field === 'passportNumber' && value) {
+      const isDuplicate = bookingData.travelers.some((traveler, travelerIndex) => {
+        if (travelerIndex === index) return false; // Skip current traveler
+        return traveler.passportNumber && 
+               traveler.passportNumber.toLowerCase() === value.toLowerCase();
+      });
+      
+      if (isDuplicate) {
+        // Show inline error
+        updatedTravelers[index].passportError = 'This passport number is already used for another traveler';
+        updatedTravelers[index][field] = value;
+        setBookingData({ ...bookingData, travelers: updatedTravelers });
+        
+        // Show alert after a short delay to allow the UI to update
+        setTimeout(() => {
+          Swal.fire({
+            title: 'Duplicate Passport Number',
+            html: `
+              <div style="text-align: center; margin: 1rem 0;">
+                <p style="color: #dc2626; font-weight: 600;">This passport number is already assigned to another traveler!</p>
+                <p style="color: #6b7280; font-size: 0.9rem; margin-top: 0.5rem;">Each traveler must have a unique passport number.</p>
+              </div>
+            `,
+            icon: 'warning',
+            confirmButtonColor: '#ef4444',
+            confirmButtonText: 'OK',
+            customClass: {
+              popup: 'custom-swal-popup',
+              title: 'custom-swal-title',
+              htmlContainer: 'custom-swal-html',
+              confirmButton: 'custom-swal-confirm'
+            },
+            buttonsStyling: false,
+            timer: 3000,
+            timerProgressBar: true
+          });
+        }, 100);
+        
+        return;
+      } else {
+        // Clear any previous passport error
+        updatedTravelers[index].passportError = null;
+      }
+    }
+    
     updatedTravelers[index][field] = value;
     setBookingData({ ...bookingData, travelers: updatedTravelers });
+  };
+
+  const handlePassportUpload = async (index, file) => {
+    if (!file) return;
+
+    const updatedTravelers = [...bookingData.travelers];
+    updatedTravelers[index].uploadingPassport = true;
+    updatedTravelers[index].passportError = null;
+    setBookingData({ ...bookingData, travelers: updatedTravelers });
+
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const response = await fetch('/api/passport/extract', {
+        method: 'POST',
+        body: formData,
+      });
+
+      const result = await response.json();
+
+      if (response.ok && result.success) {
+        const passportData = result.passport_data;
+        
+        // Check for duplicate passport across all travelers
+        const isDuplicate = bookingData.travelers.some((traveler, travelerIndex) => {
+          if (travelerIndex === index) return false; // Skip current traveler
+          
+          // Check if passport number matches
+          if (traveler.passportNumber && passportData.passport_number && 
+              traveler.passportNumber.toLowerCase() === passportData.passport_number.toLowerCase()) {
+            return true;
+          }
+          
+          // Check if passport data exists and matches
+          if (traveler.passportData && traveler.passportData.passport_number && 
+              traveler.passportData.passport_number.toLowerCase() === passportData.passport_number.toLowerCase()) {
+            return true;
+          }
+          
+          // Check by file hash if available
+          if (traveler.passportData && traveler.passportData.file_hash && 
+              passportData.file_hash && traveler.passportData.file_hash === passportData.file_hash) {
+            return true;
+          }
+          
+          return false;
+        });
+        
+        if (isDuplicate) {
+          updatedTravelers[index].uploadingPassport = false;
+          updatedTravelers[index].passportError = 'This passport has already been uploaded for another traveler';
+          setBookingData({ ...bookingData, travelers: updatedTravelers });
+          
+          // Show error alert
+          await Swal.fire({
+            title: 'Duplicate Passport Detected',
+            html: `
+              <div style="text-align: center; margin: 1rem 0;">
+                <div style="background: #fef2f2; padding: 1.5rem; border-radius: 0.5rem; margin-bottom: 1rem;">
+                  <svg style="width: 3rem; height: 3rem; color: #dc2626; margin-bottom: 1rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                  </svg>
+                  <p style="color: #dc2626; font-weight: 600; margin-bottom: 0.5rem;">This passport has already been uploaded for another traveler!</p>
+                  <p style="color: #991b1b; font-size: 0.9rem;">Each traveler must have their own unique passport. Please upload a different passport for this traveler.</p>
+                </div>
+                <div style="background: #f0f9ff; padding: 1rem; border-radius: 0.5rem;">
+                  <p style="color: #0369a1; font-size: 0.9rem; margin: 0;">
+                    <strong>Passport Number:</strong> ${passportData.passport_number || 'N/A'}<br>
+                    <strong>Name:</strong> ${passportData.given_names || ''} ${passportData.surname || ''}
+                  </p>
+                </div>
+              </div>
+            `,
+            icon: 'error',
+            confirmButtonColor: '#dc2626',
+            confirmButtonText: 'Understood',
+            customClass: {
+              popup: 'custom-swal-popup',
+              title: 'custom-swal-title',
+              htmlContainer: 'custom-swal-html',
+              confirmButton: 'custom-swal-confirm'
+            },
+            buttonsStyling: false
+          });
+          
+          return;
+        }
+        
+        // Validate that essential passport data is present
+        const requiredFields = {
+          passport_number: 'Passport Number',
+          surname: 'Surname',
+          given_names: 'Given Names',
+          date_of_birth: 'Date of Birth',
+          nationality: 'Nationality'
+        };
+        
+        const missingFields = [];
+        const extractedData = {};
+        
+        // Check for missing required fields
+        for (const [field, label] of Object.entries(requiredFields)) {
+          if (!passportData[field] || passportData[field] === 'null' || passportData[field] === '') {
+            missingFields.push(label);
+          } else {
+            extractedData[field] = passportData[field];
+          }
+        }
+        
+        // Check if this might not be a passport image
+        const criticalFieldsMissing = !passportData.passport_number && !passportData.surname && !passportData.given_names;
+        
+        if (criticalFieldsMissing) {
+          // This is likely not a passport image
+          updatedTravelers[index].uploadingPassport = false;
+          updatedTravelers[index].passportError = 'Invalid image - please upload a clear passport photo';
+          setBookingData({ ...bookingData, travelers: updatedTravelers });
+          
+          await Swal.fire({
+            title: 'Invalid Document',
+            html: `
+              <div style="text-align: center; margin: 1rem 0;">
+                <div style="background: #fef2f2; padding: 1.5rem; border-radius: 0.5rem; margin-bottom: 1rem;">
+                  <svg style="width: 4rem; height: 4rem; color: #dc2626; margin-bottom: 1rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                  <p style="color: #dc2626; font-weight: 600; margin-bottom: 0.5rem;">This doesn't appear to be a passport image</p>
+                  <p style="color: #991b1b; font-size: 0.9rem;">Our AI couldn't detect any passport information in this image.</p>
+                </div>
+                <div style="background: #f0f9ff; padding: 1rem; border-radius: 0.5rem;">
+                  <p style="color: #0369a1; font-size: 0.9rem; margin: 0 0 1rem 0;"><strong>Tips for successful passport scanning:</strong></p>
+                  <ul style="text-align: left; color: #0369a1; font-size: 0.875rem; margin: 0; padding-left: 1.5rem;">
+                    <li>Upload a clear photo of the passport's data page</li>
+                    <li>Ensure the entire passport page is visible</li>
+                    <li>Avoid blurry or dark images</li>
+                    <li>Make sure text is readable and not cut off</li>
+                    <li>Use the page with photo and personal details</li>
+                  </ul>
+                </div>
+              </div>
+            `,
+            icon: 'error',
+            confirmButtonColor: '#dc2626',
+            confirmButtonText: 'Try Again',
+            customClass: {
+              popup: 'custom-swal-popup',
+              title: 'custom-swal-title',
+              htmlContainer: 'custom-swal-html',
+              confirmButton: 'custom-swal-confirm'
+            },
+            buttonsStyling: false
+          });
+          
+          return;
+        }
+        
+        // If some fields are missing but it's likely a passport
+        if (missingFields.length > 0) {
+          // Still update with available data
+          updatedTravelers[index].passportData = passportData;
+          updatedTravelers[index].name = `${passportData.given_names || ''} ${passportData.surname || ''}`.trim() || updatedTravelers[index].name;
+          updatedTravelers[index].passportNumber = passportData.passport_number || updatedTravelers[index].passportNumber;
+          
+          // Continue with date parsing and other updates...
+          // (Moving the existing date parsing code here)
+        } else {
+          // All required fields are present
+          updatedTravelers[index].passportData = passportData;
+          updatedTravelers[index].name = `${passportData.given_names || ''} ${passportData.surname || ''}`.trim() || updatedTravelers[index].name;
+          updatedTravelers[index].passportNumber = passportData.passport_number || updatedTravelers[index].passportNumber;
+        }
+        
+        // Parse and format date of birth
+        if (passportData.date_of_birth) {
+          console.log('Original DOB:', passportData.date_of_birth);
+          
+          // Try different date parsing approaches
+          let parsedDate = null;
+          
+          // First try splitting by / or -
+          const dobParts = passportData.date_of_birth.split(/[-\/]/);
+          if (dobParts.length === 3) {
+            // Check if it's DD/MM/YYYY or DD-MM-YYYY format
+            let day, month, year;
+            
+            // If the first part is > 12, it's likely DD/MM/YYYY
+            if (parseInt(dobParts[0]) > 12 || parseInt(dobParts[1]) <= 12) {
+              day = dobParts[0].padStart(2, '0');
+              month = dobParts[1].padStart(2, '0');
+              year = dobParts[2];
+            } else {
+              // Otherwise might be MM/DD/YYYY
+              month = dobParts[0].padStart(2, '0');
+              day = dobParts[1].padStart(2, '0');
+              year = dobParts[2];
+            }
+            
+            // Handle 2-digit years
+            if (year.length === 2) {
+              year = parseInt(year) > 50 ? '19' + year : '20' + year;
+            }
+            
+            parsedDate = `${year}-${month}-${day}`;
+            
+            // Validate the parsed date
+            const testDate = new Date(parsedDate);
+            if (isNaN(testDate.getTime())) {
+              parsedDate = null;
+            }
+          }
+          
+          // If first approach failed, try parsing as a Date object
+          if (!parsedDate) {
+            try {
+              // Try various date formats
+              const dateFormats = [
+                passportData.date_of_birth, // Original format
+                passportData.date_of_birth.replace(/\//g, '-'), // Replace / with -
+                passportData.date_of_birth.split(/[-\/]/).reverse().join('-') // Try reversing
+              ];
+              
+              for (const format of dateFormats) {
+                const date = new Date(format);
+                if (!isNaN(date.getTime())) {
+                  const year = date.getFullYear();
+                  const month = (date.getMonth() + 1).toString().padStart(2, '0');
+                  const day = date.getDate().toString().padStart(2, '0');
+                  parsedDate = `${year}-${month}-${day}`;
+                  break;
+                }
+              }
+            } catch (e) {
+              console.error('Date parsing error:', e);
+            }
+          }
+          
+          // If we successfully parsed the date, update it
+          if (parsedDate) {
+            console.log('Parsed DOB:', parsedDate);
+            updatedTravelers[index].dateOfBirth = parsedDate;
+          } else {
+            console.error('Failed to parse date:', passportData.date_of_birth);
+          }
+        }
+        
+        // Update gender if available
+        if (passportData.sex) {
+          updatedTravelers[index].gender = passportData.sex.toLowerCase() === 'm' ? 'male' : 'female';
+        }
+        
+        updatedTravelers[index].uploadingPassport = false;
+        setBookingData({ ...bookingData, travelers: updatedTravelers });
+        
+        // Show success message with warning about missing fields if any
+        if (missingFields.length > 0) {
+          await Swal.fire({
+            title: 'Passport Data Partially Extracted',
+            html: `
+              <div style="text-align: left; margin: 1rem 0;">
+                <div style="background: #fef8e1; padding: 1rem; border-radius: 0.5rem; margin-bottom: 1rem; border: 1px solid #fbbf24;">
+                  <p style="color: #92400e; font-weight: 600; margin-bottom: 0.5rem;">
+                    <svg style="width: 1.25rem; height: 1.25rem; display: inline-block; vertical-align: -3px; margin-right: 0.5rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    </svg>
+                    Some information could not be extracted
+                  </p>
+                  <p style="color: #92400e; font-size: 0.875rem; margin: 0;">Missing fields: ${missingFields.join(', ')}</p>
+                </div>
+                <div style="background: #f3f4f6; padding: 1rem; border-radius: 0.5rem; margin-bottom: 1rem;">
+                  <p style="color: #059669; font-weight: 600; margin-bottom: 0.5rem;">Extracted Information:</p>
+                  ${updatedTravelers[index].name ? `<p style="margin: 0.25rem 0;"><strong>Name:</strong> ${updatedTravelers[index].name}</p>` : ''}
+                  ${updatedTravelers[index].passportNumber ? `<p style="margin: 0.25rem 0;"><strong>Passport:</strong> ${updatedTravelers[index].passportNumber}</p>` : ''}
+                  ${updatedTravelers[index].dateOfBirth ? `<p style="margin: 0.25rem 0;"><strong>DOB:</strong> ${updatedTravelers[index].dateOfBirth}</p>` : ''}
+                  ${passportData.nationality ? `<p style="margin: 0.25rem 0;"><strong>Nationality:</strong> ${passportData.nationality}</p>` : ''}
+                </div>
+                <p style="color: #6b7280; font-size: 0.875rem; text-align: center;">Please fill in any missing information manually.</p>
+              </div>
+            `,
+            icon: 'warning',
+            confirmButtonColor: '#f59e0b',
+            confirmButtonText: 'OK, I\'ll Complete It',
+            customClass: {
+              popup: 'custom-swal-popup',
+              title: 'custom-swal-title',
+              htmlContainer: 'custom-swal-html',
+              confirmButton: 'custom-swal-confirm'
+            },
+            buttonsStyling: false
+          });
+        } else {
+          // All fields extracted successfully
+          await Swal.fire({
+            title: 'Passport Data Extracted!',
+            html: `
+              <div style="text-align: left; margin: 1rem 0;">
+                <div style="background: #d1fae5; padding: 1rem; border-radius: 0.5rem; margin-bottom: 1rem; text-align: center;">
+                  <svg style="width: 3rem; height: 3rem; color: #059669; margin-bottom: 0.5rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <p style="color: #065f46; font-weight: 600; margin: 0;">All passport information extracted successfully!</p>
+                </div>
+                <div style="background: #f3f4f6; padding: 1rem; border-radius: 0.5rem;">
+                  <p style="margin: 0.25rem 0;"><strong>Name:</strong> ${updatedTravelers[index].name}</p>
+                  <p style="margin: 0.25rem 0;"><strong>Passport:</strong> ${updatedTravelers[index].passportNumber}</p>
+                  <p style="margin: 0.25rem 0;"><strong>DOB:</strong> ${updatedTravelers[index].dateOfBirth || passportData.date_of_birth}</p>
+                  <p style="margin: 0.25rem 0;"><strong>Nationality:</strong> ${passportData.nationality}</p>
+                </div>
+              </div>
+            `,
+            icon: 'success',
+            confirmButtonColor: '#059669',
+            confirmButtonText: 'Continue',
+            customClass: {
+              popup: 'custom-swal-popup',
+              title: 'custom-swal-title',
+              htmlContainer: 'custom-swal-html',
+              confirmButton: 'custom-swal-confirm'
+            },
+            buttonsStyling: false
+          });
+        }
+      } else {
+        throw new Error(result.error || 'Failed to extract passport data');
+      }
+    } catch (err) {
+      updatedTravelers[index].uploadingPassport = false;
+      updatedTravelers[index].passportError = err.message || 'Failed to process passport image';
+      setBookingData({ ...bookingData, travelers: updatedTravelers });
+      
+      // Show detailed error message
+      await Swal.fire({
+        title: 'Processing Failed',
+        html: `
+          <div style="text-align: center; margin: 1rem 0;">
+            <div style="background: #fef2f2; padding: 1.5rem; border-radius: 0.5rem; margin-bottom: 1rem;">
+              <svg style="width: 3rem; height: 3rem; color: #dc2626; margin-bottom: 1rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <p style="color: #dc2626; font-weight: 600; margin-bottom: 0.5rem;">Failed to process passport image</p>
+              <p style="color: #991b1b; font-size: 0.9rem;">${err.message || 'Please try again with a clearer image'}</p>
+            </div>
+            <div style="background: #f0f9ff; padding: 1rem; border-radius: 0.5rem;">
+              <p style="color: #0369a1; font-size: 0.9rem; margin: 0 0 0.5rem 0;"><strong>Common issues:</strong></p>
+              <ul style="text-align: left; color: #0369a1; font-size: 0.875rem; margin: 0; padding-left: 1.5rem;">
+                <li>Image is too blurry or dark</li>
+                <li>File size is too large (max 16MB)</li>
+                <li>Passport page is partially hidden</li>
+                <li>Wrong page of passport (use data page)</li>
+                <li>Network connection issues</li>
+              </ul>
+            </div>
+          </div>
+        `,
+        icon: 'error',
+        confirmButtonColor: '#dc2626',
+        confirmButtonText: 'OK',
+        showCancelButton: true,
+        cancelButtonText: 'Enter Manually',
+        cancelButtonColor: '#6b7280',
+        customClass: {
+          popup: 'custom-swal-popup',
+          title: 'custom-swal-title',
+          htmlContainer: 'custom-swal-html',
+          confirmButton: 'custom-swal-confirm',
+          cancelButton: 'custom-swal-cancel'
+        },
+        buttonsStyling: false
+      }).then((result) => {
+        if (!result.isConfirmed) {
+          // User chose to enter manually - focus on the passport number field
+          const passportInput = document.querySelector(`#passport-input-${index}`);
+          if (passportInput) {
+            passportInput.focus();
+          }
+        }
+      });
+    }
+  };
+
+  const handleVisaUpload = async (index, file) => {
+    if (!file) return;
+
+    const updatedTravelers = [...bookingData.travelers];
+    updatedTravelers[index].uploadingVisa = true;
+    updatedTravelers[index].visaError = null;
+    setBookingData({ ...bookingData, travelers: updatedTravelers });
+
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const response = await fetch('/api/visa/extract', {
+        method: 'POST',
+        body: formData,
+      });
+
+      const result = await response.json();
+
+      if (response.ok && result.success) {
+        // Store simple file information
+        const visaFileInfo = {
+          filename: result.file_info.filename,
+          size: result.file_info.size,
+          type: result.file_info.type,
+          file_hash: result.file_info.file_hash,
+          image_path: result.file_info.image_path,
+          uploaded_at: new Date().toISOString()
+        };
+        
+        // Check for duplicate visa by file hash
+        const isDuplicate = bookingData.travelers.some((traveler, travelerIndex) => {
+          if (travelerIndex === index) return false;
+          return traveler.visaFileInfo && traveler.visaFileInfo.file_hash === visaFileInfo.file_hash;
+        });
+        
+        if (isDuplicate) {
+          updatedTravelers[index].uploadingVisa = false;
+          updatedTravelers[index].visaError = 'This visa document has already been uploaded for another traveler';
+          setBookingData({ ...bookingData, travelers: updatedTravelers });
+          
+          await Swal.fire({
+            title: 'Duplicate Visa Document',
+            html: `
+              <div style="text-align: center; margin: 1rem 0;">
+                <div style="background: #fef2f2; padding: 1.5rem; border-radius: 0.5rem; margin-bottom: 1rem;">
+                  <svg style="width: 3rem; height: 3rem; color: #dc2626; margin-bottom: 1rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                  </svg>
+                  <p style="color: #dc2626; font-weight: 600; margin-bottom: 0.5rem;">This visa document has already been uploaded for another traveler!</p>
+                  <p style="color: #991b1b; font-size: 0.9rem;">Each traveler must have their own unique visa document. Please upload a different document for this traveler.</p>
+                </div>
+                <div style="background: #f0f9ff; padding: 1rem; border-radius: 0.5rem;">
+                  <p style="color: #0369a1; font-size: 0.9rem; margin: 0;">
+                    <strong>Filename:</strong> ${visaFileInfo.filename}<br>
+                    <strong>File Hash:</strong> ${visaFileInfo.file_hash.substring(0, 16)}...
+                  </p>
+                </div>
+              </div>
+            `,
+            icon: 'error',
+            confirmButtonColor: '#dc2626',
+            confirmButtonText: 'Understood',
+            customClass: {
+              popup: 'custom-swal-popup',
+              title: 'custom-swal-title',
+              htmlContainer: 'custom-swal-html',
+              confirmButton: 'custom-swal-confirm'
+            },
+            buttonsStyling: false
+          });
+          
+          return;
+        }
+        
+        // Store visa file info
+        updatedTravelers[index].visaFileInfo = visaFileInfo;
+        updatedTravelers[index].uploadingVisa = false;
+        setBookingData({ ...bookingData, travelers: updatedTravelers });
+        
+        // Show success message
+        await Swal.fire({
+          title: 'Visa Document Uploaded!',
+          html: `
+            <div style="text-align: left; margin: 1rem 0;">
+              <div style="background: #d1fae5; padding: 1rem; border-radius: 0.5rem; margin-bottom: 1rem; text-align: center;">
+                <svg style="width: 3rem; height: 3rem; color: #059669; margin-bottom: 0.5rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <p style="color: #065f46; font-weight: 600; margin: 0;">Visa document uploaded successfully!</p>
+              </div>
+              <div style="background: #f3f4f6; padding: 1rem; border-radius: 0.5rem;">
+                <p style="margin: 0.25rem 0;"><strong>Filename:</strong> ${visaFileInfo.filename}</p>
+                <p style="margin: 0.25rem 0;"><strong>Size:</strong> ${(visaFileInfo.size / 1024 / 1024).toFixed(2)} MB</p>
+                <p style="margin: 0.25rem 0;"><strong>Type:</strong> ${visaFileInfo.type}</p>
+                <p style="margin: 0.25rem 0;"><strong>Uploaded:</strong> ${new Date(visaFileInfo.uploaded_at).toLocaleString()}</p>
+              </div>
+            </div>
+          `,
+          icon: 'success',
+          confirmButtonColor: '#059669',
+          confirmButtonText: 'Continue',
+          customClass: {
+            popup: 'custom-swal-popup',
+            title: 'custom-swal-title',
+            htmlContainer: 'custom-swal-html',
+            confirmButton: 'custom-swal-confirm'
+          },
+          buttonsStyling: false
+        });
+      } else {
+        throw new Error(result.error || 'Failed to upload visa document');
+      }
+    } catch (err) {
+      updatedTravelers[index].uploadingVisa = false;
+      updatedTravelers[index].visaError = err.message || 'Failed to upload visa document';
+      setBookingData({ ...bookingData, travelers: updatedTravelers });
+      
+      await Swal.fire({
+        title: 'Upload Failed',
+        html: `
+          <div style="text-align: center; margin: 1rem 0;">
+            <div style="background: #fef2f2; padding: 1.5rem; border-radius: 0.5rem; margin-bottom: 1rem;">
+              <svg style="width: 3rem; height: 3rem; color: #dc2626; margin-bottom: 1rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <p style="color: #dc2626; font-weight: 600; margin-bottom: 0.5rem;">Failed to upload visa document</p>
+              <p style="color: #991b1b; font-size: 0.9rem;">${err.message || 'Please try again with a valid image file'}</p>
+            </div>
+            <div style="background: #f0f9ff; padding: 1rem; border-radius: 0.5rem;">
+              <p style="color: #0369a1; font-size: 0.9rem; margin: 0 0 0.5rem 0;"><strong>Common issues:</strong></p>
+              <ul style="text-align: left; color: #0369a1; font-size: 0.875rem; margin: 0; padding-left: 1.5rem;">
+                <li>File is not an image (JPG, PNG, etc.)</li>
+                <li>File size is too large (max 16MB)</li>
+                <li>Image is corrupted or invalid</li>
+                <li>Network connection issues</li>
+                <li>Server temporarily unavailable</li>
+              </ul>
+            </div>
+          </div>
+        `,
+        icon: 'error',
+        confirmButtonColor: '#dc2626',
+        confirmButtonText: 'OK',
+        customClass: {
+          popup: 'custom-swal-popup',
+          title: 'custom-swal-title',
+          htmlContainer: 'custom-swal-html',
+          confirmButton: 'custom-swal-confirm'
+        },
+        buttonsStyling: false
+      });
+    }
+  };
+
+  const viewVisaData = (index) => {
+    const traveler = bookingData.travelers[index];
+    const visaFileInfo = traveler.visaFileInfo;
+    
+    if (!visaFileInfo) return;
+    
+    Swal.fire({
+      title: '📄 Uploaded Visa Document',
+      html: `
+        <div style="text-align: left; margin: 1rem 0;">
+          <div style="background: #f0f9ff; padding: 1rem; border-radius: 0.5rem; margin-bottom: 1rem;">
+            <h4 style="margin: 0 0 0.75rem 0; color: #1e40af; font-size: 1rem;">File Information</h4>
+            <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 0.5rem;">
+              <strong>Filename:</strong>
+              <span>${visaFileInfo.filename}</span>
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 0.5rem;">
+              <strong>File Type:</strong>
+              <span>${visaFileInfo.type}</span>
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 0.5rem;">
+              <strong>File Size:</strong>
+              <span>${(visaFileInfo.size / 1024 / 1024).toFixed(2)} MB</span>
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 0.5rem;">
+              <strong>Uploaded:</strong>
+              <span>${new Date(visaFileInfo.uploaded_at).toLocaleString()}</span>
+            </div>
+          </div>
+          <div style="background: #f9fafb; padding: 0.75rem; border-radius: 0.5rem; font-size: 0.85rem; color: #6b7280;">
+            <strong>File Hash:</strong><br>
+            <code style="background: #e5e7eb; padding: 0.25rem; border-radius: 0.25rem;">${visaFileInfo.file_hash}</code>
+          </div>
+        </div>
+      `,
+      width: '600px',
+      confirmButtonColor: '#059669',
+      confirmButtonText: 'Close',
+      customClass: {
+        popup: 'custom-swal-popup',
+        title: 'custom-swal-title',
+        htmlContainer: 'custom-swal-html',
+        confirmButton: 'custom-swal-confirm'
+      },
+      buttonsStyling: false
+    });
+  };
+
+  const viewPassportData = (index) => {
+    const traveler = bookingData.travelers[index];
+    const passportData = traveler.passportData;
+    
+    if (!passportData) return;
+    
+    Swal.fire({
+      title: '🛂 Passport Information',
+      html: `
+        <div style="text-align: left; margin: 1rem 0; max-height: 400px; overflow-y: auto;">
+          <div style="display: grid; gap: 1rem;">
+            ${passportData.passport_type ? `<div><strong>Type:</strong> ${passportData.passport_type}</div>` : ''}
+            ${passportData.country_code ? `<div><strong>Country:</strong> ${passportData.country_code}</div>` : ''}
+            ${passportData.passport_number ? `<div><strong>Passport No:</strong> ${passportData.passport_number}</div>` : ''}
+            ${passportData.surname ? `<div><strong>Surname:</strong> ${passportData.surname}</div>` : ''}
+            ${passportData.given_names ? `<div><strong>Given Names:</strong> ${passportData.given_names}</div>` : ''}
+            ${passportData.nationality ? `<div><strong>Nationality:</strong> ${passportData.nationality}</div>` : ''}
+            ${passportData.date_of_birth ? `<div><strong>Date of Birth:</strong> ${passportData.date_of_birth}</div>` : ''}
+            ${passportData.place_of_birth ? `<div><strong>Place of Birth:</strong> ${passportData.place_of_birth}</div>` : ''}
+            ${passportData.sex ? `<div><strong>Sex:</strong> ${passportData.sex}</div>` : ''}
+            ${passportData.date_of_issue ? `<div><strong>Issue Date:</strong> ${passportData.date_of_issue}</div>` : ''}
+            ${passportData.date_of_expiry ? `<div><strong>Expiry Date:</strong> ${passportData.date_of_expiry}</div>` : ''}
+            ${passportData.issuing_authority ? `<div><strong>Issuing Authority:</strong> ${passportData.issuing_authority}</div>` : ''}
+          </div>
+        </div>
+      `,
+      width: '600px',
+      confirmButtonColor: '#059669',
+      confirmButtonText: 'Close',
+      customClass: {
+        popup: 'custom-swal-popup',
+        title: 'custom-swal-title',
+        htmlContainer: 'custom-swal-html',
+        confirmButton: 'custom-swal-confirm'
+      },
+      buttonsStyling: false
+    });
   };
 
   const handleCreditCardChange = (field, value) => {
@@ -300,7 +992,19 @@ export default function BookPackage() {
       const orderData = {
         packageId: packageData.id,
         numberOfTravelers: bookingData.numberOfTravelers,
-        travelers: bookingData.travelers,
+        numberOfAdults: bookingData.numberOfAdults,
+        numberOfChildren: bookingData.numberOfChildren,
+        travelers: bookingData.travelers.map(traveler => ({
+          name: traveler.name,
+          passportNumber: traveler.passportNumber,
+          dateOfBirth: traveler.dateOfBirth,
+          gender: traveler.gender,
+          isChild: traveler.isChild,
+          passportData: traveler.passportData,
+          visaFileInfo: traveler.visaFileInfo,
+          needsPassportAssistance: traveler.needsPassportAssistance,
+          needsVisaAssistance: traveler.needsVisaAssistance
+        })),
         specialRequests: bookingData.specialRequests,
         paymentMethod: bookingData.paymentMethod,
         paymentReceiptPath: bookingData.paymentReceiptFile?.path,
@@ -707,12 +1411,21 @@ export default function BookPackage() {
                                     <label className="customer-book-form-label">Passport Number</label>
                                     <input
                                       type="text"
-                                      className="customer-book-form-input"
+                                      id={`passport-input-${index}`}
+                                      className={`customer-book-form-input ${traveler.passportError ? 'error' : ''}`}
                                       value={traveler.passportNumber}
                                       onChange={(e) => handleTravelerChange(index, 'passportNumber', e.target.value)}
                                       placeholder="Enter passport number"
                                       required
                                     />
+                                    {traveler.passportError && (
+                                      <div className="customer-book-field-error">
+                                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        </svg>
+                                        <span>{traveler.passportError}</span>
+                                      </div>
+                                    )}
                                   </div>
                                   
                                   <div className="customer-book-form-group">
@@ -726,6 +1439,223 @@ export default function BookPackage() {
                                     />
                                   </div>
                                 </div>
+                                
+                                {/* Passport Upload */}
+                                <div className="customer-book-form-group">
+                                  <label className="customer-book-form-label">
+                                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2M15 11h3m-3 4h2" />
+                                    </svg>
+                                    Upload Passport (Optional)
+                                  </label>
+                                  <div className="customer-book-passport-upload">
+                                    <input
+                                      type="file"
+                                      id={`passport-${index}`}
+                                      accept="image/*"
+                                      onChange={(e) => handlePassportUpload(index, e.target.files[0])}
+                                      style={{ display: 'none' }}
+                                    />
+                                    <label htmlFor={`passport-${index}`} className="customer-book-passport-upload-label">
+                                      {traveler.uploadingPassport ? (
+                                        <div className="customer-book-passport-extracting">
+                                          <div className="passport-ai-loader">
+                                            <div className="ai-scanner">
+                                              <div className="scanner-line"></div>
+                                              <svg className="passport-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2M15 11h3m-3 4h2" />
+                                              </svg>
+                                            </div>
+                                            <div className="ai-particles">
+                                              <span className="particle"></span>
+                                              <span className="particle"></span>
+                                              <span className="particle"></span>
+                                              <span className="particle"></span>
+                                            </div>
+                                          </div>
+                                          <div className="passport-extracting-text">
+                                            <h4>Our AI is extracting passport information</h4>
+                                            <p>This usually takes 3-5 seconds...</p>
+                                          </div>
+                                          <div className="extraction-progress">
+                                            <div className="progress-bar-ai">
+                                              <div className="progress-fill-ai"></div>
+                                            </div>
+                                          </div>
+                                        </div>
+                                      ) : traveler.passportData ? (
+                                        <div className="customer-book-passport-upload-success">
+                                          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                          </svg>
+                                          <span>Passport data extracted</span>
+                                          <button
+                                            type="button"
+                                            className="customer-book-passport-view-btn"
+                                            onClick={(e) => {
+                                              e.preventDefault();
+                                              e.stopPropagation();
+                                              viewPassportData(index);
+                                            }}
+                                          >
+                                            View Details
+                                          </button>
+                                        </div>
+                                      ) : (
+                                        <div className="customer-book-file-upload-placeholder">
+                                          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                          </svg>
+                                          <span>Click to upload passport image</span>
+                                          <small>AI will extract passport details automatically</small>
+                                        </div>
+                                      )}
+                                    </label>
+                                  </div>
+                                  {traveler.passportError && (
+                                    <div className="customer-book-passport-error">
+                                      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                      </svg>
+                                      <span>{traveler.passportError}</span>
+                                    </div>
+                                  )}
+                                </div>
+                                
+                                {/* Visa Upload */}
+                                <div className="customer-book-form-group">
+                                  <label className="customer-book-form-label">
+                                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                                    </svg>
+                                    Upload Visa (Optional)
+                                  </label>
+                                  <div className="customer-book-visa-upload">
+                                    <input
+                                      type="file"
+                                      id={`visa-${index}`}
+                                      accept="image/*"
+                                      onChange={(e) => handleVisaUpload(index, e.target.files[0])}
+                                      style={{ display: 'none' }}
+                                    />
+                                    <label htmlFor={`visa-${index}`} className="customer-book-visa-upload-label">
+                                      {traveler.uploadingVisa ? (
+                                        <div className="customer-book-visa-extracting">
+                                          <div className="visa-ai-loader">
+                                            <div className="ai-scanner">
+                                              <div className="scanner-line"></div>
+                                              <svg className="visa-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                                              </svg>
+                                            </div>
+                                            <div className="ai-particles">
+                                              <span className="particle"></span>
+                                              <span className="particle"></span>
+                                              <span className="particle"></span>
+                                              <span className="particle"></span>
+                                            </div>
+                                          </div>
+                                          <div className="visa-extracting-text">
+                                            <h4>Uploading visa document</h4>
+                                            <p>Processing your document...</p>
+                                          </div>
+                                          <div className="extraction-progress">
+                                            <div className="progress-bar-ai">
+                                              <div className="progress-fill-ai"></div>
+                                            </div>
+                                          </div>
+                                        </div>
+                                      ) : traveler.visaFileInfo ? (
+                                        <div className="customer-book-visa-upload-success">
+                                          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                          </svg>
+                                          <span>Visa document uploaded</span>
+                                          <button
+                                            type="button"
+                                            className="customer-book-visa-view-btn"
+                                            onClick={(e) => {
+                                              e.preventDefault();
+                                              e.stopPropagation();
+                                              viewVisaData(index);
+                                            }}
+                                          >
+                                            View Details
+                                          </button>
+                                        </div>
+                                      ) : (
+                                        <div className="customer-book-file-upload-placeholder">
+                                          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                          </svg>
+                                          <span>Click to upload visa document</span>
+                                          <small>Upload your visa document for processing</small>
+                                        </div>
+                                      )}
+                                    </label>
+                                  </div>
+                                  {traveler.visaError && (
+                                    <div className="customer-book-visa-error">
+                                      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                      </svg>
+                                      <span>{traveler.visaError}</span>
+                                    </div>
+                                  )}
+                                </div>
+                                
+                                {/* Assistance Request Section */}
+                                {(packageData.includesPassportAssistance || packageData.includesVisaAssistance) && (
+                                  <div className="customer-book-assistance-section">
+                                    <h5 className="customer-book-assistance-title">
+                                      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192L5.636 18.364M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z" />
+                                      </svg>
+                                      Need Assistance?
+                                    </h5>
+                                    <p className="customer-book-assistance-description">
+                                      If you don't have a passport or visa, we can help you obtain them.
+                                    </p>
+                                    
+                                    {packageData.includesPassportAssistance && (
+                                      <div className="customer-book-assistance-option">
+                                        <label className="customer-book-assistance-checkbox">
+                                          <input
+                                            type="checkbox"
+                                            checked={traveler.needsPassportAssistance}
+                                            onChange={(e) => handleTravelerChange(index, 'needsPassportAssistance', e.target.checked)}
+                                          />
+                                          <span className="customer-book-checkmark"></span>
+                                          <div className="customer-book-assistance-details">
+                                            <span className="customer-book-assistance-name">Passport Assistance</span>
+                                            <span className="customer-book-assistance-fee">
+                                              {packageData.passportAssistanceFee > 0 ? `+${formatCurrency(packageData.passportAssistanceFee)}` : 'Included'}
+                                            </span>
+                                          </div>
+                                        </label>
+                                      </div>
+                                    )}
+                                    
+                                    {packageData.includesVisaAssistance && (
+                                      <div className="customer-book-assistance-option">
+                                        <label className="customer-book-assistance-checkbox">
+                                          <input
+                                            type="checkbox"
+                                            checked={traveler.needsVisaAssistance}
+                                            onChange={(e) => handleTravelerChange(index, 'needsVisaAssistance', e.target.checked)}
+                                          />
+                                          <span className="customer-book-checkmark"></span>
+                                          <div className="customer-book-assistance-details">
+                                            <span className="customer-book-assistance-name">Visa Assistance</span>
+                                            <span className="customer-book-assistance-fee">
+                                              {packageData.visaAssistanceFee > 0 ? `+${formatCurrency(packageData.visaAssistanceFee)}` : 'Included'}
+                                            </span>
+                                          </div>
+                                        </label>
+                                      </div>
+                                    )}
+                                  </div>
+                                )}
                               </div>
                             </div>
                           ))}

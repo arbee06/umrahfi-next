@@ -2,6 +2,8 @@ const sequelize = require('../lib/database');
 const User = require('./User');
 const Package = require('./Package');
 const Order = require('./Order');
+const Passport = require('./Passport');
+const Visa = require('./Visa');
 
 // Define associations
 User.hasMany(Package, { 
@@ -44,6 +46,26 @@ Order.belongsTo(Package, {
   as: 'package' 
 });
 
+Order.hasMany(Passport, { 
+  foreignKey: 'orderId', 
+  as: 'passports',
+  onDelete: 'CASCADE'
+});
+Passport.belongsTo(Order, { 
+  foreignKey: 'orderId', 
+  as: 'order' 
+});
+
+Order.hasMany(Visa, { 
+  foreignKey: 'orderId', 
+  as: 'visas',
+  onDelete: 'CASCADE'
+});
+Visa.belongsTo(Order, { 
+  foreignKey: 'orderId', 
+  as: 'order' 
+});
+
 // Function to sync database
 async function syncDatabase(force = false) {
   try {
@@ -59,5 +81,7 @@ module.exports = {
   User,
   Package,
   Order,
+  Passport,
+  Visa,
   syncDatabase
 };
