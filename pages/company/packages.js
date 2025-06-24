@@ -265,13 +265,14 @@ export default function CompanyPackages() {
                         {/* Actions */}
                         <td className="text-center">
                           <div className="actions">
-                            <button 
-                              className="action-btn edit-btn"
-                              title="Edit Package"
-                              onClick={() => console.log('Edit:', pkg.id)}
-                            >
-                              <Icon icon="edit" /> Edit
-                            </button>
+                            <Link href={`/company/packages/edit/${pkg.id}`}>
+                              <button 
+                                className="action-btn edit-btn"
+                                title="Edit Package"
+                              >
+                                <Icon icon="edit" /> Edit
+                              </button>
+                            </Link>
                             <button 
                               onClick={() => pkg.id && handleDelete(pkg.id, pkg.title)}
                               className="action-btn delete-btn"

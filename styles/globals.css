@@ -14,8 +14,11 @@
   --primary-light: #dbeafe;
   --secondary: #7c3aed;
   --success: #10b981;
+  --success-dark: #059669;
   --warning: #f59e0b;
+  --warning-dark: #d97706;
   --error: #ef4444;
+  --error-dark: #dc2626;
   
   /* Neutral colors */
   --white: #ffffff;
@@ -603,3 +606,7 @@ p {
 /* Template and Package Gallery Styles */
 @import url("./template-styles.css");
 @import url("./package-details-gallery.css");
+
+/* Password Reset Styles */
+@import url("./forgot-password.css");
+@import url("./reset-password.css");

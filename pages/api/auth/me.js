@@ -8,7 +8,7 @@ export default async function handler(req, res) {
   const authResult = await authMiddleware([])(req, res);
   
   if (authResult && authResult.user) {
-    const userResponse = authResult.user.toObject();
+    const userResponse = authResult.user.toJSON();
     delete userResponse.password;
     res.status(200).json({ success: true, user: userResponse });
   }

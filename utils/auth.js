@@ -17,9 +17,29 @@ export const verifyToken = (token) => {
 };
 
 export const setTokenCookie = (res, token) => {
-  res.setHeader('Set-Cookie', `token=${token}; Path=/; HttpOnly; SameSite=Strict; Max-Age=${7 * 24 * 60 * 60}`);
+  const isProduction = process.env.NODE_ENV === 'production';
+  const cookieOptions = [
+    `token=${token}`,
+    'Path=/',
+    'HttpOnly',
+    'SameSite=Lax', // Changed from Strict to Lax to allow cookies on navigation
+    `Max-Age=${7 * 24 * 60 * 60}`,
+    isProduction ? 'Secure' : ''
+  ].filter(Boolean).join('; ');
+  
+  res.setHeader('Set-Cookie', cookieOptions);
 };
 
 export const removeTokenCookie = (res) => {
-  res.setHeader('Set-Cookie', 'token=; Path=/; HttpOnly; SameSite=Strict; Max-Age=0');
+  const isProduction = process.env.NODE_ENV === 'production';
+  const cookieOptions = [
+    'token=',
+    'Path=/',
+    'HttpOnly',
+    'SameSite=Lax',
+    'Max-Age=0',
+    isProduction ? 'Secure' : ''
+  ].filter(Boolean).join('; ');
+  
+  res.setHeader('Set-Cookie', cookieOptions);
 };

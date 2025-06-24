@@ -5,8 +5,10 @@
   min-height: 100vh;
   position: relative;
   display: flex;
-  align-items: center;
-  overflow: hidden;
+  align-items: flex-start;
+  overflow-x: hidden;
+  overflow-y: auto;
+  padding: 2rem 0 4rem 0;
 }
 
 .register-auth-background {
@@ -56,8 +58,8 @@
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 4rem;
-  align-items: center;
-  min-height: 100vh;
+  align-items: flex-start;
+  min-height: calc(100vh - 4rem);
 }
 
 .register-auth-form-wrapper {
@@ -181,6 +183,7 @@
   background: white;
   border-radius: 2rem;
   padding: 2.5rem;
+  margin-bottom: 4rem;
   box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
   border: 1px solid rgba(255, 255, 255, 0.2);
   position: relative;
@@ -469,6 +472,8 @@
 
 .register-form-navigation .register-btn-auth-secondary {
   flex: 0 0 auto;
+  width: auto;
+  min-width: 120px;
 }
 
 .register-form-navigation .register-btn-auth-primary {
@@ -524,6 +529,10 @@
   justify-content: center;
   gap: 0.75rem;
   text-decoration: none;
+}
+
+.register-form-navigation .register-btn-auth-secondary {
+  width: auto !important;
 }
 
 .register-btn-auth-secondary:hover {
@@ -714,8 +723,9 @@
 
 @media (max-width: 768px) {
   .register-auth-container {
-    min-height: auto;
-    padding: 2rem 0;
+    min-height: 100vh;
+    padding: 1rem 0 6rem 0;
+    align-items: flex-start;
   }
   
   .register-auth-content {
@@ -733,6 +743,7 @@
   
   .register-auth-card {
     padding: 2rem;
+    margin-bottom: 6rem;
   }
   
   .register-auth-title {
@@ -778,12 +789,17 @@
 }
 
 @media (max-width: 480px) {
+  .register-auth-container {
+    padding: 0.5rem 0 8rem 0;
+  }
+  
   .register-auth-content {
     padding: 0.5rem;
   }
   
   .register-auth-card {
     padding: 1.5rem;
+    margin-bottom: 8rem;
   }
   
   .register-auth-icon {

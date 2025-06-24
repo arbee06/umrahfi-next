@@ -10,19 +10,61 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
+  const [lastActivity, setLastActivity] = useState(Date.now());
+  const inactivityTimeout = 2 * 60 * 1000; // 2 minutes in milliseconds
 
   useEffect(() => {
     checkAuth();
   }, []);
 
+  // Setup inactivity timer
+  useEffect(() => {
+    if (!user) return;
+
+    const checkInactivity = () => {
+      if (Date.now() - lastActivity > inactivityTimeout) {
+        logout();
+        alert('You have been logged out due to inactivity.');
+      }
+    };
+
+    // Check every 30 seconds
+    const interval = setInterval(checkInactivity, 30000);
+
+    // Activity event listeners
+    const updateActivity = () => setLastActivity(Date.now());
+    const events = ['mousedown', 'keydown', 'scroll', 'touchstart', 'click'];
+    
+    events.forEach(event => {
+      document.addEventListener(event, updateActivity);
+    });
+
+    return () => {
+      clearInterval(interval);
+      events.forEach(event => {
+        document.removeEventListener(event, updateActivity);
+      });
+    };
+  }, [user, lastActivity]);
+
   const checkAuth = async () => {
     try {
+      // Debug: Check cookies first
+      console.log('Checking auth...');
+      
       const response = await authService.getCurrentUser();
+      console.log('Auth response:', response);
+      
       if (response && response.user) {
         setUser(response.user);
+        setLastActivity(Date.now()); // Reset activity on successful auth
+      } else {
+        setUser(null);
       }
     } catch (error) {
-      console.error('Auth check failed:', error);
+      // Don't log out on auth check failure, just set user to null
+      console.error('Auth check error:', error.response?.data || error.message);
+      setUser(null);
     } finally {
       setLoading(false);
     }

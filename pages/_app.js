@@ -3,6 +3,8 @@ import '@/styles/home.css';
 import '@/styles/login.css';
 import '@/styles/register.css';
 import '@/styles/packages.css';
+import '@/styles/forgot-password.css';
+import '@/styles/reset-password.css';
 import '@/styles/package-details.css'
 import '@/styles/company-dashboard.css'
 import '@/styles/company-orders.css'
@@ -21,9 +23,12 @@ import '@/styles/customer-order-details.css'
 import '@/styles/customer-booking.css'
 import '@/styles/admin-dashboard.css'
 import '@/styles/fontawesome-custom.css'
+import '@/styles/date-range-picker.css'
+import '@/styles/date-range-picker-inline.css'
 import { AuthProvider } from '@/utils/AuthContext';
 import '@/lib/fontawesome';
 import '@fortawesome/fontawesome-svg-core/styles.css';
+import '@/utils/axiosConfig';
 
 export default function App({ Component, pageProps }) {
   return (

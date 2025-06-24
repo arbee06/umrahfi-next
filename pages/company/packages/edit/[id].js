@@ -10,17 +10,20 @@ import Icon from '@/components/FontAwesome';
 import DateRangePickerInline from '@/components/DateRangePickerInline';
 import Swal from 'sweetalert2';
 
-export default function CreatePackage() {
+export default function EditPackage() {
   const router = useRouter();
+  const { id } = router.query;
   const [loading, setLoading] = useState(false);
+  const [pageLoading, setPageLoading] = useState(true);
   const [error, setError] = useState('');
   const [currentStep, setCurrentStep] = useState(1);
-  const totalSteps = 6; // Increased to 6 steps to include images
+  const totalSteps = 6;
   const [airports] = useState(() => getAirports());
   const [countries] = useState(() => getCountries());
   const [templates, setTemplates] = useState({ inclusions: [], exclusions: [] });
   const [uploadedImages, setUploadedImages] = useState([]);
   const [uploadingImages, setUploadingImages] = useState(false);
+  const [packageData, setPackageData] = useState(null);
   
   const [formData, setFormData] = useState({
     title: '',
@@ -48,8 +51,82 @@ export default function CreatePackage() {
   });
 
   useEffect(() => {
-    fetchTemplates();
-  }, []);
+    if (!router.isReady) return;
+    
+    if (id) {
+      fetchPackageData();
+      fetchTemplates();
+    }
+  }, [router.isReady, id]);
+
+  const fetchPackageData = async () => {
+    try {
+      setPageLoading(true);
+      const response = await packageService.getPackageById(id);
+      const pkg = response.package;
+      
+      setPackageData(pkg);
+      
+      // Format dates for input fields
+      const formatDateForInput = (date) => {
+        if (!date) return '';
+        return new Date(date).toISOString().split('T')[0];
+      };
+
+      // Set form data with existing package data
+      setFormData({
+        title: pkg.title || '',
+        description: pkg.description || '',
+        price: pkg.price?.toString() || '',
+        childPrice: pkg.childPrice?.toString() || '',
+        duration: pkg.duration?.toString() || '',
+        departureDate: formatDateForInput(pkg.departureDate),
+        returnDate: formatDateForInput(pkg.returnDate),
+        departureAirport: pkg.departureAirport || '',
+        arrivalAirport: pkg.arrivalAirport || 'JED',
+        transitAirport: pkg.transitAirport || '',
+        totalSeats: pkg.totalSeats?.toString() || '',
+        availableSeats: pkg.availableSeats?.toString() || '',
+        hotelName: pkg.hotelName || '',
+        hotelRating: pkg.hotelRating?.toString() || '3',
+        mealPlan: pkg.mealPlan || 'Breakfast',
+        transportation: pkg.transportation || 'Flight',
+        country: pkg.country || 'Saudi Arabia',
+        inclusions: pkg.inclusions && pkg.inclusions.length > 0 ? pkg.inclusions : [''],
+        exclusions: pkg.exclusions && pkg.exclusions.length > 0 ? pkg.exclusions : [''],
+        itinerary: pkg.itinerary && pkg.itinerary.length > 0 ? pkg.itinerary : [{ day: 1, description: '' }],
+        images: pkg.images || [],
+        specialRequests: pkg.specialRequests || ''
+      });
+
+      // Set uploaded images if they exist
+      if (pkg.images && pkg.images.length > 0) {
+        setUploadedImages(pkg.images.map((img, index) => ({
+          path: img,
+          originalname: `Image ${index + 1}`,
+          size: 0 // Size unknown for existing images
+        })));
+      }
+
+    } catch (error) {
+      console.error('Error fetching package:', error);
+      setError('Failed to load package data');
+      
+      Swal.fire({
+        title: 'Error',
+        text: 'Failed to load package data. Please try again.',
+        icon: 'error',
+        confirmButtonText: 'Go Back',
+        customClass: {
+          popup: 'custom-swal-popup'
+        }
+      }).then(() => {
+        router.push('/company/packages');
+      });
+    } finally {
+      setPageLoading(false);
+    }
+  };
 
   const fetchTemplates = async () => {
     try {
@@ -175,7 +252,6 @@ export default function CreatePackage() {
   };
 
   const nextStep = () => {
-    console.log('nextStep called, currentStep:', currentStep, 'totalSteps:', totalSteps);
     if (currentStep < totalSteps) {
       setCurrentStep(currentStep + 1);
     }
@@ -209,20 +285,16 @@ export default function CreatePackage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    console.log('handleSubmit called, currentStep:', currentStep, 'totalSteps:', totalSteps);
-    
-    // Only proceed with submission if we're on the final step
     if (currentStep !== totalSteps) {
-      console.log('Not on final step, returning early');
       return;
     }
     
     // Show confirmation dialog
     const result = await Swal.fire({
-      title: 'Create Package?',
+      title: 'Update Package?',
       html: `
         <div style="text-align: left; margin: 1rem 0;">
-          <p style="margin-bottom: 0.5rem; color: #6b7280;">You're about to create:</p>
+          <p style="margin-bottom: 0.5rem; color: #6b7280;">You're about to update:</p>
           <p style="font-weight: 600; color: #1f2937; margin-bottom: 0.5rem;">${formData.title}</p>
           <div style="background: #f0f8ff; padding: 1rem; border-radius: 0.5rem; margin-bottom: 1rem;">
             <p style="color: #6b7280; margin: 0.25rem 0;">• Adult Price: $${formData.price} per person</p>
@@ -232,14 +304,14 @@ export default function CreatePackage() {
             <p style="color: #6b7280; margin: 0.25rem 0;">• Departure: ${new Date(formData.departureDate).toLocaleDateString()}</p>
             <p style="color: #6b7280; margin: 0.25rem 0;">• Route: ${formData.departureAirport} → ${formData.transitAirport ? formData.transitAirport + ' → ' : ''}${formData.arrivalAirport}</p>
           </div>
-          <p style="color: #6b7280; font-size: 0.9rem;">The package will be published and available for booking immediately.</p>
+          <p style="color: #6b7280; font-size: 0.9rem;">The changes will be saved and reflected immediately.</p>
         </div>
       `,
       icon: 'question',
       showCancelButton: true,
       confirmButtonColor: '#059669',
       cancelButtonColor: '#6b7280',
-      confirmButtonText: 'Yes, Create Package',
+      confirmButtonText: 'Yes, Update Package',
       cancelButtonText: 'Cancel',
       reverseButtons: true,
       customClass: {
@@ -261,8 +333,8 @@ export default function CreatePackage() {
 
     // Show loading state
     Swal.fire({
-      title: 'Creating Package...',
-      html: 'Please wait while we create your package.',
+      title: 'Updating Package...',
+      html: 'Please wait while we update your package.',
       allowOutsideClick: false,
       allowEscapeKey: false,
       showConfirmButton: false,
@@ -276,7 +348,7 @@ export default function CreatePackage() {
 
     try {
       // Prepare data
-      const packageData = {
+      const updateData = {
         ...formData,
         price: Number(formData.price),
         childPrice: Number(formData.childPrice),
@@ -289,14 +361,14 @@ export default function CreatePackage() {
         itinerary: formData.itinerary.filter(item => item.description.trim())
       };
 
-      const response = await packageService.createPackage(packageData);
+      const response = await packageService.updatePackage(id, updateData);
       
       // Show success message
       await Swal.fire({
-        title: 'Package Created!',
+        title: 'Package Updated!',
         html: `
           <div style="text-align: center; margin: 1rem 0;">
-            <p style="color: #059669; font-weight: 600; margin-bottom: 1rem;">Your package has been successfully created!</p>
+            <p style="color: #059669; font-weight: 600; margin-bottom: 1rem;">Your package has been successfully updated!</p>
             <p style="color: #6b7280; margin-bottom: 0.5rem;">Package:</p>
             <p style="font-weight: 600; color: #1f2937;">${formData.title}</p>
           </div>
@@ -316,14 +388,14 @@ export default function CreatePackage() {
       router.push('/company/packages');
     } catch (err) {
       Swal.close();
-      setError(err.error || 'Failed to create package');
+      setError(err.error || 'Failed to update package');
       
       // Show error message
       await Swal.fire({
-        title: 'Creation Failed',
+        title: 'Update Failed',
         html: `
           <div style="text-align: center; margin: 1rem 0;">
-            <p style="color: #ef4444; margin-bottom: 1rem;">${err.error || 'Failed to create package'}</p>
+            <p style="color: #ef4444; margin-bottom: 1rem;">${err.error || 'Failed to update package'}</p>
             <p style="color: #6b7280; font-size: 0.9rem;">Please check your information and try again.</p>
           </div>
         `,
@@ -354,7 +426,7 @@ export default function CreatePackage() {
               </div>
               <h3 className="create-package-step-title">Basic Information</h3>
               <p className="create-package-step-description">
-                Start by providing the essential details about your Umrah package
+                Update the essential details about your Umrah package
               </p>
             </div>
 
@@ -481,7 +553,7 @@ export default function CreatePackage() {
               </div>
               <h3 className="create-package-step-title">Dates & Capacity</h3>
               <p className="create-package-step-description">
-                Set your travel dates and how many pilgrims you can accommodate
+                Update your travel dates and passenger capacity
               </p>
             </div>
 
@@ -642,7 +714,7 @@ export default function CreatePackage() {
               </div>
               <h3 className="create-package-step-title">Accommodation & Travel</h3>
               <p className="create-package-step-description">
-                Specify hotel details, transportation, and destination information
+                Update hotel details, transportation, and destination information
               </p>
             </div>
 
@@ -776,7 +848,7 @@ export default function CreatePackage() {
               </div>
               <h3 className="create-package-step-title">Daily Itinerary</h3>
               <p className="create-package-step-description">
-                Plan the daily activities and schedule for your pilgrims
+                Update the daily activities and schedule for your pilgrims
               </p>
             </div>
 
@@ -835,7 +907,7 @@ export default function CreatePackage() {
               </div>
               <h3 className="create-package-step-title">Inclusions & Exclusions</h3>
               <p className="create-package-step-description">
-                Specify what is and isn't included in your package or use templates
+                Update what is and isn't included in your package or use templates
               </p>
             </div>
 
@@ -982,7 +1054,7 @@ export default function CreatePackage() {
               </div>
               <h3 className="create-package-step-title">Package Images</h3>
               <p className="create-package-step-description">
-                Upload photos to showcase your package (optional)
+                Update photos to showcase your package (optional)
               </p>
             </div>
 
@@ -1004,7 +1076,7 @@ export default function CreatePackage() {
                     </div>
                     <div className="package-image-upload-text">
                       <h4>
-                        {uploadingImages ? 'Uploading images...' : 'Upload Package Images'}
+                        {uploadingImages ? 'Uploading images...' : 'Upload Additional Images'}
                       </h4>
                       <p>Click to select or drag and drop images here</p>
                       <span className="package-image-upload-info">
@@ -1018,7 +1090,7 @@ export default function CreatePackage() {
                   <div className="package-image-preview-section">
                     <h4 className="package-creation-section-title">
                       <Icon icon="images" />
-                      Uploaded Images ({uploadedImages.length})
+                      Package Images ({uploadedImages.length})
                     </h4>
                     <div className="package-image-grid">
                       {uploadedImages.map((image, index) => (
@@ -1044,9 +1116,11 @@ export default function CreatePackage() {
                             <span className="package-image-name">
                               {image.originalname}
                             </span>
-                            <span className="package-image-size">
-                              {(image.size / 1024 / 1024).toFixed(2)} MB
-                            </span>
+                            {image.size > 0 && (
+                              <span className="package-image-size">
+                                {(image.size / 1024 / 1024).toFixed(2)} MB
+                              </span>
+                            )}
                           </div>
                         </div>
                       ))}
@@ -1076,6 +1150,27 @@ export default function CreatePackage() {
     }
   };
 
+  if (pageLoading) {
+    return (
+      <ProtectedRoute allowedRoles={['company']}>
+        <Layout>
+          <div className="create-package-container">
+            <div className="create-package-background">
+              <div className="create-package-pattern"></div>
+              <div className="create-package-gradient"></div>
+            </div>
+            <div className="create-package-content">
+              <div className="create-package-loading">
+                <div className="create-package-loading-spinner"></div>
+                <p>Loading package data...</p>
+              </div>
+            </div>
+          </div>
+        </Layout>
+      </ProtectedRoute>
+    );
+  }
+
   return (
     <ProtectedRoute allowedRoles={['company']}>
       <Layout>
@@ -1101,11 +1196,11 @@ export default function CreatePackage() {
               
               <div className="create-package-title-section">
                 <div className="create-package-icon">
-                  <Icon icon="kaaba" style={{ color: 'white' }} />
+                  <Icon icon="edit" style={{ color: 'white' }} />
                 </div>
-                <h1 className="create-package-title">Create New Package</h1>
+                <h1 className="create-package-title">Edit Package</h1>
                 <p className="create-package-subtitle">
-                  Design a memorable Umrah experience for your pilgrims
+                  Update your Umrah package details
                 </p>
               </div>
             </div>
@@ -1201,12 +1296,12 @@ export default function CreatePackage() {
                       {loading ? (
                         <div className="create-package-btn-loading">
                           <div className="create-package-loading-spinner"></div>
-                          <span>Creating Package...</span>
+                          <span>Updating Package...</span>
                         </div>
                       ) : (
                         <div className="create-package-btn-content">
-                          <span>Create Package</span>
-                          <Icon icon="check" />
+                          <span>Update Package</span>
+                          <Icon icon="save" />
                         </div>
                       )}
                     </button>

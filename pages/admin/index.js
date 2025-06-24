@@ -42,21 +42,6 @@ export default function AdminDashboard() {
     }).format(amount);
   };
 
-  if (loading) {
-    return (
-      <ProtectedRoute allowedRoles={['admin']}>
-        <Layout>
-          <div className="admin-dashboard-container">
-            <div className="admin-dashboard-loading-state">
-              <div className="admin-dashboard-loading-spinner"></div>
-              <span>Loading dashboard...</span>
-            </div>
-          </div>
-        </Layout>
-      </ProtectedRoute>
-    );
-  }
-
   return (
     <ProtectedRoute allowedRoles={['admin']}>
       <Layout>
@@ -85,7 +70,7 @@ export default function AdminDashboard() {
                 </Link>
                 <Link href="/admin/packages">
                   <button className="admin-dashboard-btn-header-primary">
-                    <Icon icon="users" className="admin-dashboard-btn-icon" />
+                    <Icon icon="suitcase" className="admin-dashboard-btn-icon" />
                     <span>Manage Packages</span>
                   </button>
                 </Link>
@@ -153,7 +138,10 @@ export default function AdminDashboard() {
                   <Icon icon="file-alt" />
                 </div>
                 <div className="admin-dashboard-stat-trend neutral">
-                  <span className="trend-value">{stats?.orders.pending || 0} pending</span>
+                  <span className="trend-value">
+                    <Icon icon="clock" />
+                    {stats?.orders.pending || 0} pending
+                  </span>
                 </div>
               </div>
               <div className="admin-dashboard-stat-content">
@@ -175,9 +163,6 @@ export default function AdminDashboard() {
               <div className="admin-dashboard-stat-header">
                 <div className="admin-dashboard-stat-icon">
                   <Icon icon="dollar-sign" />
-                </div>
-                <div className="admin-dashboard-stat-trend positive">
-                  <Icon icon="arrow-up" />
                 </div>
               </div>
               <div className="admin-dashboard-stat-content">

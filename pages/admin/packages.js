@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import Link from 'next/link';
 import Layout from '@/components/Layout';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import packageService from '@/services/packageService';
@@ -388,10 +389,10 @@ export default function AdminPackages() {
                         <Icon icon={pkg.status === 'active' ? 'eye-slash' : 'eye'} />
                         {pkg.status === 'active' ? 'Deactivate' : 'Activate'}
                       </button>
-                      <button className="admin-packages-view-btn">
-                        <Icon icon="external-link-alt" />
+                      <Link href={`/packages/${pkg.id}`} className="admin-packages-view-btn">
+                        <Icon icon="eye" />
                         View Details
-                      </button>
+                      </Link>
                     </div>
                   </div>
                 ))}

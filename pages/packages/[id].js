@@ -15,6 +15,22 @@ export default function PackageDetails() {
   const [loading, setLoading] = useState(true);
   const [selectedImage, setSelectedImage] = useState(null);
   const [imageModalOpen, setImageModalOpen] = useState(false);
+  
+  const handleBackClick = () => {
+    // If there's a previous page in history, go back
+    if (window.history.length > 1) {
+      router.back();
+    } else {
+      // Otherwise, route based on user role
+      if (user?.role === 'company') {
+        router.push('/company/packages');
+      } else if (user?.role === 'admin') {
+        router.push('/admin/packages');
+      } else {
+        router.push('/packages');
+      }
+    }
+  };
 
   useEffect(() => {
     if (!router.isReady) return;
@@ -112,12 +128,12 @@ export default function PackageDetails() {
               </div>
               <h2>Package Not Found</h2>
               <p>The requested package could not be found. It may have been removed or is no longer available.</p>
-              <Link href="/packages" className="package-details-btn-primary">
+              <button onClick={handleBackClick} className="package-details-btn-primary">
                 <span>Browse All Packages</span>
                 <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
                 </svg>
-              </Link>
+              </button>
             </div>
           </div>
         </div>
@@ -137,12 +153,12 @@ export default function PackageDetails() {
           {/* Header Section */}
           <div className="package-details-header">
             <div className="package-details-breadcrumb">
-              <Link href="/packages" className="package-details-breadcrumb-link">
+              <button onClick={handleBackClick} className="package-details-breadcrumb-link">
                 <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 17l-5-5m0 0l5-5m-5 5h12" />
                 </svg>
                 <span>Back to Packages</span>
-              </Link>
+              </button>
             </div>
             
             <div className="package-details-title-section">
@@ -158,40 +174,6 @@ export default function PackageDetails() {
             </div>
           </div>
 
-          {/* Image Gallery */}
-          {packageData.images && packageData.images.length > 0 && (
-            <div className="pkg-gallery">
-              <div className="pkg-gallery-header">
-                <h3 className="pkg-gallery-title">
-                  <Icon icon="images" />
-                  Package Photos ({packageData.images.length})
-                </h3>
-              </div>
-              <div className="pkg-gallery-grid">
-                {packageData.images.slice(0, 6).map((image, index) => (
-                  <div 
-                    key={index} 
-                    className="pkg-gallery-item"
-                    onClick={() => openImageModal(image)}
-                  >
-                    <img
-                      src={image}
-                      alt={`${packageData.title} - Photo ${index + 1}`}
-                      className="pkg-gallery-image"
-                    />
-                    <div className="pkg-gallery-overlay">
-                      <Icon icon="expand" />
-                    </div>
-                    {index === 5 && packageData.images.length > 6 && (
-                      <div className="pkg-gallery-more">
-                        <span>+{packageData.images.length - 6} more</span>
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
 
           {/* Main Content Grid */}
           <div className="package-details-grid">
@@ -201,12 +183,11 @@ export default function PackageDetails() {
               <div className="package-details-card">
                 <div className="package-details-card-header">
                   <div className="package-details-card-icon">
-                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                    </svg>
+                    <Icon icon="calendar" />
                   </div>
                   <h3>Trip Information</h3>
                 </div>
+
                 <div className="package-details-info-grid">
                   <div className="package-details-info-item">
                     <div className="package-details-info-label">Price per person</div>
@@ -244,6 +225,120 @@ export default function PackageDetails() {
                     </div>
                   )}
                 </div>
+
+                {/* Modern Image Gallery at bottom of Trip Information */}
+                {packageData.images && packageData.images.length > 0 && (
+                  <div className="package-gallery-modern">
+                    <div className="package-gallery-header">
+                      <h4 className="package-gallery-subtitle">
+                        <Icon icon="camera" />
+                        Package Gallery ({packageData.images.length} photos)
+                      </h4>
+                    </div>
+                    
+                    {packageData.images.length === 1 ? (
+                      /* Single Image Display */
+                      <div className="package-gallery-single">
+                        <img
+                          src={packageData.images[0]}
+                          alt={`${packageData.title} - Package photo`}
+                          className="package-gallery-single-image"
+                          onClick={() => openImageModal(packageData.images[0])}
+                        />
+                        <div className="package-gallery-single-overlay">
+                          <button 
+                            className="package-gallery-expand-btn"
+                            onClick={() => openImageModal(packageData.images[0])}
+                          >
+                            <Icon icon="expand-arrows-alt" />
+                            <span>View Full Size</span>
+                          </button>
+                        </div>
+                      </div>
+                    ) : packageData.images.length <= 4 ? (
+                      /* Grid Layout for 2-4 images */
+                      <div className={`package-gallery-grid package-gallery-grid-${packageData.images.length}`}>
+                        {packageData.images.map((image, index) => (
+                          <div 
+                            key={index} 
+                            className="package-gallery-grid-item"
+                            onClick={() => openImageModal(image)}
+                          >
+                            <img
+                              src={image}
+                              alt={`${packageData.title} - Photo ${index + 1}`}
+                              className="package-gallery-grid-image"
+                            />
+                            <div className="package-gallery-grid-overlay">
+                              <Icon icon="search-plus" />
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      /* Featured + Thumbnails for 5+ images */
+                      <div className="package-gallery-container">
+                        <div className="package-gallery-featured">
+                          <img
+                            src={packageData.images[0]}
+                            alt={`${packageData.title} - Main photo`}
+                            className="package-gallery-featured-image"
+                            onClick={() => openImageModal(packageData.images[0])}
+                          />
+                          <div className="package-gallery-featured-overlay">
+                            <button 
+                              className="package-gallery-expand-btn"
+                              onClick={() => openImageModal(packageData.images[0])}
+                            >
+                              <Icon icon="expand-arrows-alt" />
+                              <span>View Gallery</span>
+                            </button>
+                          </div>
+                          <div className="package-gallery-badge">
+                            <Icon icon="images" />
+                            <span>{packageData.images.length}</span>
+                          </div>
+                        </div>
+
+                        <div className="package-gallery-thumbnails">
+                          {packageData.images.slice(1, 5).map((image, index) => (
+                            <div 
+                              key={index + 1} 
+                              className="package-gallery-thumbnail"
+                              onClick={() => openImageModal(image)}
+                            >
+                              <img
+                                src={image}
+                                alt={`${packageData.title} - Photo ${index + 2}`}
+                                className="package-gallery-thumbnail-image"
+                              />
+                              <div className="package-gallery-thumbnail-overlay">
+                                <Icon icon="search-plus" />
+                              </div>
+                            </div>
+                          ))}
+                          
+                          {packageData.images.length > 5 && (
+                            <div 
+                              className="package-gallery-thumbnail package-gallery-more-btn"
+                              onClick={() => openImageModal(packageData.images[5])}
+                            >
+                              <img
+                                src={packageData.images[5]}
+                                alt="More photos"
+                                className="package-gallery-thumbnail-image"
+                              />
+                              <div className="package-gallery-more-overlay">
+                                <Icon icon="plus" />
+                                <span>+{packageData.images.length - 5}</span>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
 
               {/* Accommodation Card */}
@@ -401,6 +496,10 @@ export default function PackageDetails() {
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
                         </svg>
                       </Link>
+                    ) : user?.role === 'admin' ? (
+                      <div className="package-details-booking-note">
+                        <p>Admin accounts are for management purposes only.</p>
+                      </div>
                     ) : (
                       <div className="package-details-booking-note">
                         <p>Company accounts cannot book packages directly.</p>

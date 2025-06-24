@@ -15,7 +15,9 @@
       "Bash(mkdir:*)",
       "Bash(ls:*)",
       "Bash(mv:*)",
-      "Bash(mkdir:*)"
+      "Bash(mkdir:*)",
+      "Bash(curl:*)",
+      "Bash(open http://localhost:3000/test-cookies)"
     ],
     "deny": []
   }

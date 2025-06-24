@@ -20,10 +20,17 @@ export default function CompanyDashboard() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchDashboardData();
-  }, []);
+    if (user?.id) {
+      fetchDashboardData();
+    }
+  }, [user]);
 
   const fetchDashboardData = async () => {
+    if (!user?.id) {
+      console.log('User not loaded yet, skipping dashboard data fetch');
+      return;
+    }
+    
     try {
       // Fetch packages
       const packagesResponse = await packageService.getPackages({ 
