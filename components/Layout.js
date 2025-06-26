@@ -3,6 +3,7 @@ import { useRouter } from 'next/router';
 import { useAuth } from '@/utils/AuthContext';
 import { useState, useEffect } from 'react';
 import styles from './Layout.module.css';
+import Icon from '@/components/FontAwesome';
 
 export default function Layout({ children }) {
   const { user, logout, isAuthenticated } = useAuth();
@@ -184,9 +185,17 @@ export default function Layout({ children }) {
                 ) : (
                   <div className={styles.userMenu}>
                     <div className={styles.userAvatar}>
-                      <span>
-                        {user.name?.charAt(0)?.toUpperCase() || 'U'}
-                      </span>
+                      {user?.profilePicture ? (
+                        <img 
+                          src={user.profilePicture} 
+                          alt={user.name || 'User'} 
+                          className={styles.avatarImage}
+                        />
+                      ) : (
+                        <span>
+                          {user.name?.charAt(0)?.toUpperCase() || 'U'}
+                        </span>
+                      )}
                     </div>
                     <div className={styles.userInfo}>
                       <span className={styles.userName}>Hi, {user.name}</span>
@@ -226,7 +235,7 @@ export default function Layout({ children }) {
                   className={`${styles.mobileNavLink} ${isActive('/packages') ? styles.mobileNavLinkActive : ''}`}
                   onClick={closeMobileMenu}
                 >
-                  <span className={styles.mobileNavIcon}>📦</span>
+                  <Icon icon={['fas', 'box']} className={styles.mobileNavIcon} />
                   <span>Packages</span>
                 </Link>
 
@@ -237,7 +246,7 @@ export default function Layout({ children }) {
                       className={`${styles.mobileNavLink} ${isActive('/about') ? styles.mobileNavLinkActive : ''}`}
                       onClick={closeMobileMenu}
                     >
-                      <span className={styles.mobileNavIcon}>ℹ️</span>
+                      <Icon icon={['fas', 'info-circle']} className={styles.mobileNavIcon} />
                       <span>About</span>
                     </Link>
                     <Link 
@@ -245,7 +254,7 @@ export default function Layout({ children }) {
                       className={`${styles.mobileNavLink} ${isActive('/contact') ? styles.mobileNavLinkActive : ''}`}
                       onClick={closeMobileMenu}
                     >
-                      <span className={styles.mobileNavIcon}>📞</span>
+                      <Icon icon={['fas', 'phone']} className={styles.mobileNavIcon} />
                       <span>Contact</span>
                     </Link>
                   </>
@@ -258,7 +267,7 @@ export default function Layout({ children }) {
                           className={`${styles.mobileNavLink} ${isActiveSection('/customer') ? styles.mobileNavLinkActive : ''}`}
                           onClick={closeMobileMenu}
                         >
-                          <span className={styles.mobileNavIcon}>📊</span>
+                          <Icon icon={['fas', 'tachometer-alt']} className={styles.mobileNavIcon} />
                           <span>Dashboard</span>
                         </Link>
                         <Link 
@@ -266,7 +275,7 @@ export default function Layout({ children }) {
                           className={`${styles.mobileNavLink} ${isActive('/customer/orders') ? styles.mobileNavLinkActive : ''}`}
                           onClick={closeMobileMenu}
                         >
-                          <span className={styles.mobileNavIcon}>📋</span>
+                          <Icon icon={['fas', 'clipboard-list']} className={styles.mobileNavIcon} />
                           <span>My Orders</span>
                         </Link>
                       </>
@@ -279,7 +288,7 @@ export default function Layout({ children }) {
                           className={`${styles.mobileNavLink} ${isActiveSection('/company') ? styles.mobileNavLinkActive : ''}`}
                           onClick={closeMobileMenu}
                         >
-                          <span className={styles.mobileNavIcon}>📊</span>
+                          <Icon icon={['fas', 'tachometer-alt']} className={styles.mobileNavIcon} />
                           <span>Dashboard</span>
                         </Link>
                         <Link 
@@ -287,7 +296,7 @@ export default function Layout({ children }) {
                           className={`${styles.mobileNavLink} ${isActive('/company/packages') ? styles.mobileNavLinkActive : ''}`}
                           onClick={closeMobileMenu}
                         >
-                          <span className={styles.mobileNavIcon}>📦</span>
+                          <Icon icon={['fas', 'box']} className={styles.mobileNavIcon} />
                           <span>My Packages</span>
                         </Link>
                         <Link 
@@ -295,7 +304,7 @@ export default function Layout({ children }) {
                           className={`${styles.mobileNavLink} ${isActive('/company/orders') ? styles.mobileNavLinkActive : ''}`}
                           onClick={closeMobileMenu}
                         >
-                          <span className={styles.mobileNavIcon}>📋</span>
+                          <Icon icon={['fas', 'clipboard-list']} className={styles.mobileNavIcon} />
                           <span>Orders</span>
                         </Link>
                       </>
@@ -308,7 +317,7 @@ export default function Layout({ children }) {
                           className={`${styles.mobileNavLink} ${isActiveSection('/admin') ? styles.mobileNavLinkActive : ''}`}
                           onClick={closeMobileMenu}
                         >
-                          <span className={styles.mobileNavIcon}>⚙️</span>
+                          <Icon icon={['fas', 'cog']} className={styles.mobileNavIcon} />
                           <span>Dashboard</span>
                         </Link>
                         <Link 
@@ -316,7 +325,7 @@ export default function Layout({ children }) {
                           className={`${styles.mobileNavLink} ${isActive('/admin/users') ? styles.mobileNavLinkActive : ''}`}
                           onClick={closeMobileMenu}
                         >
-                          <span className={styles.mobileNavIcon}>👥</span>
+                          <Icon icon={['fas', 'users']} className={styles.mobileNavIcon} />
                           <span>Users</span>
                         </Link>
                         <Link 
@@ -324,7 +333,7 @@ export default function Layout({ children }) {
                           className={`${styles.mobileNavLink} ${isActive('/admin/packages') ? styles.mobileNavLinkActive : ''}`}
                           onClick={closeMobileMenu}
                         >
-                          <span className={styles.mobileNavIcon}>📦</span>
+                          <Icon icon={['fas', 'box']} className={styles.mobileNavIcon} />
                           <span>Packages</span>
                         </Link>
                       </>
@@ -352,7 +361,15 @@ export default function Layout({ children }) {
                   <div className={styles.mobileUserSection}>
                     <div className={styles.mobileUserInfo}>
                       <div className={styles.mobileUserAvatar}>
-                        <span>{user.name?.charAt(0)?.toUpperCase() || 'U'}</span>
+                        {user?.profilePicture ? (
+                          <img 
+                            src={user.profilePicture} 
+                            alt={user.name || 'User'} 
+                            className={styles.mobileAvatarImage}
+                          />
+                        ) : (
+                          <span>{user.name?.charAt(0)?.toUpperCase() || 'U'}</span>
+                        )}
                       </div>
                       <div className={styles.mobileUserDetails}>
                         <span className={styles.mobileUserName}>{user.name}</span>

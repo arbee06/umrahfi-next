@@ -113,7 +113,7 @@ export default function CompanyDashboard() {
             <div className="company-dashboard-header-content">
               <div className="company-dashboard-header-text">
                 <div className="company-dashboard-welcome-badge">
-                  <span className="company-dashboard-badge-icon">🏢</span>
+                  <Icon icon={['fas', 'building']} className="company-dashboard-badge-icon" />
                   <span className="company-dashboard-badge-text">Company Dashboard</span>
                 </div>
                 <h1 className="company-dashboard-header-title">

@@ -11,6 +11,7 @@ import '@/styles/company-orders.css'
 import '@/styles/company-packages.css'
 import '@/styles/company-packages-create.css'
 import '@/styles/company-order-details.css'
+import '@/styles/company-profile.css';
 
 import '@/styles/package-details-gallery.css'
 import '@/styles/package-gallery-modal.css'
@@ -18,6 +19,7 @@ import '@/styles/package-image-upload.css'
 import '@/styles/template-styles.css'
 import '@/styles/company-template-management.css'
 
+import '@/styles/customer-profile.css';
 import '@/styles/customer-dashboard.css'
 import '@/styles/customer-order-details.css'
 import '@/styles/customer-booking.css'

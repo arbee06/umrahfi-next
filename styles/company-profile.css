@@ -1,0 +1,406 @@
+/* ===== MODERN COMPACT COMPANY PROFILE STYLES ===== */
+
+/* Profile Container */
+.company-profile-container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 1.5rem;
+  min-height: 100vh;
+  background: #f8fafc;
+}
+
+/* Header Section */
+.company-profile-header {
+  background: linear-gradient(135deg, #1e293b 0%, #334155 50%, #475569 100%);
+  border-radius: 2rem;
+  padding: 3rem;
+  margin-bottom: 1.5rem;
+  color: white;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+}
+
+.company-profile-header::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000"><defs><pattern id="dash-grid" width="50" height="50" patternUnits="userSpaceOnUse"><path d="M 50 0 L 0 0 0 50" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="1"/></pattern></defs><rect width="100%" height="100%" fill="url(%23dash-grid)"/></svg>');
+}
+
+.company-profile-header::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 100px;
+  background: linear-gradient(180deg, transparent 0%, rgba(248, 250, 252, 0.1) 100%);
+}
+
+.company-profile-header-content {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 2rem;
+}
+
+.company-profile-header-text {
+  flex: 1;
+}
+
+.company-profile-welcome-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 0.75rem 1.5rem;
+  border-radius: 2rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  margin-bottom: 1.5rem;
+  animation: company-profile-glow 2s ease-in-out infinite alternate;
+}
+
+.company-profile-badge-icon {
+  font-size: 1.25rem;
+  color: #60a5fa;
+}
+
+.company-profile-badge-text {
+  color: rgba(255, 255, 255, 0.9);
+  letter-spacing: 0.025em;
+}
+
+.company-profile-header-title {
+  font-size: clamp(2rem, 4vw, 3rem);
+  font-weight: 800;
+  margin-bottom: 1rem;
+  line-height: 1.1;
+  color: white;
+}
+
+.company-profile-company-name {
+  background: linear-gradient(135deg, #60a5fa 0%, #a78bfa 50%, #34d399 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  position: relative;
+}
+
+.company-profile-company-name::after {
+  content: '';
+  position: absolute;
+  bottom: -0.5rem;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(135deg, #60a5fa 0%, #a78bfa 50%, #34d399 100%);
+  border-radius: 2px;
+  opacity: 0.6;
+}
+
+.company-profile-header-subtitle {
+  font-size: 1.125rem;
+  color: rgba(255, 255, 255, 0.8);
+  max-width: 600px;
+  line-height: 1.6;
+}
+
+.company-profile-header-actions {
+  display: flex;
+  gap: 1rem;
+}
+
+.company-profile-avatar-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.company-profile-avatar {
+  width: 100px;
+  height: 100px;
+  border-radius: 1.5rem;
+  object-fit: cover;
+  border: 3px solid rgba(255, 255, 255, 0.2);
+  flex-shrink: 0;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.2);
+}
+
+.company-profile-upload-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.25rem;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 1rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.company-profile-upload-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.2);
+}
+
+.company-profile-upload-btn input {
+  display: none;
+}
+
+@keyframes company-profile-glow {
+  0% {
+    box-shadow: 0 0 20px rgba(96, 165, 250, 0.2);
+  }
+  100% {
+    box-shadow: 0 0 30px rgba(96, 165, 250, 0.4);
+  }
+}
+
+/* Alert Messages */
+.company-profile-alert {
+  padding: 0.875rem 1.25rem;
+  border-radius: 0.75rem;
+  margin-bottom: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.company-profile-alert-success {
+  background: #f0fdf4;
+  color: #166534;
+  border: 1px solid #bbf7d0;
+}
+
+.company-profile-alert-error {
+  background: #fef2f2;
+  color: #dc2626;
+  border: 1px solid #fecaca;
+}
+
+/* Info Banner */
+.company-profile-info-banner {
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  border: 1px solid #f59e0b;
+  border-radius: 0.75rem;
+  padding: 1rem 1.25rem;
+  margin-bottom: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.875rem;
+  color: #92400e;
+}
+
+.company-profile-info-icon {
+  color: #f59e0b;
+  font-size: 1rem;
+}
+
+/* Form Container */
+.company-profile-form {
+  background: white;
+  border-radius: 1rem;
+  padding: 1.5rem;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+}
+
+/* Form Sections */
+.company-profile-form-section {
+  margin-bottom: 2rem;
+}
+
+.company-profile-form-section:last-child {
+  margin-bottom: 0;
+}
+
+.company-profile-section-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.company-profile-section-icon {
+  width: 1.25rem;
+  height: 1.25rem;
+  color: #f59e0b;
+}
+
+.company-profile-section-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #111827;
+  margin: 0;
+}
+
+/* Form Grid */
+.company-profile-form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1rem;
+}
+
+.company-profile-form-grid-full {
+  grid-column: 1 / -1;
+}
+
+/* Form Groups */
+.company-profile-form-group {
+  margin-bottom: 1rem;
+}
+
+.company-profile-form-label {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 0.375rem;
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+}
+
+.company-profile-form-input,
+.company-profile-form-textarea {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  transition: all 0.2s;
+  background: #fafafa;
+  box-sizing: border-box;
+}
+
+.company-profile-form-input:focus,
+.company-profile-form-textarea:focus {
+  outline: none;
+  border-color: #f59e0b;
+  background: white;
+  box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.1);
+}
+
+.company-profile-form-input:disabled,
+.company-profile-disabled-input {
+  background: #f3f4f6 !important;
+  color: #6b7280 !important;
+  cursor: not-allowed;
+}
+
+.company-profile-form-textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+.company-profile-form-help {
+  font-size: 0.75rem;
+  color: #6b7280;
+  margin-top: 0.25rem;
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+}
+
+/* Submit Button */
+.company-profile-submit-button {
+  background: linear-gradient(135deg, #60a5fa 0%, #a78bfa 100%);
+  color: white;
+  border: none;
+  padding: 0.875rem 2rem;
+  border-radius: 0.75rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 1.5rem;
+  box-shadow: 0 4px 6px -1px rgba(96, 165, 250, 0.3);
+}
+
+.company-profile-submit-button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 8px -1px rgba(96, 165, 250, 0.4);
+}
+
+.company-profile-submit-button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .company-profile-container {
+    padding: 1rem;
+  }
+
+  .company-profile-header-content {
+    flex-direction: column;
+    text-align: center;
+    gap: 2rem;
+    align-items: center;
+  }
+
+  .company-profile-header-title {
+    font-size: clamp(1.75rem, 4vw, 2.5rem);
+  }
+
+  .company-profile-header-subtitle {
+    font-size: 1rem;
+  }
+
+  .company-profile-form-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .company-profile-header {
+    padding: 2rem 1.5rem;
+  }
+
+  .company-profile-form {
+    padding: 1.25rem;
+  }
+
+  .company-profile-submit-button {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .company-profile-avatar {
+    width: 80px;
+    height: 80px;
+  }
+
+  .company-profile-welcome-badge {
+    padding: 0.5rem 1rem;
+    font-size: 0.75rem;
+  }
+
+  .company-profile-header-title {
+    font-size: clamp(1.5rem, 4vw, 2rem);
+  }
+}

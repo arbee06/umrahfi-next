@@ -24,6 +24,9 @@ export default function Register() {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
+  const [profilePicture, setProfilePicture] = useState(null);
+  const [profilePicturePreview, setProfilePicturePreview] = useState(null);
+  const [uploadingPicture, setUploadingPicture] = useState(false);
 
   useEffect(() => {
     if (router.query.type) {
@@ -38,16 +41,55 @@ export default function Register() {
     });
   };
 
+  const handleProfilePictureChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setProfilePicture(file);
+      
+      // Create preview URL
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setProfilePicturePreview(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const removeProfilePicture = () => {
+    setProfilePicture(null);
+    setProfilePicturePreview(null);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     setLoading(true);
 
     try {
-      await register({
+      // First register the user
+      const registeredUser = await register({
         ...formData,
         role: userType
       });
+
+      // If profile picture is selected, upload it
+      if (profilePicture && registeredUser) {
+        setUploadingPicture(true);
+        const formDataUpload = new FormData();
+        formDataUpload.append('profilePicture', profilePicture);
+
+        try {
+          await fetch('/api/auth/upload-profile-picture', {
+            method: 'POST',
+            body: formDataUpload
+          });
+        } catch (uploadErr) {
+          console.error('Profile picture upload failed:', uploadErr);
+          // Don't fail registration if profile picture upload fails
+        } finally {
+          setUploadingPicture(false);
+        }
+      }
     } catch (err) {
       setError(err.error || 'Registration failed');
     } finally {
@@ -88,7 +130,7 @@ export default function Register() {
           <div className="register-auth-form-wrapper register">
             <div className="register-auth-header">
               <div className="register-auth-icon">
-                <span className="register-auth-icon-symbol">🌟</span>
+                <Icon icon={['fas', 'star']} className="register-auth-icon-symbol" />
               </div>
               <h1 className="register-auth-title">Create Your Account</h1>
               <p className="register-auth-subtitle">
@@ -206,6 +248,53 @@ export default function Register() {
                           placeholder="Enter your full name"
                           required
                         />
+                      </div>
+                    </div>
+
+                    {/* Profile Picture Upload */}
+                    <div className="register-form-group-modern">
+                      <label className="register-form-label-modern">
+                        <span className="register-label-text">Profile Picture</span>
+                      </label>
+                      <div className="register-profile-picture-section">
+                        <div className="register-profile-picture-preview">
+                          {profilePicturePreview ? (
+                            <div className="register-preview-container">
+                              <img 
+                                src={profilePicturePreview} 
+                                alt="Profile preview" 
+                                className="register-preview-image"
+                              />
+                              <button
+                                type="button"
+                                onClick={removeProfilePicture}
+                                className="register-remove-picture-btn"
+                              >
+                                <Icon icon="times" />
+                              </button>
+                            </div>
+                          ) : (
+                            <div className="register-preview-placeholder">
+                              <Icon icon="camera" />
+                              <span>Upload Photo</span>
+                            </div>
+                          )}
+                        </div>
+                        <div className="register-profile-picture-controls">
+                          <label className="register-upload-btn">
+                            <input
+                              type="file"
+                              accept="image/*"
+                              onChange={handleProfilePictureChange}
+                              className="register-file-input"
+                            />
+                            <Icon icon="upload" />
+                            <span>{profilePicturePreview ? 'Change Photo' : 'Choose Photo'}</span>
+                          </label>
+                          <p className="register-upload-hint">
+                            Optional. JPG, PNG or GIF up to 5MB
+                          </p>
+                        </div>
                       </div>
                     </div>
 
@@ -435,7 +524,7 @@ export default function Register() {
           <div className="register-auth-visual">
             <div className="register-visual-content">
               <div className="register-visual-icon">
-                <span>🌟</span>
+                <Icon icon={['fas', 'star']} />
               </div>
               <h2 className="register-visual-title">
                 Start Your Sacred Journey

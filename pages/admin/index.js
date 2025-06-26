@@ -51,7 +51,7 @@ export default function AdminDashboard() {
             <div className="admin-dashboard-header-content">
               <div className="admin-dashboard-header-text">
                 <div className="admin-dashboard-welcome-badge">
-                  <span className="admin-dashboard-badge-icon">⚡</span>
+                  <Icon icon={['fas', 'bolt']} className="admin-dashboard-badge-icon" />
                   <span className="admin-dashboard-badge-text">Admin Dashboard</span>
                 </div>
                 <h1 className="admin-dashboard-header-title">
@@ -206,7 +206,9 @@ export default function AdminDashboard() {
                   </div>
                 ) : recentActivity?.users.length === 0 ? (
                   <div className="admin-dashboard-empty-state">
-                    <div className="admin-dashboard-empty-icon">👥</div>
+                    <div className="admin-dashboard-empty-icon">
+                      <Icon icon={['fas', 'users']} />
+                    </div>
                     <h4>No recent users</h4>
                     <p>New user registrations will appear here.</p>
                   </div>
@@ -256,7 +258,9 @@ export default function AdminDashboard() {
                   </div>
                 ) : recentActivity?.orders.length === 0 ? (
                   <div className="admin-dashboard-empty-state">
-                    <div className="admin-dashboard-empty-icon">📋</div>
+                    <div className="admin-dashboard-empty-icon">
+                      <Icon icon={['fas', 'clipboard-list']} />
+                    </div>
                     <h4>No recent orders</h4>
                     <p>New orders will appear here.</p>
                   </div>

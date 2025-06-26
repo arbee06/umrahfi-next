@@ -3,6 +3,7 @@ import Link from 'next/link';
 import Layout from '@/components/Layout';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import orderService from '@/services/orderService';
+import Icon from '@/components/FontAwesome';
 
 export default function CustomerOrders() {
   const [orders, setOrders] = useState([]);
@@ -45,10 +46,10 @@ export default function CustomerOrders() {
 
   const getStatusBadge = (status) => {
     const badges = {
-      pending: { class: 'customer-orders-status-badge pending', text: 'Pending', icon: '🕐' },
-      confirmed: { class: 'customer-orders-status-badge confirmed', text: 'Confirmed', icon: '✓' },
-      cancelled: { class: 'customer-orders-status-badge cancelled', text: 'Cancelled', icon: '✕' },
-      completed: { class: 'customer-orders-status-badge completed', text: 'Completed', icon: '🎉' }
+      pending: { class: 'customer-orders-status-badge pending', text: 'Pending', icon: 'clock' },
+      confirmed: { class: 'customer-orders-status-badge confirmed', text: 'Confirmed', icon: 'check' },
+      cancelled: { class: 'customer-orders-status-badge cancelled', text: 'Cancelled', icon: 'times' },
+      completed: { class: 'customer-orders-status-badge completed', text: 'Completed', icon: 'check-circle' }
     };
     return badges[status] || badges.pending;
   };
@@ -144,7 +145,9 @@ export default function CustomerOrders() {
               </div>
             ) : filteredOrders.length === 0 ? (
               <div className="customer-orders-empty-state">
-                <div className="customer-orders-empty-icon">📦</div>
+                <div className="customer-orders-empty-icon">
+                  <Icon icon={['fas', 'box']} />
+                </div>
                 <h3>No orders found</h3>
                 <p>
                   {searchQuery 
@@ -186,7 +189,7 @@ export default function CustomerOrders() {
                         </div>
                         
                         <div className={badge.class}>
-                          <span className="customer-orders-status-icon">{badge.icon}</span>
+                          <Icon icon={['fas', badge.icon]} className="customer-orders-status-icon" />
                           <span className="customer-orders-status-text">{badge.text}</span>
                         </div>
                       </div>

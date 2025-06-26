@@ -4,6 +4,7 @@ import Layout from '@/components/Layout';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import { useAuth } from '@/utils/AuthContext';
 import orderService from '@/services/orderService';
+import Icon from '@/components/FontAwesome';
 
 export default function CustomerDashboard() {
   const { user } = useAuth();
@@ -35,10 +36,10 @@ export default function CustomerDashboard() {
 
   const getStatusBadge = (status) => {
     const badges = {
-      pending: { class: 'customer-dash-status-badge pending', text: 'Pending', icon: '🕐' },
-      confirmed: { class: 'customer-dash-status-badge confirmed', text: 'Confirmed', icon: '✓' },
-      cancelled: { class: 'customer-dash-status-badge cancelled', text: 'Cancelled', icon: '✕' },
-      completed: { class: 'customer-dash-status-badge completed', text: 'Completed', icon: '🎉' }
+      pending: { class: 'customer-dash-status-badge pending', text: 'Pending', icon: 'clock' },
+      confirmed: { class: 'customer-dash-status-badge confirmed', text: 'Confirmed', icon: 'check' },
+      cancelled: { class: 'customer-dash-status-badge cancelled', text: 'Cancelled', icon: 'times' },
+      completed: { class: 'customer-dash-status-badge completed', text: 'Completed', icon: 'check-circle' }
     };
     return badges[status] || badges.pending;
   };
@@ -52,7 +53,7 @@ export default function CustomerDashboard() {
             <div className="customer-dash-header-content">
               <div className="customer-dash-header-text">
                 <div className="customer-dash-welcome-badge">
-                  <span className="customer-dash-badge-icon">🕌</span>
+                  <Icon icon={['fas', 'mosque']} className="customer-dash-badge-icon" />
                   <span className="customer-dash-badge-text">Customer Dashboard</span>
                 </div>
                 <h1 className="customer-dash-header-title">
@@ -155,7 +156,9 @@ export default function CustomerDashboard() {
                 </div>
               ) : recentOrders.length === 0 ? (
                 <div className="customer-dash-empty-state">
-                  <div className="customer-dash-empty-icon">📦</div>
+                  <div className="customer-dash-empty-icon">
+                    <Icon icon={['fas', 'box']} />
+                  </div>
                   <h3>No orders yet</h3>
                   <p>Start by browsing our amazing Umrah packages!</p>
                   <Link href="/packages" className="customer-dash-empty-action">
@@ -172,7 +175,7 @@ export default function CustomerDashboard() {
                           <div className="customer-dash-order-header">
                             <span className="customer-dash-order-number">#{order.orderNumber}</span>
                             <div className={`customer-dash-order-status ${order.status}`}>
-                              <span className="customer-dash-status-icon">{badge.icon}</span>
+                              <Icon icon={['fas', badge.icon]} className="customer-dash-status-icon" />
                               <span>{badge.text}</span>
                             </div>
                           </div>

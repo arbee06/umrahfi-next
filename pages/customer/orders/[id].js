@@ -6,6 +6,7 @@ import ProtectedRoute from '@/components/ProtectedRoute';
 import { useAuth } from '@/utils/AuthContext';
 import orderService from '@/services/orderService';
 import Swal from 'sweetalert2';
+import Icon from '@/components/FontAwesome';
 
 export default function OrderDetails() {
   const router = useRouter();
@@ -37,7 +38,7 @@ export default function OrderDetails() {
 
   const viewPassportDetails = (passportData) => {
     Swal.fire({
-      title: '🛂 Passport Information',
+      title: '<Icon icon={["fas", "passport"]} /> Passport Information',
       html: `
         <div style="text-align: left; margin: 1rem 0; max-height: 400px; overflow-y: auto;">
           <div style="display: grid; gap: 1rem; font-size: 0.95rem;">
@@ -260,10 +261,10 @@ export default function OrderDetails() {
 
   const getStatusBadge = (status) => {
     const badges = {
-      pending: { class: 'status-pending', text: 'Pending', icon: '🕐' },
-      confirmed: { class: 'status-confirmed', text: 'Confirmed', icon: '✓' },
-      cancelled: { class: 'status-cancelled', text: 'Cancelled', icon: '✕' },
-      completed: { class: 'status-completed', text: 'Completed', icon: '🎉' }
+      pending: { class: 'status-pending', text: 'Pending', icon: 'clock' },
+      confirmed: { class: 'status-confirmed', text: 'Confirmed', icon: 'check' },
+      cancelled: { class: 'status-cancelled', text: 'Cancelled', icon: 'times' },
+      completed: { class: 'status-completed', text: 'Completed', icon: 'check-circle' }
     };
     return badges[status] || badges.pending;
   };
@@ -338,7 +339,7 @@ export default function OrderDetails() {
               <h1 className="order-details-title">Order #{order.orderNumber}</h1>
               <div className="order-details-badges">
                 <div className={`order-details-status-badge ${statusBadge.class}`}>
-                  <span className="status-icon">{statusBadge.icon}</span>
+                  <Icon icon={['fas', statusBadge.icon]} className="status-icon" />
                   <span>{statusBadge.text}</span>
                 </div>
                 {/* <div className={`order-details-payment-badge ${paymentBadge.class}`}>
