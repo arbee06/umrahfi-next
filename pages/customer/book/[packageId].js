@@ -8,6 +8,7 @@ import orderService from '@/services/orderService';
 import { getCountries } from '@/utils/countries';
 import Swal from 'sweetalert2';
 import Head from 'next/head';
+import StripePaymentForm from '@/components/StripePaymentForm';
 
 export default function BookPackage() {
   const router = useRouter();
@@ -19,6 +20,7 @@ export default function BookPackage() {
   const [currentStep, setCurrentStep] = useState(1);
   const [uploading, setUploading] = useState(false);
   const [countries] = useState(() => getCountries());
+  const [pendingOrderId, setPendingOrderId] = useState(null);
   
   const [bookingData, setBookingData] = useState({
     numberOfTravelers: 1,
@@ -40,22 +42,11 @@ export default function BookPackage() {
       needsVisaAssistance: false
     }],
     specialRequests: '',
-    paymentMethod: 'credit_card',
+    paymentMethod: 'stripe',
     paymentReceiptFile: null,
     paymentNotes: '',
-    creditCard: {
-      cardNumber: '',
-      expiryDate: '',
-      cvv: '',
-      cardholderName: '',
-      billingAddress: {
-        street: '',
-        city: '',
-        state: '',
-        zipCode: '',
-        country: ''
-      }
-    }
+    stripeToken: null,
+    stripePaymentMethod: null
   });
 
   useEffect(() => {
@@ -815,55 +806,117 @@ export default function BookPackage() {
     });
   };
 
-  const handleCreditCardChange = (field, value) => {
-    if (field.includes('.')) {
-      const [parent, child] = field.split('.');
-      setBookingData({
-        ...bookingData,
-        creditCard: {
-          ...bookingData.creditCard,
-          [parent]: {
-            ...bookingData.creditCard[parent],
-            [child]: value
-          }
+  const handleStripePaymentSuccess = async (paymentIntent) => {
+    console.log('Payment success handler called:', paymentIntent);
+    
+    try {
+      // Show loading state
+      Swal.fire({
+        title: 'Creating Your Booking...',
+        html: 'Payment successful! Creating your booking...',
+        allowOutsideClick: false,
+        allowEscapeKey: false,
+        showConfirmButton: false,
+        customClass: {
+          popup: 'custom-swal-popup'
+        },
+        didOpen: () => {
+          Swal.showLoading();
         }
       });
-    } else {
-      setBookingData({
-        ...bookingData,
-        creditCard: {
-          ...bookingData.creditCard,
-          [field]: value
-        }
+
+      // Create order with payment data
+      const response = await createOrderWithPaymentData(paymentIntent.id);
+
+      // Show success message
+      const result = await Swal.fire({
+        title: 'Payment Successful!',
+        html: `
+          <div style="text-align: center; margin: 1rem 0;">
+            <p style="color: #059669; font-weight: 600; margin-bottom: 1rem;">Your payment has been processed successfully!</p>
+            <p style="color: #6b7280; margin-bottom: 0.5rem;">Order Number:</p>
+            <p style="font-weight: 600; color: #1f2937; font-family: monospace; font-size: 1.1rem;">${response.order.orderNumber}</p>
+            <p style="color: #6b7280; margin-bottom: 0.5rem;">Payment ID:</p>
+            <p style="font-weight: 600; color: #1f2937; font-family: monospace; font-size: 0.9rem;">${paymentIntent.id}</p>
+            <div style="background: #f0f8ff; padding: 1rem; border-radius: 0.5rem; margin-top: 1rem;">
+              <p style="color: #0284c7; margin: 0; font-size: 0.9rem;">Your booking is pending company confirmation. You'll receive an email once it's confirmed.</p>
+            </div>
+          </div>
+        `,
+        icon: 'success',
+        confirmButtonColor: '#059669',
+        confirmButtonText: 'View Order Details',
+        customClass: {
+          popup: 'custom-swal-popup',
+          title: 'custom-swal-title',
+          htmlContainer: 'custom-swal-html',
+          confirmButton: 'custom-swal-confirm'
+        },
+        buttonsStyling: false
       });
+
+      // Redirect to order details after user clicks button
+      if (result.isConfirmed) {
+        console.log('Redirecting to order details...');
+        router.push(`/customer/orders/${response.order.id}`);
+      }
+      
+      return response;
+    } catch (error) {
+      console.error('Error creating order:', error);
+      handleStripePaymentError('Payment was successful but there was an error creating your booking. Please contact support with payment ID: ' + paymentIntent.id);
     }
   };
 
-  const formatCardNumber = (value) => {
-    // Remove all non-digits
-    const cleaned = value.replace(/\D/g, '');
-    // Add spaces every 4 digits
-    const formatted = cleaned.replace(/(\d{4})(?=\d)/g, '$1 ');
-    return formatted.substring(0, 19); // Max 16 digits + 3 spaces
+  const handleStripePaymentError = (error) => {
+    console.log('Payment error handler called:', error);
+    Swal.fire({
+      title: 'Payment Failed',
+      html: `
+        <div style="text-align: center; margin: 1rem 0;">
+          <p style="color: #ef4444; margin-bottom: 1rem;">Your payment could not be processed</p>
+          <p style="color: #6b7280; font-size: 0.9rem; margin-bottom: 1rem;">${error}</p>
+          <div style="background: #fef2f2; padding: 1rem; border-radius: 0.5rem;">
+            <p style="color: #dc2626; margin: 0; font-size: 0.9rem;">You have not been charged. Please try again or contact support if the problem persists.</p>
+          </div>
+        </div>
+      `,
+      icon: 'error',
+      confirmButtonColor: '#ef4444',
+      confirmButtonText: 'Try Again'
+    });
   };
 
-  const formatExpiryDate = (value) => {
-    // Remove all non-digits
-    const cleaned = value.replace(/\D/g, '');
-    // Add slash after 2 digits
-    if (cleaned.length >= 2) {
-      return cleaned.substring(0, 2) + '/' + cleaned.substring(2, 4);
+  const nextStep = (e) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
     }
-    return cleaned;
-  };
-
-  const nextStep = () => {
     if (currentStep < 2) {
       setCurrentStep(currentStep + 1);
+      
+      // Scroll to step indicators when moving to step 2
+      if (currentStep === 1) {
+        setTimeout(() => {
+          // Target the step indicators section specifically
+          const stepsElement = document.querySelector('.customer-book-steps');
+          if (stepsElement) {
+            stepsElement.scrollIntoView({ 
+              behavior: 'smooth', 
+              block: 'start',
+              inline: 'nearest'
+            });
+          }
+        }, 100); // Small delay to ensure the step has updated
+      }
     }
   };
 
-  const prevStep = () => {
+  const prevStep = (e) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
     if (currentStep > 1) {
       setCurrentStep(currentStep - 1);
     }
@@ -879,16 +932,10 @@ export default function BookPackage() {
       // Validate payment information
       if (bookingData.paymentMethod === 'bank_transfer') {
         return bookingData.paymentReceiptFile !== null;
-      } else if (bookingData.paymentMethod === 'credit_card') {
-        const { creditCard } = bookingData;
-        return creditCard.cardNumber && 
-               creditCard.expiryDate && 
-               creditCard.cvv && 
-               creditCard.cardholderName &&
-               creditCard.billingAddress.street &&
-               creditCard.billingAddress.city &&
-               creditCard.billingAddress.zipCode &&
-               creditCard.billingAddress.country;
+      } else if (bookingData.paymentMethod === 'stripe') {
+        return true; // Stripe validation will be handled during payment processing
+      } else if (bookingData.paymentMethod === 'cash') {
+        return true; // Cash payment requires no additional validation
       }
       return true;
     }
@@ -935,7 +982,13 @@ export default function BookPackage() {
       return;
     }
     
-    // Show confirmation dialog
+    // For Stripe payments, don't show confirmation - let Stripe form handle everything
+    if (bookingData.paymentMethod === 'stripe') {
+      setError('');
+      return; // Let Stripe form handle the payment and order creation
+    }
+    
+    // Show confirmation dialog for non-Stripe payments
     const result = await Swal.fire({
       title: 'Confirm Booking?',
       html: `
@@ -988,6 +1041,10 @@ export default function BookPackage() {
       }
     });
 
+    await createOrderWithPaymentData();
+  };
+
+  const createOrderWithPaymentData = async (stripePaymentIntentId = null) => {
     try {
       const orderData = {
         packageId: packageData.id,
@@ -1009,12 +1066,29 @@ export default function BookPackage() {
         paymentMethod: bookingData.paymentMethod,
         paymentReceiptPath: bookingData.paymentReceiptFile?.path,
         paymentReceiptOriginalName: bookingData.paymentReceiptFile?.originalName,
-        paymentNotes: bookingData.paymentNotes
+        paymentNotes: bookingData.paymentNotes,
+        // For Stripe payments, include payment intent ID and mark payment as completed
+        // but keep order status as pending for company confirmation
+        ...(stripePaymentIntentId && {
+          stripePaymentIntentId,
+          paymentStatus: 'completed',
+          status: 'pending'  // Company should confirm the order
+        }),
+        // For other payment methods, set as pending
+        ...(!stripePaymentIntentId && bookingData.paymentMethod !== 'stripe' && {
+          paymentStatus: 'pending',
+          status: 'pending'
+        })
       };
 
       const response = await orderService.createOrder(orderData);
       
-      // Show success message
+      // For Stripe payments, don't show success message here - let the caller handle it
+      if (stripePaymentIntentId) {
+        return response;
+      }
+      
+      // Show success message for non-Stripe payments only
       await Swal.fire({
         title: 'Booking Confirmed!',
         html: `
@@ -1037,6 +1111,8 @@ export default function BookPackage() {
       });
       
       router.push(`/customer/orders/${response.order.id}`);
+      
+      return response;
     } catch (err) {
       Swal.close();
       setError(err.error || 'Failed to create booking');
@@ -1698,25 +1774,51 @@ export default function BookPackage() {
                           <div className="customer-book-payment-option">
                             <input
                               type="radio"
-                              id="credit_card"
+                              id="stripe"
                               name="paymentMethod"
-                              value="credit_card"
-                              checked={bookingData.paymentMethod === 'credit_card'}
+                              value="stripe"
+                              checked={bookingData.paymentMethod === 'stripe'}
                               onChange={(e) => setBookingData({
                                 ...bookingData,
                                 paymentMethod: e.target.value,
                                 paymentReceiptFile: null
                               })}
                             />
-                            <label htmlFor="credit_card" className="customer-book-payment-label">
+                            <label htmlFor="stripe" className="customer-book-payment-label">
                               <div className="customer-book-payment-icon">
                                 <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
                                 </svg>
                               </div>
                               <div className="customer-book-payment-info">
-                                <div className="customer-book-payment-title">Credit Card</div>
-                                <div className="customer-book-payment-desc">Pay with your credit or debit card</div>
+                                <div className="customer-book-payment-title">Online Payment</div>
+                                <div className="customer-book-payment-desc">Pay securely with Stripe</div>
+                              </div>
+                            </label>
+                          </div>
+                          
+                          <div className="customer-book-payment-option">
+                            <input
+                              type="radio"
+                              id="cash"
+                              name="paymentMethod"
+                              value="cash"
+                              checked={bookingData.paymentMethod === 'cash'}
+                              onChange={(e) => setBookingData({
+                                ...bookingData,
+                                paymentMethod: e.target.value,
+                                paymentReceiptFile: null
+                              })}
+                            />
+                            <label htmlFor="cash" className="customer-book-payment-label">
+                              <div className="customer-book-payment-icon">
+                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
+                                </svg>
+                              </div>
+                              <div className="customer-book-payment-info">
+                                <div className="customer-book-payment-title">Cash Payment</div>
+                                <div className="customer-book-payment-desc">Pay in cash upon arrival or at office</div>
                               </div>
                             </label>
                           </div>
@@ -1749,180 +1851,142 @@ export default function BookPackage() {
                       </div>
 
                       {/* Credit Card Form */}
-                      {bookingData.paymentMethod === 'credit_card' && (
-                        <div className="customer-book-credit-card-section">
-                          <div className="customer-book-credit-card-header">
-                            <h4 className="customer-book-credit-card-title">
+                      {/* Stripe Payment Form */}
+                      {bookingData.paymentMethod === 'stripe' && (
+                        <div className="customer-book-stripe-section">
+                          <div className="customer-book-stripe-header">
+                            <h4 className="customer-book-stripe-title">
                               <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.5-2A11.95 11.95 0 014 12H0l2-2m-2 2l2 2m18-2a11.95 11.95 0 01-11.5 10z" />
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
                               </svg>
-                              Credit Card Information
+                              Secure Online Payment
                             </h4>
                             <div className="customer-book-secure-badge">
                               <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                               </svg>
-                              <span>Secured with SSL encryption</span>
+                              <span>Powered by Stripe - Bank-level security</span>
                             </div>
                           </div>
 
-                          <div className="customer-book-credit-card-form">
-                            {/* Card Number */}
-                            <div className="customer-book-form-group">
-                              <label className="customer-book-form-label">
-                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
-                                </svg>
-                                Card Number *
-                              </label>
-                              <input
-                                type="text"
-                                className="customer-book-form-input customer-book-card-input"
-                                value={bookingData.creditCard.cardNumber}
-                                onChange={(e) => handleCreditCardChange('cardNumber', formatCardNumber(e.target.value))}
-                                placeholder="1234 5678 9012 3456"
-                                maxLength="19"
-                                required
-                              />
+                          <div className="customer-book-stripe-form">
+                            <div className="customer-book-stripe-info">
+                              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                              </svg>
+                              <p>Complete your payment securely using Stripe. You will be redirected to enter your card details on a secure payment page.</p>
+                            </div>
+                            
+                            <StripePaymentForm
+                              amount={packageData.price * bookingData.numberOfTravelers}
+                              onSuccess={handleStripePaymentSuccess}
+                              onError={handleStripePaymentError}
+                            />
+
+                            <div className="customer-book-payment-notice">
+                              <div className="customer-book-notice-content">
+                                <h5>Payment Information</h5>
+                                <ul>
+                                  <li>Your payment will be processed securely through Stripe</li>
+                                  <li>We accept all major credit and debit cards</li>
+                                  <li>Payment confirmation will be sent via email</li>
+                                  <li>Booking will be confirmed upon successful payment</li>
+                                </ul>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Cash Payment Information */}
+                      {bookingData.paymentMethod === 'cash' && (
+                        <div className="customer-book-cash-section">
+                          <div className="customer-book-cash-header">
+                            <h4 className="customer-book-cash-title">
+                              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
+                              </svg>
+                              Cash Payment Instructions
+                            </h4>
+                          </div>
+
+                          <div className="customer-book-cash-info">
+                            <div className="customer-book-cash-notice">
+                              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                              </svg>
+                              <div>
+                                <h5>Important Notice</h5>
+                                <p>By selecting cash payment, you agree to pay the full amount in cash according to the terms below.</p>
+                              </div>
                             </div>
 
-                            {/* Cardholder Name */}
-                            <div className="customer-book-form-group">
-                              <label className="customer-book-form-label">
-                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                                </svg>
-                                Cardholder Name *
-                              </label>
-                              <input
-                                type="text"
-                                className="customer-book-form-input"
-                                value={bookingData.creditCard.cardholderName}
-                                onChange={(e) => handleCreditCardChange('cardholderName', e.target.value.toUpperCase())}
-                                placeholder="JOHN DOE"
-                                required
-                              />
-                            </div>
-
-                            {/* Expiry Date and CVV */}
-                            <div className="customer-book-form-row">
-                              <div className="customer-book-form-group">
-                                <label className="customer-book-form-label">
+                            <div className="customer-book-cash-options">
+                              <div className="customer-book-cash-option">
+                                <div className="customer-book-cash-option-header">
                                   <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                                   </svg>
-                                  Expiry Date *
-                                </label>
-                                <input
-                                  type="text"
-                                  className="customer-book-form-input"
-                                  value={bookingData.creditCard.expiryDate}
-                                  onChange={(e) => handleCreditCardChange('expiryDate', formatExpiryDate(e.target.value))}
-                                  placeholder="MM/YY"
-                                  maxLength="5"
-                                  required
-                                />
+                                  <h6>Office Payment</h6>
+                                </div>
+                                <ul>
+                                  <li>Visit our office during business hours</li>
+                                  <li>Bring your booking reference number</li>
+                                  <li>Payment must be completed before departure date</li>
+                                  <li>Office Address: [Office Address]</li>
+                                  <li>Business Hours: Monday - Friday, 9:00 AM - 6:00 PM</li>
+                                </ul>
                               </div>
-                              
-                              <div className="customer-book-form-group">
-                                <label className="customer-book-form-label">
+
+                              <div className="customer-book-cash-option">
+                                <div className="customer-book-cash-option-header">
                                   <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.5-2A11.95 11.95 0 014 12H0l2-2m-2 2l2 2m18-2a11.95 11.95 0 01-11.5 10z" />
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
                                   </svg>
-                                  CVV *
-                                </label>
-                                <input
-                                  type="text"
-                                  className="customer-book-form-input"
-                                  value={bookingData.creditCard.cvv}
-                                  onChange={(e) => {
-                                    const value = e.target.value.replace(/\D/g, '');
-                                    if (value.length <= 4) {
-                                      handleCreditCardChange('cvv', value);
-                                    }
-                                  }}
-                                  placeholder="123"
-                                  maxLength="4"
-                                  required
-                                />
+                                  <h6>Payment Upon Arrival</h6>
+                                </div>
+                                <ul>
+                                  <li>Pay cash at the meeting point on departure day</li>
+                                  <li>Arrive 30 minutes early for payment processing</li>
+                                  <li>Exact amount preferred (limited change available)</li>
+                                  <li>Payment receipt will be provided</li>
+                                </ul>
                               </div>
                             </div>
 
-                            {/* Billing Address */}
-                            <div className="customer-book-billing-section">
-                              <h5 className="customer-book-billing-title">
+                            <div className="customer-book-cash-terms">
+                              <div className="customer-book-terms-header">
                                 <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                                 </svg>
-                                Billing Address
-                              </h5>
-                              
-                              <div className="customer-book-form-group">
-                                <label className="customer-book-form-label">Street Address *</label>
-                                <input
-                                  type="text"
-                                  className="customer-book-form-input"
-                                  value={bookingData.creditCard.billingAddress.street}
-                                  onChange={(e) => handleCreditCardChange('billingAddress.street', e.target.value)}
-                                  placeholder="123 Main Street"
-                                  required
-                                />
+                                <h6>Terms & Conditions</h6>
                               </div>
+                              <ul>
+                                <li>Booking confirmation will be sent immediately</li>
+                                <li>Payment must be completed as per selected option</li>
+                                <li>Failure to pay may result in booking cancellation</li>
+                                <li>No refunds for partial payments</li>
+                                <li>Contact us for any payment-related queries</li>
+                              </ul>
+                            </div>
 
-                              <div className="customer-book-form-row">
-                                <div className="customer-book-form-group">
-                                  <label className="customer-book-form-label">City *</label>
-                                  <input
-                                    type="text"
-                                    className="customer-book-form-input"
-                                    value={bookingData.creditCard.billingAddress.city}
-                                    onChange={(e) => handleCreditCardChange('billingAddress.city', e.target.value)}
-                                    placeholder="New York"
-                                    required
-                                  />
-                                </div>
-                                
-                                <div className="customer-book-form-group">
-                                  <label className="customer-book-form-label">State/Province</label>
-                                  <input
-                                    type="text"
-                                    className="customer-book-form-input"
-                                    value={bookingData.creditCard.billingAddress.state}
-                                    onChange={(e) => handleCreditCardChange('billingAddress.state', e.target.value)}
-                                    placeholder="NY"
-                                  />
-                                </div>
-                              </div>
-
-                              <div className="customer-book-form-row">
-                                <div className="customer-book-form-group">
-                                  <label className="customer-book-form-label">ZIP/Postal Code *</label>
-                                  <input
-                                    type="text"
-                                    className="customer-book-form-input"
-                                    value={bookingData.creditCard.billingAddress.zipCode}
-                                    onChange={(e) => handleCreditCardChange('billingAddress.zipCode', e.target.value)}
-                                    placeholder="10001"
-                                    required
-                                  />
-                                </div>
-                                
-                                <div className="customer-book-form-group">
-                                  <label className="customer-book-form-label">Country *</label>
-                                  <select
-                                    className="customer-book-form-select"
-                                    value={bookingData.creditCard.billingAddress.country}
-                                    onChange={(e) => handleCreditCardChange('billingAddress.country', e.target.value)}
-                                    required
-                                  >
-                                    <option value="">Select Country</option>
-                                    {countries.map(country => (
-                                      <option key={country.code} value={country.code}>
-                                        {country.name}
-                                      </option>
-                                    ))}
-                                  </select>
+                            <div className="customer-book-cash-contact">
+                              <div className="customer-book-contact-info">
+                                <h6>Need Help?</h6>
+                                <p>Contact our customer service team for assistance with cash payment options.</p>
+                                <div className="customer-book-contact-details">
+                                  <div className="customer-book-contact-item">
+                                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                                    </svg>
+                                    <span>+1 (555) 123-4567</span>
+                                  </div>
+                                  <div className="customer-book-contact-item">
+                                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                                    </svg>
+                                    <span>support@umrahfi.com</span>
+                                  </div>
                                 </div>
                               </div>
                             </div>

@@ -70,13 +70,14 @@ export default async function handler(req, res) {
         // Check access
         const canUpdate = 
           authResult.user.role === 'admin' ||
-          (authResult.user.role === 'company' && order.companyId === authResult.user.id);
+          (authResult.user.role === 'company' && order.companyId === authResult.user.id) ||
+          (authResult.user.role === 'customer' && order.customerId === authResult.user.id);
 
         if (!canUpdate) {
           return res.status(403).json({ error: 'Access denied' });
         }
 
-        const { status, paymentStatus } = req.body;
+        const { status, paymentStatus, stripePaymentIntentId } = req.body;
 
         // Handle cancellation
         if (status === 'cancelled' && order.status !== 'cancelled') {
@@ -93,6 +94,7 @@ export default async function handler(req, res) {
 
         if (status) order.status = status;
         if (paymentStatus) order.paymentStatus = paymentStatus;
+        if (stripePaymentIntentId) order.stripePaymentIntentId = stripePaymentIntentId;
 
         await order.save();
 

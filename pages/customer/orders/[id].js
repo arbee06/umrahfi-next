@@ -272,8 +272,8 @@ export default function OrderDetails() {
   const getPaymentStatusBadge = (status) => {
     const badges = {
       pending: { class: 'payment-pending', text: 'Payment Pending' },
-      paid: { class: 'payment-paid', text: 'Paid' },
-      failed: { class: 'payment-failed', text: 'Payment Failed' },
+      completed: { class: 'payment-completed', text: 'Payment Completed' },
+      partial: { class: 'payment-partial', text: 'Partial Payment' },
       refunded: { class: 'payment-refunded', text: 'Refunded' }
     };
     return badges[status] || badges.pending;
@@ -430,6 +430,40 @@ export default function OrderDetails() {
                         </div>
                       );
                     })}
+                  </div>
+                </div>
+              </div>
+
+              {/* Payment Information */}
+              <div className="order-details-card">
+                <div className="order-details-card-header">
+                  <h3>Payment Information</h3>
+                </div>
+                <div className="order-details-card-content">
+                  <div className="payment-info-grid">
+                    <div className="info-item">
+                      <div className="info-label">Payment Method</div>
+                      <div className="info-value payment-method">
+                        {order.paymentMethod === 'stripe' && '💳 Stripe'}
+                        {order.paymentMethod === 'bank_transfer' && '🏦 Bank Transfer'}
+                        {order.paymentMethod === 'cash' && '💵 Cash Payment'}
+                      </div>
+                    </div>
+                    <div className="info-item">
+                      <div className="info-label">Payment Status</div>
+                      <div className={`info-value payment-status ${order.paymentStatus}`}>
+                        {order.paymentStatus === 'pending' && '🕐 Pending'}
+                        {order.paymentStatus === 'completed' && '✅ Completed'}
+                        {order.paymentStatus === 'partial' && '⏳ Partial'}
+                        {order.paymentStatus === 'refunded' && '🔄 Refunded'}
+                      </div>
+                    </div>
+                    {order.stripePaymentIntentId && (
+                      <div className="info-item">
+                        <div className="info-label">Stripe Payment ID</div>
+                        <div className="info-value stripe-payment-id">{order.stripePaymentIntentId}</div>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>

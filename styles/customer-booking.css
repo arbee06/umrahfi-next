@@ -2365,3 +2365,547 @@
   background-size: 1.5em 1.5em;
   padding-right: 2.5rem;
 }
+
+/* Stripe Payment Section */
+.customer-book-stripe-section {
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.02) 0%, rgba(139, 92, 246, 0.02) 100%);
+  border: 1px solid rgba(59, 130, 246, 0.1);
+  border-radius: 1.5rem;
+  padding: 2rem;
+  margin-top: 1.5rem;
+  animation: customer-book-stripe-section-appear 0.4s ease-out;
+}
+
+@keyframes customer-book-stripe-section-appear {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+    max-height: 0;
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+    max-height: 1000px;
+  }
+}
+
+.customer-book-stripe-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid rgba(59, 130, 246, 0.1);
+}
+
+.customer-book-stripe-title {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--gray-900);
+  margin: 0;
+}
+
+.customer-book-stripe-title svg {
+  width: 1.25rem;
+  height: 1.25rem;
+  color: var(--primary);
+}
+
+.customer-book-stripe-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.customer-book-stripe-info {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  padding: 1rem;
+  background: rgba(59, 130, 246, 0.05);
+  border: 1px solid rgba(59, 130, 246, 0.1);
+  border-radius: 1rem;
+  color: var(--primary);
+}
+
+.customer-book-stripe-info svg {
+  width: 1.25rem;
+  height: 1.25rem;
+  color: var(--primary);
+  flex-shrink: 0;
+  margin-top: 0.125rem;
+}
+
+.customer-book-stripe-info p {
+  margin: 0;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: var(--gray-700);
+}
+
+.customer-book-stripe-placeholder {
+  background: white;
+  border: 2px dashed var(--gray-300);
+  border-radius: 1rem;
+  padding: 2rem;
+  text-align: center;
+  transition: all 0.3s ease;
+}
+
+.customer-book-stripe-placeholder:hover {
+  border-color: var(--primary);
+  background: rgba(59, 130, 246, 0.02);
+}
+
+.customer-book-stripe-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  color: var(--gray-500);
+}
+
+.customer-book-stripe-card svg {
+  width: 3rem;
+  height: 3rem;
+  color: var(--gray-400);
+}
+
+.customer-book-stripe-card span {
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+/* Stripe Payment Form */
+.customer-book-stripe-payment-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.customer-book-stripe-card-element {
+  padding: 1rem;
+  border: 2px solid var(--gray-200);
+  border-radius: 1rem;
+  background: white;
+  transition: all 0.3s ease;
+}
+
+.customer-book-stripe-card-element:focus-within {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.customer-book-stripe-processing {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 1rem;
+  background: rgba(59, 130, 246, 0.05);
+  border: 1px solid rgba(59, 130, 246, 0.1);
+  border-radius: 1rem;
+  color: var(--primary);
+  font-weight: 500;
+}
+
+.customer-book-stripe-pay-btn {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+  color: white;
+  border: none;
+  padding: 1rem 2rem;
+  border-radius: 1rem;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.3);
+}
+
+.customer-book-stripe-pay-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px -5px rgba(37, 99, 235, 0.4);
+}
+
+.customer-book-stripe-pay-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.customer-book-payment-notice {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.05) 0%, rgba(5, 150, 105, 0.05) 100%);
+  border: 1px solid rgba(16, 185, 129, 0.1);
+  border-radius: 1rem;
+  padding: 1.5rem;
+}
+
+.customer-book-notice-content h5 {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--success);
+  margin: 0 0 1rem 0;
+}
+
+.customer-book-notice-content ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.customer-book-notice-content li {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  color: var(--gray-700);
+  line-height: 1.4;
+}
+
+.customer-book-notice-content li::before {
+  content: '✓';
+  color: var(--success);
+  font-weight: 700;
+  flex-shrink: 0;
+  margin-top: 0.125rem;
+}
+
+/* Cash Payment Section */
+.customer-book-cash-section {
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.02) 0%, rgba(217, 119, 6, 0.02) 100%);
+  border: 1px solid rgba(245, 158, 11, 0.1);
+  border-radius: 1.5rem;
+  padding: 2rem;
+  margin-top: 1.5rem;
+  animation: customer-book-cash-section-appear 0.4s ease-out;
+}
+
+@keyframes customer-book-cash-section-appear {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+    max-height: 0;
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+    max-height: 1000px;
+  }
+}
+
+.customer-book-cash-header {
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid rgba(245, 158, 11, 0.1);
+}
+
+.customer-book-cash-title {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--gray-900);
+  margin: 0;
+}
+
+.customer-book-cash-title svg {
+  width: 1.25rem;
+  height: 1.25rem;
+  color: var(--warning);
+}
+
+.customer-book-cash-info {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.customer-book-cash-notice {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  padding: 1rem;
+  background: rgba(245, 158, 11, 0.05);
+  border: 1px solid rgba(245, 158, 11, 0.1);
+  border-radius: 1rem;
+  color: var(--warning);
+}
+
+.customer-book-cash-notice svg {
+  width: 1.25rem;
+  height: 1.25rem;
+  color: var(--warning);
+  flex-shrink: 0;
+  margin-top: 0.125rem;
+}
+
+.customer-book-cash-notice div h5 {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--warning);
+  margin: 0 0 0.5rem 0;
+}
+
+.customer-book-cash-notice div p {
+  margin: 0;
+  font-size: 0.8rem;
+  line-height: 1.4;
+  color: #92400e;
+}
+
+.customer-book-cash-options {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
+}
+
+.customer-book-cash-option {
+  background: white;
+  border: 1px solid var(--gray-200);
+  border-radius: 1rem;
+  padding: 1.5rem;
+  transition: all 0.3s ease;
+}
+
+.customer-book-cash-option:hover {
+  border-color: var(--warning);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 15px -3px rgba(245, 158, 11, 0.1);
+}
+
+.customer-book-cash-option-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--gray-100);
+}
+
+.customer-book-cash-option-header svg {
+  width: 1.5rem;
+  height: 1.5rem;
+  color: var(--warning);
+  flex-shrink: 0;
+}
+
+.customer-book-cash-option-header h6 {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--gray-900);
+  margin: 0;
+}
+
+.customer-book-cash-option ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.customer-book-cash-option li {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  color: var(--gray-700);
+  line-height: 1.4;
+}
+
+.customer-book-cash-option li::before {
+  content: '•';
+  color: var(--warning);
+  font-weight: 700;
+  flex-shrink: 0;
+  margin-top: 0.125rem;
+}
+
+.customer-book-cash-terms {
+  background: rgba(16, 185, 129, 0.05);
+  border: 1px solid rgba(16, 185, 129, 0.1);
+  border-radius: 1rem;
+  padding: 1.5rem;
+}
+
+.customer-book-terms-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid rgba(16, 185, 129, 0.1);
+}
+
+.customer-book-terms-header svg {
+  width: 1.25rem;
+  height: 1.25rem;
+  color: var(--success);
+  flex-shrink: 0;
+}
+
+.customer-book-terms-header h6 {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--success);
+  margin: 0;
+}
+
+.customer-book-cash-terms ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.customer-book-cash-terms li {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  color: #065f46;
+  line-height: 1.4;
+}
+
+.customer-book-cash-terms li::before {
+  content: '✓';
+  color: var(--success);
+  font-weight: 700;
+  flex-shrink: 0;
+  margin-top: 0.125rem;
+}
+
+.customer-book-cash-contact {
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.05) 0%, rgba(139, 92, 246, 0.05) 100%);
+  border: 1px solid rgba(59, 130, 246, 0.1);
+  border-radius: 1rem;
+  padding: 1.5rem;
+}
+
+.customer-book-contact-info h6 {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--primary);
+  margin: 0 0 0.5rem 0;
+}
+
+.customer-book-contact-info p {
+  font-size: 0.875rem;
+  color: var(--gray-700);
+  margin: 0 0 1rem 0;
+  line-height: 1.4;
+}
+
+.customer-book-contact-details {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.customer-book-contact-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  background: white;
+  border: 1px solid rgba(59, 130, 246, 0.1);
+  border-radius: 0.75rem;
+  transition: all 0.3s ease;
+}
+
+.customer-book-contact-item:hover {
+  border-color: var(--primary);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px -2px rgba(59, 130, 246, 0.1);
+}
+
+.customer-book-contact-item svg {
+  width: 1rem;
+  height: 1rem;
+  color: var(--primary);
+  flex-shrink: 0;
+}
+
+.customer-book-contact-item span {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--gray-900);
+}
+
+/* Mobile Responsive Styles for New Payment Sections */
+@media (max-width: 768px) {
+  .customer-book-stripe-section,
+  .customer-book-cash-section {
+    padding: 1.5rem;
+    margin-top: 1rem;
+  }
+  
+  .customer-book-stripe-header,
+  .customer-book-cash-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+    margin-bottom: 1rem;
+  }
+  
+  .customer-book-stripe-placeholder {
+    padding: 1.5rem;
+  }
+  
+  .customer-book-cash-options {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  
+  .customer-book-cash-option {
+    padding: 1.25rem;
+  }
+  
+  .customer-book-contact-details {
+    gap: 0.5rem;
+  }
+  
+  .customer-book-contact-item {
+    padding: 0.625rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .customer-book-stripe-section,
+  .customer-book-cash-section {
+    padding: 1rem;
+  }
+  
+  .customer-book-stripe-info,
+  .customer-book-cash-notice {
+    padding: 0.75rem;
+    gap: 0.75rem;
+  }
+  
+  .customer-book-cash-option {
+    padding: 1rem;
+  }
+  
+  .customer-book-cash-terms,
+  .customer-book-cash-contact {
+    padding: 1rem;
+  }
+  
+  .customer-book-stripe-card svg {
+    width: 2.5rem;
+    height: 2.5rem;
+  }
+}

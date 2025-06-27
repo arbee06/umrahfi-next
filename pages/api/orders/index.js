@@ -78,7 +78,10 @@ export default async function handler(req, res) {
           paymentMethod,
           paymentReceiptPath,
           paymentReceiptOriginalName,
-          paymentNotes
+          paymentNotes,
+          stripePaymentIntentId,
+          paymentStatus,
+          status
         } = req.body;
 
         // Validate package exists and has seats
@@ -122,10 +125,13 @@ export default async function handler(req, res) {
           travelers,
           totalAmount,
           specialRequests,
-          paymentMethod: paymentMethod || 'credit_card',
+          paymentMethod: paymentMethod || 'stripe',
           paymentReceiptPath,
           paymentReceiptOriginalName,
-          paymentNotes
+          paymentNotes,
+          ...(stripePaymentIntentId && { stripePaymentIntentId }),
+          ...(paymentStatus && { paymentStatus }),
+          ...(status && { status })
         };
 
         const order = await Order.create(orderData);

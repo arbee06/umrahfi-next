@@ -124,9 +124,9 @@ export default function CompanyOrderDetails() {
       // Prepare update data
       const updateData = { status: newStatus };
       
-      // Update payment status when confirming order
-      if (newStatus === 'confirmed') {
-        updateData.paymentStatus = 'paid';
+      // Update payment status when confirming order (only for non-Stripe payments)
+      if (newStatus === 'confirmed' && order.paymentMethod !== 'stripe') {
+        updateData.paymentStatus = 'completed';
       }
       
       await orderService.updateOrder(order.id, updateData);
@@ -135,12 +135,12 @@ export default function CompanyOrderDetails() {
       const updatedOrder = { 
         ...order, 
         status: newStatus,
-        ...(newStatus === 'confirmed' && { paymentStatus: 'paid' })
+        ...(newStatus === 'confirmed' && order.paymentMethod !== 'stripe' && { paymentStatus: 'completed' })
       };
       setOrder(updatedOrder);
       
       const successMessages = {
-        confirmed: 'Order confirmed and payment verified!',
+        confirmed: order.paymentMethod === 'stripe' ? 'Order confirmed!' : 'Order confirmed and payment verified!',
         cancelled: 'Order cancelled successfully!',
         completed: 'Order marked as completed!'
       };
@@ -196,6 +196,146 @@ export default function CompanyOrderDetails() {
     }
   };
 
+  const handlePaymentStatusUpdate = async (newPaymentStatus) => {
+    if (!order) return;
+    
+    const statusLabels = {
+      completed: 'Mark as Paid',
+      pending: 'Mark as Pending',
+      refunded: 'Mark as Refunded'
+    };
+    
+    const statusMessages = {
+      completed: { title: 'Mark Payment as Completed?', message: 'This will mark the payment as received and completed.' },
+      pending: { title: 'Mark Payment as Pending?', message: 'This will set the payment status back to pending.' },
+      refunded: { title: 'Mark Payment as Refunded?', message: 'This will mark the payment as refunded to the customer.' }
+    };
+    
+    const statusColors = {
+      completed: '#10b981',
+      pending: '#f59e0b',
+      refunded: '#ef4444'
+    };
+    
+    // Show confirmation dialog
+    const result = await Swal.fire({
+      title: statusMessages[newPaymentStatus]?.title || 'Update Payment Status?',
+      html: `
+        <div style="text-align: left; margin: 1rem 0;">
+          <p style="margin-bottom: 0.5rem; color: #6b7280;">Order:</p>
+          <p style="font-weight: 600; color: #1f2937; margin-bottom: 0.5rem;">${order.orderNumber}</p>
+          <p style="color: #6b7280; margin-bottom: 1rem;">Payment Method: ${order.paymentMethod}</p>
+          <div style="background: #f9fafb; padding: 1rem; border-radius: 0.5rem; margin-bottom: 1rem;">
+            <p style="color: #6b7280; margin: 0;">${statusMessages[newPaymentStatus]?.message || 'This will update the payment status.'}</p>
+          </div>
+        </div>
+      `,
+      icon: newPaymentStatus === 'refunded' ? 'warning' : 'question',
+      showCancelButton: true,
+      confirmButtonColor: statusColors[newPaymentStatus] || '#3b82f6',
+      cancelButtonColor: '#6b7280',
+      confirmButtonText: `Yes, ${statusLabels[newPaymentStatus]}`,
+      cancelButtonText: 'Cancel',
+      reverseButtons: true,
+      customClass: {
+        popup: 'custom-swal-popup',
+        title: 'custom-swal-title',
+        htmlContainer: 'custom-swal-html',
+        confirmButton: 'custom-swal-confirm',
+        cancelButton: 'custom-swal-cancel'
+      },
+      buttonsStyling: false,
+      focusConfirm: false,
+      focusCancel: true
+    });
+
+    if (!result.isConfirmed) return;
+    
+    setUpdating(true);
+    setProcessing(true);
+    
+    // Show loading state
+    Swal.fire({
+      title: `Updating Payment Status...`,
+      html: 'Please wait while we update the payment status.',
+      allowOutsideClick: false,
+      allowEscapeKey: false,
+      showConfirmButton: false,
+      customClass: {
+        popup: 'custom-swal-popup'
+      },
+      didOpen: () => {
+        Swal.showLoading();
+      }
+    });
+    
+    try {
+      await orderService.updateOrder(order.id, { paymentStatus: newPaymentStatus });
+      
+      // Update local state
+      const updatedOrder = { 
+        ...order, 
+        paymentStatus: newPaymentStatus
+      };
+      setOrder(updatedOrder);
+      
+      const successMessages = {
+        completed: 'Payment marked as completed!',
+        pending: 'Payment marked as pending!',
+        refunded: 'Payment marked as refunded!'
+      };
+      
+      // Show success message
+      await Swal.fire({
+        title: 'Payment Status Updated!',
+        html: `
+          <div style="text-align: center; margin: 1rem 0;">
+            <p style="color: ${statusColors[newPaymentStatus]}; font-weight: 600; margin-bottom: 1rem;">${successMessages[newPaymentStatus]}</p>
+            <p style="color: #6b7280; margin-bottom: 0.5rem;">Order Number:</p>
+            <p style="font-weight: 600; color: #1f2937; font-family: monospace;">${order.orderNumber}</p>
+          </div>
+        `,
+        icon: 'success',
+        confirmButtonColor: statusColors[newPaymentStatus],
+        confirmButtonText: 'Continue',
+        customClass: {
+          popup: 'custom-swal-popup',
+          title: 'custom-swal-title',
+          htmlContainer: 'custom-swal-html',
+          confirmButton: 'custom-swal-confirm'
+        },
+        buttonsStyling: false
+      });
+    } catch (error) {
+      console.error('Error updating payment status:', error);
+      Swal.close();
+      
+      // Show error message
+      await Swal.fire({
+        title: 'Update Failed',
+        html: `
+          <div style="text-align: center; margin: 1rem 0;">
+            <p style="color: #ef4444; margin-bottom: 1rem;">Failed to update payment status</p>
+            <p style="color: #6b7280; font-size: 0.9rem;">Please try again or contact support if the problem persists.</p>
+          </div>
+        `,
+        icon: 'error',
+        confirmButtonColor: '#ef4444',
+        confirmButtonText: 'Try Again',
+        customClass: {
+          popup: 'custom-swal-popup',
+          title: 'custom-swal-title',
+          htmlContainer: 'custom-swal-html',
+          confirmButton: 'custom-swal-confirm'
+        },
+        buttonsStyling: false
+      });
+    } finally {
+      setUpdating(false);
+      setProcessing(false);
+    }
+  };
+
   const formatDate = (date) => {
     return new Date(date).toLocaleDateString('en-US', {
       year: 'numeric',
@@ -226,8 +366,8 @@ export default function CompanyOrderDetails() {
   const getPaymentStatusBadge = (status) => {
     const badges = {
       pending: { class: 'company-order-payment-pending', text: 'Payment Pending' },
-      paid: { class: 'company-order-payment-paid', text: 'Payment Confirmed' },
-      failed: { class: 'company-order-payment-failed', text: 'Payment Failed' },
+      completed: { class: 'company-order-payment-completed', text: 'Payment Completed' },
+      partial: { class: 'company-order-payment-partial', text: 'Partial Payment' },
       refunded: { class: 'company-order-payment-refunded', text: 'Refunded' }
     };
     return badges[status] || badges.pending;
@@ -247,10 +387,11 @@ export default function CompanyOrderDetails() {
 
   const getPaymentMethodBadge = (method) => {
     const badges = {
-      credit_card: { class: 'company-order-payment-credit-card', text: 'Credit Card', icon: '💳' },
-      bank_transfer: { class: 'company-order-payment-bank-transfer', text: 'Bank Transfer', icon: '🏦' }
+      stripe: { class: 'company-order-payment-stripe', text: 'Stripe', icon: '💳' },
+      bank_transfer: { class: 'company-order-payment-bank-transfer', text: 'Bank Transfer', icon: '🏦' },
+      cash: { class: 'company-order-payment-cash', text: 'Cash Payment', icon: '💵' }
     };
-    return badges[method] || badges.credit_card;
+    return badges[method] || badges.stripe;
   };
 
   if (loading) {
@@ -681,6 +822,79 @@ export default function CompanyOrderDetails() {
                         </div>
                       </div>
                     </div>
+
+                    {/* Payment Status */}
+                    <div className="company-order-payment-status-section">
+                      <div className="company-order-payment-status-header">
+                        <span className="company-order-payment-status-label">Payment Status</span>
+                        <div className={`company-order-payment-status-badge ${paymentBadge.class}`}>
+                          {paymentBadge.text}
+                        </div>
+                      </div>
+                      
+                      {/* Payment Status Controls for non-Stripe payments */}
+                      {order.paymentMethod !== 'stripe' && (
+                        <div className="company-order-payment-controls">
+                          <div className="company-order-payment-controls-title">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                            </svg>
+                            <span>Update Payment Status</span>
+                          </div>
+                          <div className="company-order-payment-buttons">
+                            {order.paymentStatus !== 'completed' && (
+                              <button
+                                onClick={() => handlePaymentStatusUpdate('completed')}
+                                disabled={processing}
+                                className="company-order-payment-btn-completed"
+                              >
+                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                </svg>
+                                Mark as Paid
+                              </button>
+                            )}
+                            {order.paymentStatus !== 'pending' && (
+                              <button
+                                onClick={() => handlePaymentStatusUpdate('pending')}
+                                disabled={processing}
+                                className="company-order-payment-btn-pending"
+                              >
+                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                Mark as Pending
+                              </button>
+                            )}
+                            {order.paymentStatus !== 'refunded' && (
+                              <button
+                                onClick={() => handlePaymentStatusUpdate('refunded')}
+                                disabled={processing}
+                                className="company-order-payment-btn-refunded"
+                              >
+                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
+                                </svg>
+                                Mark as Refunded
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Stripe Payment Intent ID */}
+                    {order.paymentMethod === 'stripe' && order.stripePaymentIntentId && (
+                      <div className="company-order-stripe-payment-section">
+                        <div className="company-order-stripe-payment-header">
+                          <span className="company-order-stripe-payment-label">Stripe Payment ID</span>
+                          <div className="company-order-stripe-payment-id">
+                            <code>{order.stripePaymentIntentId}</code>
+                          </div>
+                        </div>
+                      </div>
+                    )}
 
                     {/* Bank Transfer Receipt */}
                     {order.paymentMethod === 'bank_transfer' && order.paymentReceiptPath && (

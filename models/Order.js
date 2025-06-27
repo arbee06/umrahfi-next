@@ -92,8 +92,8 @@ const Order = sequelize.define('Order', {
     allowNull: true
   },
   paymentMethod: {
-    type: DataTypes.ENUM('credit_card', 'bank_transfer'),
-    defaultValue: 'credit_card',
+    type: DataTypes.ENUM('stripe', 'bank_transfer', 'cash'),
+    defaultValue: 'stripe',
     allowNull: false
   },
   paymentReceiptPath: {
@@ -123,6 +123,10 @@ const Order = sequelize.define('Order', {
       model: 'users',
       key: 'id'
     }
+  },
+  stripePaymentIntentId: {
+    type: DataTypes.STRING(255),
+    allowNull: true
   }
 }, {
   tableName: 'orders',

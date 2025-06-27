@@ -28,6 +28,7 @@ import '@/styles/fontawesome-custom.css'
 import '@/styles/date-range-picker.css'
 import '@/styles/date-range-picker-inline.css'
 import { AuthProvider } from '@/utils/AuthContext';
+import { StripeProvider } from '@/context/StripeContext';
 import '@/lib/fontawesome';
 import '@fortawesome/fontawesome-svg-core/styles.css';
 import '@/utils/axiosConfig';
@@ -35,7 +36,9 @@ import '@/utils/axiosConfig';
 export default function App({ Component, pageProps }) {
   return (
     <AuthProvider>
-      <Component {...pageProps} />
+      <StripeProvider>
+        <Component {...pageProps} />
+      </StripeProvider>
     </AuthProvider>
   );
 }
