@@ -136,7 +136,7 @@ export default function OrderDetails() {
           <p style="color: #6b7280; margin-bottom: 0.5rem;">Order: ${order.orderNumber}</p>
           <p style="color: #6b7280; margin-bottom: 1rem;">Total Amount: ${formatCurrency(order.totalAmount)}</p>
           <div style="background: #fef2f2; border: 1px solid #fecaca; padding: 1rem; border-radius: 0.5rem; margin-bottom: 1rem;">
-            <p style="color: #ef4444; font-weight: 600; margin: 0 0 0.5rem 0;">⚠️ Important Notice:</p>
+            <p style="color: #ef4444; font-weight: 600; margin: 0 0 0.5rem 0;">⚠ Important Notice:</p>
             <p style="color: #dc2626; margin: 0.25rem 0; font-size: 0.9rem;">• Cancellation may incur fees as per our policy</p>
             <p style="color: #dc2626; margin: 0.25rem 0; font-size: 0.9rem;">• Refund processing may take 5-10 business days</p>
             <p style="color: #dc2626; margin: 0.25rem 0; font-size: 0.9rem;">• This action cannot be undone</p>
@@ -261,6 +261,7 @@ export default function OrderDetails() {
 
   const getStatusBadge = (status) => {
     const badges = {
+      draft: { class: 'status-draft', text: 'Payment Required', icon: 'credit-card' },
       pending: { class: 'status-pending', text: 'Pending', icon: 'clock' },
       confirmed: { class: 'status-confirmed', text: 'Confirmed', icon: 'check' },
       cancelled: { class: 'status-cancelled', text: 'Cancelled', icon: 'times' },
@@ -277,6 +278,11 @@ export default function OrderDetails() {
       refunded: { class: 'payment-refunded', text: 'Refunded' }
     };
     return badges[status] || badges.pending;
+  };
+
+  const handleCompletePayment = () => {
+    // Redirect to booking page with order details to complete payment
+    router.push(`/customer/book/${order.packageId}?completeOrder=${order.id}`);
   };
 
   if (loading) {
@@ -444,18 +450,32 @@ export default function OrderDetails() {
                     <div className="info-item">
                       <div className="info-label">Payment Method</div>
                       <div className="info-value payment-method">
-                        {order.paymentMethod === 'stripe' && '💳 Stripe'}
-                        {order.paymentMethod === 'bank_transfer' && '🏦 Bank Transfer'}
-                        {order.paymentMethod === 'cash' && '💵 Cash Payment'}
+                        {order.paymentMethod === 'stripe' && (
+                          <span><Icon icon={['fas', 'credit-card']} /> Stripe</span>
+                        )}
+                        {order.paymentMethod === 'bank_transfer' && (
+                          <span><Icon icon={['fas', 'university']} /> Bank Transfer</span>
+                        )}
+                        {order.paymentMethod === 'cash' && (
+                          <span><Icon icon={['fas', 'money-bill-wave']} /> Cash Payment</span>
+                        )}
                       </div>
                     </div>
                     <div className="info-item">
                       <div className="info-label">Payment Status</div>
                       <div className={`info-value payment-status ${order.paymentStatus}`}>
-                        {order.paymentStatus === 'pending' && '🕐 Pending'}
-                        {order.paymentStatus === 'completed' && '✅ Completed'}
-                        {order.paymentStatus === 'partial' && '⏳ Partial'}
-                        {order.paymentStatus === 'refunded' && '🔄 Refunded'}
+                        {order.paymentStatus === 'pending' && (
+                          <span><Icon icon={['fas', 'clock']} /> Pending</span>
+                        )}
+                        {order.paymentStatus === 'completed' && (
+                          <span><Icon icon={['fas', 'check-circle']} /> Completed</span>
+                        )}
+                        {order.paymentStatus === 'partial' && (
+                          <span><Icon icon={['fas', 'hourglass-half']} /> Partial</span>
+                        )}
+                        {order.paymentStatus === 'refunded' && (
+                          <span><Icon icon={['fas', 'undo']} /> Refunded</span>
+                        )}
                       </div>
                     </div>
                     {order.stripePaymentIntentId && (
@@ -557,6 +577,23 @@ export default function OrderDetails() {
               </div>
 
               {/* Actions */}
+              {order.status === 'draft' && (
+                <div className="order-details-actions">
+                  <button 
+                    className="order-details-btn-primary"
+                    onClick={handleCompletePayment}
+                  >
+                    <Icon icon={['fas', 'credit-card']} />
+                    Complete Payment
+                  </button>
+                  <button 
+                    className="order-details-btn-cancel"
+                    onClick={handleCancelBooking}
+                  >
+                    Cancel Booking
+                  </button>
+                </div>
+              )}
               {order.status === 'pending' && (
                 <div className="order-details-actions">
                   <button 

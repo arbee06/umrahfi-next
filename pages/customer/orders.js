@@ -46,12 +46,23 @@ export default function CustomerOrders() {
 
   const getStatusBadge = (status) => {
     const badges = {
+      draft: { class: 'customer-orders-status-badge draft', text: 'Payment Required', icon: 'credit-card' },
       pending: { class: 'customer-orders-status-badge pending', text: 'Pending', icon: 'clock' },
       confirmed: { class: 'customer-orders-status-badge confirmed', text: 'Confirmed', icon: 'check' },
       cancelled: { class: 'customer-orders-status-badge cancelled', text: 'Cancelled', icon: 'times' },
       completed: { class: 'customer-orders-status-badge completed', text: 'Completed', icon: 'check-circle' }
     };
     return badges[status] || badges.pending;
+  };
+
+  const getPaymentStatusBadge = (paymentStatus) => {
+    const badges = {
+      pending: { class: 'customer-orders-payment-badge pending', text: 'Payment Pending', icon: 'clock' },
+      completed: { class: 'customer-orders-payment-badge completed', text: 'Paid', icon: 'check-circle' },
+      partial: { class: 'customer-orders-payment-badge partial', text: 'Partial', icon: 'hourglass-half' },
+      refunded: { class: 'customer-orders-payment-badge refunded', text: 'Refunded', icon: 'undo' }
+    };
+    return badges[paymentStatus] || badges.pending;
   };
 
   const getFilterCount = (status) => {
@@ -102,6 +113,7 @@ export default function CustomerOrders() {
             <div className="customer-orders-filter-tabs">
               {[
                 { key: 'all', label: 'All Orders', count: getFilterCount('all') },
+                { key: 'draft', label: 'Payment Required', count: getFilterCount('draft') },
                 { key: 'pending', label: 'Pending', count: getFilterCount('pending') },
                 { key: 'confirmed', label: 'Confirmed', count: getFilterCount('confirmed') },
                 { key: 'cancelled', label: 'Cancelled', count: getFilterCount('cancelled') },
@@ -173,7 +185,8 @@ export default function CustomerOrders() {
             ) : (
               <div className="customer-orders-list">
                 {filteredOrders.map((order) => {
-                  const badge = getStatusBadge(order.status);
+                  const statusBadge = getStatusBadge(order.status);
+                  const paymentBadge = getPaymentStatusBadge(order.paymentStatus);
                   return (
                     <div key={order.id} className="customer-orders-list-item">
                       <div className="customer-orders-item-info">
@@ -188,9 +201,18 @@ export default function CustomerOrders() {
                           {formatCurrency(order.totalAmount)}
                         </div>
                         
-                        <div className={badge.class}>
-                          <Icon icon={['fas', badge.icon]} className="customer-orders-status-icon" />
-                          <span className="customer-orders-status-text">{badge.text}</span>
+                        <div className="customer-orders-item-badges">
+                          <div className={statusBadge.class}>
+                            <Icon icon={['fas', statusBadge.icon]} className="customer-orders-status-icon" />
+                            <span className="customer-orders-status-text">{statusBadge.text}</span>
+                          </div>
+                          {/* Show payment status for draft orders or when payment is pending */}
+                          {(order.status === 'draft' || order.paymentStatus === 'pending') && (
+                            <div className={paymentBadge.class}>
+                              <Icon icon={['fas', paymentBadge.icon]} className="customer-orders-payment-icon" />
+                              <span className="customer-orders-payment-text">{paymentBadge.text}</span>
+                            </div>
+                          )}
                         </div>
                       </div>
 

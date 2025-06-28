@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import { useStripe, useElements, CardElement } from '@stripe/react-stripe-js';
+import Swal from 'sweetalert2';
+import soundManager from '@/utils/soundUtils';
 
 export default function StripePaymentForm({ amount, orderId, onSuccess, onError }) {
   const stripe = useStripe();
@@ -10,6 +12,66 @@ export default function StripePaymentForm({ amount, orderId, onSuccess, onError 
     if (!stripe || !elements) {
       return;
     }
+
+    const cardElement = elements.getElement(CardElement);
+    
+    // Get card details for confirmation
+    const { error: cardError, paymentMethod } = await stripe.createPaymentMethod({
+      type: 'card',
+      card: cardElement,
+    });
+
+    if (cardError) {
+      onError(cardError.message);
+      return;
+    }
+
+    const { card } = paymentMethod;
+    const cardDetails = `**** **** **** ${card.last4}`;
+    const expiryDate = `${card.exp_month.toString().padStart(2, '0')}/${card.exp_year.toString().slice(2)}`;
+
+    // Show confirmation dialog with card details
+    const result = await Swal.fire({
+      title: 'Confirm Payment',
+      html: `
+        <div style="text-align: left; margin: 1rem 0;">
+          <p style="margin-bottom: 0.5rem; color: #6b7280;">Amount to pay:</p>
+          <p style="font-weight: 700; font-size: 1.5rem; color: #1f2937; margin-bottom: 1rem;">$${amount}</p>
+          
+          <div style="background: #f3f4f6; padding: 1rem; border-radius: 0.5rem; margin-bottom: 1rem; border-left: 4px solid #3b82f6;">
+            <p style="color: #374151; margin: 0 0 0.5rem 0; font-weight: 600; font-size: 0.9rem;">Payment Card:</p>
+            <p style="color: #1f2937; margin: 0 0 0.25rem 0; font-family: monospace; font-size: 0.9rem;">${cardDetails}</p>
+            <p style="color: #6b7280; margin: 0; font-size: 0.85rem;">Expires: ${expiryDate} • ${card.brand.toUpperCase()}</p>
+          </div>
+          
+          <div style="background: #f9fafb; padding: 1rem; border-radius: 0.5rem; margin-bottom: 1rem;">
+            <p style="color: #6b7280; margin: 0; font-size: 0.9rem;">Your payment will be processed securely through Stripe. You will receive a confirmation email once the payment is completed.</p>
+          </div>
+        </div>
+      `,
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonColor: '#3b82f6',
+      cancelButtonColor: '#6b7280',
+      confirmButtonText: 'Yes, Process Payment',
+      cancelButtonText: 'Cancel',
+      reverseButtons: true,
+      customClass: {
+        popup: 'custom-swal-popup',
+        title: 'custom-swal-title',
+        htmlContainer: 'custom-swal-html',
+        confirmButton: 'custom-swal-confirm',
+        cancelButton: 'custom-swal-cancel'
+      },
+      buttonsStyling: false,
+      focusConfirm: false,
+      focusCancel: true
+    });
+
+    if (!result.isConfirmed) return;
+
+    // Play action sound when confirming
+    soundManager.playAction();
 
     setProcessing(true);
 
@@ -38,6 +100,8 @@ export default function StripePaymentForm({ amount, orderId, onSuccess, onError 
       if (result.error) {
         onError(result.error.message);
       } else {
+        // Play success sound when payment is successful
+        soundManager.playLogin();
         onSuccess(result.paymentIntent);
       }
     } catch (error) {

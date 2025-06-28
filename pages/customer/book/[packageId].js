@@ -21,6 +21,8 @@ export default function BookPackage() {
   const [uploading, setUploading] = useState(false);
   const [countries] = useState(() => getCountries());
   const [pendingOrderId, setPendingOrderId] = useState(null);
+  const [completingOrderId, setCompletingOrderId] = useState(null);
+  const [existingOrder, setExistingOrder] = useState(null);
   
   const [bookingData, setBookingData] = useState({
     numberOfTravelers: 1,
@@ -54,6 +56,14 @@ export default function BookPackage() {
       fetchPackage();
     }
   }, [packageId]);
+
+  useEffect(() => {
+    const { completeOrder } = router.query;
+    if (completeOrder && router.isReady) {
+      setCompletingOrderId(completeOrder);
+      fetchExistingOrder(completeOrder);
+    }
+  }, [router.query, router.isReady]);
 
   useEffect(() => {
     // Update travelers array when numbers change
@@ -129,6 +139,39 @@ export default function BookPackage() {
       console.error('Error fetching package:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchExistingOrder = async (orderId) => {
+    try {
+      const response = await orderService.getOrderById(orderId);
+      const order = response.order;
+      setExistingOrder(order);
+      
+      // Pre-fill form with existing order data
+      setBookingData({
+        numberOfTravelers: order.numberOfAdults + order.numberOfChildren,
+        numberOfAdults: order.numberOfAdults,
+        numberOfChildren: order.numberOfChildren,
+        travelers: order.travelers || [],
+        specialRequests: order.specialRequests || '',
+        paymentMethod: 'stripe', // Force Stripe for completing payment
+        paymentReceiptFile: null,
+        paymentNotes: '',
+        stripeToken: null,
+        stripePaymentMethod: null
+      });
+      
+      // Skip to payment step
+      setCurrentStep(2);
+    } catch (error) {
+      console.error('Error fetching existing order:', error);
+      Swal.fire({
+        title: 'Error',
+        text: 'Could not load order details. Please try again.',
+        icon: 'error',
+        confirmButtonColor: '#ef4444'
+      });
     }
   };
 
@@ -811,9 +854,12 @@ export default function BookPackage() {
     
     try {
       // Show loading state
+      const loadingTitle = completingOrderId ? 'Completing Your Payment...' : 'Creating Your Booking...';
+      const loadingMessage = completingOrderId ? 'Payment successful! Updating your order...' : 'Payment successful! Creating your booking...';
+      
       Swal.fire({
-        title: 'Creating Your Booking...',
-        html: 'Payment successful! Creating your booking...',
+        title: loadingTitle,
+        html: loadingMessage,
         allowOutsideClick: false,
         allowEscapeKey: false,
         showConfirmButton: false,
@@ -829,13 +875,17 @@ export default function BookPackage() {
       const response = await createOrderWithPaymentData(paymentIntent.id);
 
       // Show success message
+      const successTitle = completingOrderId ? 'Payment Completed!' : 'Payment Successful!';
+      const successMessage = completingOrderId ? 'Your order payment has been completed successfully!' : 'Your payment has been processed successfully!';
+      const orderNumberLabel = completingOrderId ? 'Your Order Number:' : 'Order Number:';
+      
       const result = await Swal.fire({
-        title: 'Payment Successful!',
+        title: successTitle,
         html: `
           <div style="text-align: center; margin: 1rem 0;">
-            <p style="color: #059669; font-weight: 600; margin-bottom: 1rem;">Your payment has been processed successfully!</p>
-            <p style="color: #6b7280; margin-bottom: 0.5rem;">Order Number:</p>
-            <p style="font-weight: 600; color: #1f2937; font-family: monospace; font-size: 1.1rem;">${response.order.orderNumber}</p>
+            <p style="color: #059669; font-weight: 600; margin-bottom: 1rem;">${successMessage}</p>
+            <p style="color: #6b7280; margin-bottom: 0.5rem;">${orderNumberLabel}</p>
+            <p style="font-weight: 600; color: #1f2937; font-family: monospace; font-size: 1.1rem;">${response.order.orderNumber || existingOrder?.orderNumber}</p>
             <p style="color: #6b7280; margin-bottom: 0.5rem;">Payment ID:</p>
             <p style="font-weight: 600; color: #1f2937; font-family: monospace; font-size: 0.9rem;">${paymentIntent.id}</p>
             <div style="background: #f0f8ff; padding: 1rem; border-radius: 0.5rem; margin-top: 1rem;">
@@ -868,23 +918,150 @@ export default function BookPackage() {
     }
   };
 
-  const handleStripePaymentError = (error) => {
+  const handleStripePaymentError = async (error) => {
     console.log('Payment error handler called:', error);
-    Swal.fire({
+    
+    // First show payment failure and ask if they want to save order
+    const confirmResult = await Swal.fire({
       title: 'Payment Failed',
       html: `
         <div style="text-align: center; margin: 1rem 0;">
-          <p style="color: #ef4444; margin-bottom: 1rem;">Your payment could not be processed</p>
+          <p style="color: #ef4444; margin-bottom: 1rem; font-weight: 600;">Your payment could not be processed</p>
           <p style="color: #6b7280; font-size: 0.9rem; margin-bottom: 1rem;">${error}</p>
-          <div style="background: #fef2f2; padding: 1rem; border-radius: 0.5rem;">
-            <p style="color: #dc2626; margin: 0; font-size: 0.9rem;">You have not been charged. Please try again or contact support if the problem persists.</p>
+          
+          <div style="background: #fef2f2; padding: 1rem; border-radius: 0.5rem; margin-bottom: 1rem;">
+            <p style="color: #dc2626; margin: 0; font-size: 0.9rem;">You have not been charged.</p>
+          </div>
+          
+          <div style="background: #f0f9ff; padding: 1rem; border-radius: 0.5rem; margin-bottom: 1rem; border-left: 4px solid #3b82f6;">
+            <p style="color: #1e40af; margin: 0 0 0.5rem 0; font-weight: 600;">Save Your Booking?</p>
+            <p style="color: #1e3a8a; margin: 0; font-size: 0.9rem;">We can save your booking details so you can complete payment later from your orders page.</p>
           </div>
         </div>
       `,
-      icon: 'error',
-      confirmButtonColor: '#ef4444',
-      confirmButtonText: 'Try Again'
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#3b82f6',
+      cancelButtonColor: '#ef4444',
+      confirmButtonText: 'Yes, Save Order',
+      cancelButtonText: 'Try Payment Again',
+      reverseButtons: true,
+      customClass: {
+        popup: 'custom-swal-popup',
+        title: 'custom-swal-title',
+        htmlContainer: 'custom-swal-html',
+        confirmButton: 'custom-swal-confirm',
+        cancelButton: 'custom-swal-cancel'
+      },
+      buttonsStyling: false,
+      focusConfirm: false,
+      focusCancel: true
     });
+
+    // If user chooses not to save order, just return (stay on booking page)
+    if (!confirmResult.isConfirmed) {
+      return;
+    }
+
+    // Show loading state while creating draft order
+    Swal.fire({
+      title: 'Saving Your Order...',
+      html: 'Creating your order for later payment completion.',
+      allowOutsideClick: false,
+      allowEscapeKey: false,
+      showConfirmButton: false,
+      didOpen: () => {
+        Swal.showLoading();
+      }
+    });
+
+    try {
+      // Create a draft order with payment pending
+      const orderData = {
+        packageId: parseInt(packageId),
+        numberOfTravelers: bookingData.numberOfAdults + bookingData.numberOfChildren,
+        numberOfAdults: bookingData.numberOfAdults,
+        numberOfChildren: bookingData.numberOfChildren,
+        travelers: bookingData.travelers,
+        specialRequests: bookingData.specialRequests,
+        paymentMethod: 'stripe',
+        paymentStatus: 'pending', // Payment pending since Stripe failed
+        status: 'draft', // Draft status until payment completes
+        stripePaymentIntentId: null
+      };
+
+      const response = await orderService.createOrder(orderData);
+      
+      // Show success message with draft order created
+      await Swal.fire({
+        title: 'Order Saved Successfully',
+        html: `
+          <div style="text-align: center; margin: 1rem 0;">
+            <div style="background: #f0fdf4; padding: 1rem; border-radius: 0.5rem; margin-bottom: 1rem; border-left: 4px solid #10b981;">
+              <p style="color: #059669; margin: 0 0 0.5rem 0; font-weight: 600;">Order Created!</p>
+              <p style="color: #047857; margin: 0; font-size: 0.9rem;">Your booking details have been saved. You can complete payment anytime from your orders page.</p>
+            </div>
+            
+            <div style="background: #f3f4f6; padding: 1rem; border-radius: 0.5rem; margin-bottom: 1rem;">
+              <p style="color: #374151; margin: 0 0 0.5rem 0; font-size: 0.9rem;"><strong>Order Number:</strong></p>
+              <p style="color: #1f2937; margin: 0; font-family: monospace; font-weight: 600;">${response.order.orderNumber}</p>
+            </div>
+            
+            <div style="background: #fef3c7; padding: 1rem; border-radius: 0.5rem;">
+              <p style="color: #92400e; margin: 0; font-size: 0.9rem;">⏰ Remember to complete payment to confirm your booking.</p>
+            </div>
+          </div>
+        `,
+        icon: 'success',
+        showCancelButton: true,
+        confirmButtonColor: '#3b82f6',
+        cancelButtonColor: '#6b7280',
+        confirmButtonText: 'View My Orders',
+        cancelButtonText: 'Continue Browsing',
+        reverseButtons: true,
+        customClass: {
+          popup: 'custom-swal-popup',
+          title: 'custom-swal-title',
+          htmlContainer: 'custom-swal-html',
+          confirmButton: 'custom-swal-confirm',
+          cancelButton: 'custom-swal-cancel'
+        },
+        buttonsStyling: false
+      }).then((result) => {
+        if (result.isConfirmed) {
+          // Redirect to orders page
+          router.push('/customer/orders');
+        }
+        // If cancelled, user stays on current page
+      });
+
+    } catch (orderError) {
+      console.error('Error creating draft order:', orderError);
+      
+      // Show error message if order creation fails
+      await Swal.fire({
+        title: 'Unable to Save Order',
+        html: `
+          <div style="text-align: center; margin: 1rem 0;">
+            <p style="color: #ef4444; margin-bottom: 1rem;">Payment failed and we couldn't save your order</p>
+            <div style="background: #fef2f2; padding: 1rem; border-radius: 0.5rem; margin-bottom: 1rem;">
+              <p style="color: #dc2626; margin: 0; font-size: 0.9rem;">You have not been charged. Please try again or contact support.</p>
+            </div>
+            <p style="color: #6b7280; font-size: 0.85rem;">Error: ${orderError.error || 'Unknown error'}</p>
+          </div>
+        `,
+        icon: 'error',
+        confirmButtonColor: '#ef4444',
+        confirmButtonText: 'Try Again',
+        customClass: {
+          popup: 'custom-swal-popup',
+          title: 'custom-swal-title',
+          htmlContainer: 'custom-swal-html',
+          confirmButton: 'custom-swal-confirm'
+        },
+        buttonsStyling: false
+      });
+    }
   };
 
   const nextStep = (e) => {
@@ -1046,42 +1223,57 @@ export default function BookPackage() {
 
   const createOrderWithPaymentData = async (stripePaymentIntentId = null) => {
     try {
-      const orderData = {
-        packageId: packageData.id,
-        numberOfTravelers: bookingData.numberOfTravelers,
-        numberOfAdults: bookingData.numberOfAdults,
-        numberOfChildren: bookingData.numberOfChildren,
-        travelers: bookingData.travelers.map(traveler => ({
-          name: traveler.name,
-          passportNumber: traveler.passportNumber,
-          dateOfBirth: traveler.dateOfBirth,
-          gender: traveler.gender,
-          isChild: traveler.isChild,
-          passportData: traveler.passportData,
-          visaFileInfo: traveler.visaFileInfo,
-          needsPassportAssistance: traveler.needsPassportAssistance,
-          needsVisaAssistance: traveler.needsVisaAssistance
-        })),
-        specialRequests: bookingData.specialRequests,
-        paymentMethod: bookingData.paymentMethod,
-        paymentReceiptPath: bookingData.paymentReceiptFile?.path,
-        paymentReceiptOriginalName: bookingData.paymentReceiptFile?.originalName,
-        paymentNotes: bookingData.paymentNotes,
-        // For Stripe payments, include payment intent ID and mark payment as completed
-        // but keep order status as pending for company confirmation
-        ...(stripePaymentIntentId && {
+      let response;
+      
+      if (completingOrderId) {
+        // Update existing draft order with payment data
+        const updateData = {
           stripePaymentIntentId,
           paymentStatus: 'completed',
-          status: 'pending'  // Company should confirm the order
-        }),
-        // For other payment methods, set as pending
-        ...(!stripePaymentIntentId && bookingData.paymentMethod !== 'stripe' && {
-          paymentStatus: 'pending',
-          status: 'pending'
-        })
-      };
+          status: 'pending'  // Change from draft to pending after payment
+        };
+        
+        response = await orderService.updateOrder(completingOrderId, updateData);
+        response.order = { ...existingOrder, ...updateData, id: completingOrderId };
+      } else {
+        // Create new order
+        const orderData = {
+          packageId: packageData.id,
+          numberOfTravelers: bookingData.numberOfTravelers,
+          numberOfAdults: bookingData.numberOfAdults,
+          numberOfChildren: bookingData.numberOfChildren,
+          travelers: bookingData.travelers.map(traveler => ({
+            name: traveler.name,
+            passportNumber: traveler.passportNumber,
+            dateOfBirth: traveler.dateOfBirth,
+            gender: traveler.gender,
+            isChild: traveler.isChild,
+            passportData: traveler.passportData,
+            visaFileInfo: traveler.visaFileInfo,
+            needsPassportAssistance: traveler.needsPassportAssistance,
+            needsVisaAssistance: traveler.needsVisaAssistance
+          })),
+          specialRequests: bookingData.specialRequests,
+          paymentMethod: bookingData.paymentMethod,
+          paymentReceiptPath: bookingData.paymentReceiptFile?.path,
+          paymentReceiptOriginalName: bookingData.paymentReceiptFile?.originalName,
+          paymentNotes: bookingData.paymentNotes,
+          // For Stripe payments, include payment intent ID and mark payment as completed
+          // but keep order status as pending for company confirmation
+          ...(stripePaymentIntentId && {
+            stripePaymentIntentId,
+            paymentStatus: 'completed',
+            status: 'pending'  // Company should confirm the order
+          }),
+          // For other payment methods, set as pending
+          ...(!stripePaymentIntentId && bookingData.paymentMethod !== 'stripe' && {
+            paymentStatus: 'pending',
+            status: 'pending'
+          })
+        };
 
-      const response = await orderService.createOrder(orderData);
+        response = await orderService.createOrder(orderData);
+      }
       
       // For Stripe payments, don't show success message here - let the caller handle it
       if (stripePaymentIntentId) {
@@ -1762,14 +1954,28 @@ export default function BookPackage() {
 
                   {currentStep === 2 && (
                     <div className="customer-book-step-content">
-                      {/* Payment Method Selection */}
-                      <div className="customer-book-form-group">
-                        <label className="customer-book-form-label">
-                          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
-                          </svg>
-                          Payment Method
-                        </label>
+                      {/* Show payment message for completing existing orders */}
+                      {completingOrderId && (
+                        <div className="customer-book-completing-order-notice">
+                          <div className="customer-book-notice-header">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            <h3>Complete Your Payment</h3>
+                          </div>
+                          <p>You're completing payment for order <strong>{existingOrder?.orderNumber}</strong>. Payment will be processed securely through Stripe.</p>
+                        </div>
+                      )}
+                      
+                      {/* Payment Method Selection - only show for new orders */}
+                      {!completingOrderId && (
+                        <div className="customer-book-form-group">
+                          <label className="customer-book-form-label">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                            </svg>
+                            Payment Method
+                          </label>
                         <div className="customer-book-payment-options">
                           <div className="customer-book-payment-option">
                             <input
@@ -1849,6 +2055,7 @@ export default function BookPackage() {
                           </div>
                         </div>
                       </div>
+                      )}
 
                       {/* Credit Card Form */}
                       {/* Stripe Payment Form */}
@@ -2098,7 +2305,8 @@ export default function BookPackage() {
                 </div>
               </div>
 
-              {/* Step Navigation and Total */}
+              {/* Step Navigation and Total - Hide when completing existing order */}
+              {!completingOrderId && (
               <div className="customer-book-total-section">
                 <div className="customer-book-total-card">
                   <div className="customer-book-total-breakdown">
@@ -2121,6 +2329,8 @@ export default function BookPackage() {
                     </div>
                   </div>
                   
+                  {/* Navigation Actions - Hide when completing existing order */}
+                  {!completingOrderId && (
                   <div className="customer-book-actions">
                     {currentStep === 1 ? (
                       <>
@@ -2159,8 +2369,9 @@ export default function BookPackage() {
                         </button>
                         <button 
                           type="submit" 
-                          className="customer-book-btn-primary"
-                          disabled={submitting || !isStepValid()}
+                          className={`customer-book-btn-primary ${bookingData.paymentMethod === 'stripe' ? 'disabled-stripe' : ''}`}
+                          disabled={submitting || !isStepValid() || bookingData.paymentMethod === 'stripe'}
+                          title={bookingData.paymentMethod === 'stripe' ? 'Use the Stripe payment form above to complete your booking' : ''}
                         >
                           {submitting ? (
                             <>
@@ -2172,15 +2383,17 @@ export default function BookPackage() {
                               <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                               </svg>
-                              Confirm Booking
+                              {bookingData.paymentMethod === 'stripe' ? 'Use Stripe Form Above' : 'Confirm Booking'}
                             </>
                           )}
                         </button>
                       </>
                     )}
                   </div>
+                  )}
                 </div>
               </div>
+              )}
             </form>
           </div>
         </div>

@@ -130,6 +130,12 @@
 }
 
 /* Status Badge Colors */
+.status-draft {
+  background: rgba(59, 130, 246, 0.1);
+  color: #2563eb;
+  border: 1px solid rgba(59, 130, 246, 0.3);
+}
+
 .status-pending {
   background: rgba(245, 158, 11, 0.1);
   color: #d97706;
@@ -400,11 +406,15 @@
 /* Actions */
 .order-details-actions {
   margin-top: 2rem;
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
 }
 
 .order-details-btn-primary,
 .order-details-btn-cancel {
-  width: 100%;
+  flex: 1;
+  min-width: 200px;
   padding: 1rem 2rem;
   border: none;
   border-radius: 1rem;
@@ -413,7 +423,10 @@
   cursor: pointer;
   transition: all 0.2s ease;
   text-decoration: none;
-  display: inline-block;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
   text-align: center;
 }
 
@@ -496,6 +509,15 @@
   
   .order-details-sidebar {
     grid-template-columns: 1fr;
+  }
+  
+  .order-details-actions {
+    flex-direction: column;
+  }
+  
+  .order-details-btn-primary,
+  .order-details-btn-cancel {
+    min-width: auto;
   }
 }
 

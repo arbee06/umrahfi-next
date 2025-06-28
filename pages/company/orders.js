@@ -162,12 +162,23 @@ export default function CompanyOrders() {
 
   const getStatusBadge = (status) => {
     const badges = {
+      draft: { class: 'company-orders-status-badge draft', text: 'Payment Required', icon: 'credit-card' },
       pending: { class: 'company-orders-status-badge pending', text: 'Pending', icon: 'clock' },
       confirmed: { class: 'company-orders-status-badge confirmed', text: 'Confirmed', icon: 'check-circle' },
       cancelled: { class: 'company-orders-status-badge cancelled', text: 'Cancelled', icon: 'times-circle' },
       completed: { class: 'company-orders-status-badge completed', text: 'Completed', icon: 'check' }
     };
     return badges[status] || badges.pending;
+  };
+
+  const getPaymentStatusBadge = (paymentStatus) => {
+    const badges = {
+      pending: { class: 'company-orders-payment-badge pending', text: 'Payment Pending', icon: 'clock' },
+      completed: { class: 'company-orders-payment-badge completed', text: 'Paid', icon: 'check-circle' },
+      partial: { class: 'company-orders-payment-badge partial', text: 'Partial', icon: 'hourglass-half' },
+      refunded: { class: 'company-orders-payment-badge refunded', text: 'Refunded', icon: 'undo' }
+    };
+    return badges[paymentStatus] || badges.pending;
   };
 
   const filteredOrders = allOrders
@@ -318,7 +329,8 @@ export default function CompanyOrders() {
             ) : (
               <div className="company-orders-list">
                 {filteredOrders.map((order) => {
-                  const badge = getStatusBadge(order.status);
+                  const statusBadge = getStatusBadge(order.status);
+                  const paymentBadge = getPaymentStatusBadge(order.paymentStatus);
                   return (
                     <div key={order.id} className="company-orders-list-item">
                       <div className="company-orders-item-id">#{order.orderNumber}</div>
@@ -335,9 +347,18 @@ export default function CompanyOrders() {
                         {formatCurrency(order.totalAmount)}
                       </div>
                       
-                      <div className={badge.class}>
-                        <span className="company-orders-status-icon"><Icon icon={badge.icon} /></span>
-                        <span className="company-orders-status-text">{badge.text}</span>
+                      <div className="company-orders-item-badges">
+                        <div className={statusBadge.class}>
+                          <span className="company-orders-status-icon"><Icon icon={statusBadge.icon} /></span>
+                          <span className="company-orders-status-text">{statusBadge.text}</span>
+                        </div>
+                        {/* Show payment status for draft orders or when payment is pending */}
+                        {(order.status === 'draft' || order.paymentStatus === 'pending') && (
+                          <div className={paymentBadge.class}>
+                            <span className="company-orders-payment-icon"><Icon icon={paymentBadge.icon} /></span>
+                            <span className="company-orders-payment-text">{paymentBadge.text}</span>
+                          </div>
+                        )}
                       </div>
 
                       <div className="company-orders-item-actions">

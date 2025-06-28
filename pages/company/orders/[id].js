@@ -7,6 +7,7 @@ import { useAuth } from '@/utils/AuthContext';
 import orderService from '@/services/orderService';
 import soundManager from '@/utils/soundUtils';
 import Swal from 'sweetalert2';
+import Icon from '@/components/FontAwesome';
 
 export default function CompanyOrderDetails() {
   const router = useRouter();
@@ -355,10 +356,11 @@ export default function CompanyOrderDetails() {
 
   const getStatusBadge = (status) => {
     const badges = {
-      pending: { class: 'company-order-status-pending', text: 'Pending Review', icon: '🕐' },
-      confirmed: { class: 'company-order-status-confirmed', text: 'Confirmed', icon: '✓' },
-      cancelled: { class: 'company-order-status-cancelled', text: 'Cancelled', icon: '✕' },
-      completed: { class: 'company-order-status-completed', text: 'Completed', icon: '🎉' }
+      draft: { class: 'company-order-status-draft', text: 'Payment Required', icon: 'credit-card' },
+      pending: { class: 'company-order-status-pending', text: 'Pending Review', icon: 'clock' },
+      confirmed: { class: 'company-order-status-confirmed', text: 'Confirmed', icon: 'check' },
+      cancelled: { class: 'company-order-status-cancelled', text: 'Cancelled', icon: 'times' },
+      completed: { class: 'company-order-status-completed', text: 'Completed', icon: 'check-circle' }
     };
     return badges[status] || badges.pending;
   };
@@ -387,9 +389,9 @@ export default function CompanyOrderDetails() {
 
   const getPaymentMethodBadge = (method) => {
     const badges = {
-      stripe: { class: 'company-order-payment-stripe', text: 'Stripe', icon: '💳' },
-      bank_transfer: { class: 'company-order-payment-bank-transfer', text: 'Bank Transfer', icon: '🏦' },
-      cash: { class: 'company-order-payment-cash', text: 'Cash Payment', icon: '💵' }
+      stripe: { class: 'company-order-payment-stripe', text: 'Stripe', icon: 'credit-card' },
+      bank_transfer: { class: 'company-order-payment-bank-transfer', text: 'Bank Transfer', icon: 'university' },
+      cash: { class: 'company-order-payment-cash', text: 'Cash Payment', icon: 'money-bill-wave' }
     };
     return badges[method] || badges.stripe;
   };
@@ -455,7 +457,7 @@ export default function CompanyOrderDetails() {
                 <h1 className="company-order-details-title">Order #{order.orderNumber}</h1>
                 <div className="company-order-details-badges">
                   <div className={`company-order-details-status-badge ${statusBadge.class}`}>
-                    <span className="status-icon">{statusBadge.icon}</span>
+                    <span className="status-icon"><Icon icon={['fas', statusBadge.icon]} /></span>
                     <span>{statusBadge.text}</span>
                   </div>
                   {/* <div className={`company-order-details-payment-badge ${paymentBadge.class}`}>
@@ -470,8 +472,15 @@ export default function CompanyOrderDetails() {
                   <>
                     <button
                       onClick={() => handleStatusUpdate('confirmed')}
-                      disabled={processing}
-                      className="company-order-details-btn-confirm"
+                      disabled={processing || (order.paymentMethod === 'stripe' && order.paymentStatus !== 'completed')}
+                      className={`company-order-details-btn-confirm ${
+                        order.paymentMethod === 'stripe' && order.paymentStatus !== 'completed' ? 'disabled-stripe' : ''
+                      }`}
+                      title={
+                        order.paymentMethod === 'stripe' && order.paymentStatus !== 'completed' 
+                          ? 'Stripe payment must be completed before confirming order' 
+                          : ''
+                      }
                     >
                       {processing ? (
                         <div className="company-order-details-btn-loading">
@@ -485,7 +494,10 @@ export default function CompanyOrderDetails() {
                           <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                           </svg>
-                          Confirm Order
+                          {order.paymentMethod === 'stripe' && order.paymentStatus !== 'completed' 
+                            ? 'Awaiting Payment' 
+                            : 'Confirm Order'
+                          }
                         </>
                       )}
                     </button>
@@ -817,7 +829,7 @@ export default function CompanyOrderDetails() {
                       <div className="company-order-payment-method-header">
                         <span className="company-order-payment-method-label">Payment Method</span>
                         <div className={`company-order-payment-method-badge ${getPaymentMethodBadge(order.paymentMethod).class}`}>
-                          <span className="payment-method-icon">{getPaymentMethodBadge(order.paymentMethod).icon}</span>
+                          <span className="payment-method-icon"><Icon icon={['fas', getPaymentMethodBadge(order.paymentMethod).icon]} /></span>
                           <span>{getPaymentMethodBadge(order.paymentMethod).text}</span>
                         </div>
                       </div>

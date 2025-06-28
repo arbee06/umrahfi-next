@@ -1246,6 +1246,24 @@
   padding: 0;
 }
 
+/* Disabled Stripe Button */
+.company-order-details-btn-confirm.disabled-stripe {
+  background: linear-gradient(135deg, #9ca3af 0%, #6b7280 100%);
+  color: #d1d5db;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.company-order-details-btn-confirm.disabled-stripe:hover {
+  background: linear-gradient(135deg, #9ca3af 0%, #6b7280 100%);
+  transform: none;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.company-order-details-btn-confirm.disabled-stripe svg {
+  color: #d1d5db;
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
   .company-order-payment-buttons {

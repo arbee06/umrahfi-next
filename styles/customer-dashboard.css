@@ -1031,6 +1031,64 @@
   font-size: 0.75rem;
 }
 
+/* Badge Container Layout */
+.customer-orders-item-badges {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  align-items: flex-start;
+}
+
+/* Draft Status Badge */
+.customer-orders-list-item .customer-orders-status-badge.draft {
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+/* Payment Status Badges */
+.customer-orders-list-item .customer-orders-payment-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.5rem;
+  font-size: 0.6875rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+  white-space: nowrap;
+  flex-shrink: 0;
+  border: 1px solid;
+}
+
+.customer-orders-list-item .customer-orders-payment-badge.pending {
+  background: #fef3c7;
+  color: #92400e;
+  border-color: #fcd34d;
+}
+
+.customer-orders-list-item .customer-orders-payment-badge.completed {
+  background: #d1fae5;
+  color: #065f46;
+  border-color: #34d399;
+}
+
+.customer-orders-list-item .customer-orders-payment-badge.partial {
+  background: #fed7aa;
+  color: #c2410c;
+  border-color: #fb923c;
+}
+
+.customer-orders-list-item .customer-orders-payment-badge.refunded {
+  background: #e5e7eb;
+  color: #374151;
+  border-color: #9ca3af;
+}
+
+.customer-orders-list-item .customer-orders-payment-icon {
+  font-size: 0.625rem;
+}
+
 /* Secondary Button Style */
 .customer-orders-btn-secondary {
   display: inline-flex;
