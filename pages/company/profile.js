@@ -15,6 +15,8 @@ export default function CompanyProfile() {
   const [loading, setLoading] = useState(false);
   const [uploadingPicture, setUploadingPicture] = useState(false);
   const [message, setMessage] = useState({ type: '', text: '' });
+  const [showStripeModal, setShowStripeModal] = useState(false);
+  const [showBankModal, setShowBankModal] = useState(false);
   
   // Country dropdown states
   const [countries] = useState(() => getCountries());
@@ -36,7 +38,15 @@ export default function CompanyProfile() {
     bankAccountHolderName: '',
     bankRoutingNumber: '',
     bankSwiftCode: '',
-    bankAddress: ''
+    bankAddress: '',
+    // Payment Configuration
+    preferredPaymentMethods: ['stripe', 'bank_transfer'],
+    stripePublishableKey: '',
+    stripeSecretKey: '',
+    stripeWebhookSecret: '',
+    paymentProcessingFee: 2.9,
+    acceptCashPayments: true,
+    acceptBankTransfers: true
   });
 
   useEffect(() => {
@@ -56,7 +66,15 @@ export default function CompanyProfile() {
       bankAccountHolderName: user.bankAccountHolderName || '',
       bankRoutingNumber: user.bankRoutingNumber || '',
       bankSwiftCode: user.bankSwiftCode || '',
-      bankAddress: user.bankAddress || ''
+      bankAddress: user.bankAddress || '',
+      // Payment Configuration
+      preferredPaymentMethods: user.preferredPaymentMethods || ['stripe', 'bank_transfer'],
+      stripePublishableKey: user.stripePublishableKey || '',
+      stripeSecretKey: user.stripeSecretKey || '',
+      stripeWebhookSecret: user.stripeWebhookSecret || '',
+      paymentProcessingFee: user.paymentProcessingFee || 2.9,
+      acceptCashPayments: user.acceptCashPayments !== false,
+      acceptBankTransfers: user.acceptBankTransfers !== false
     });
     }
   }, [user]);
@@ -110,6 +128,104 @@ export default function CompanyProfile() {
     });
     setCountrySearch(country.name);
     setIsCountryOpen(false);
+  };
+
+  // Payment methods handlers
+  const handlePaymentMethodChange = (method) => {
+    if (method === 'stripe') {
+      // If stripe is being enabled and not already configured, show modal
+      if (!formData.preferredPaymentMethods.includes(method)) {
+        setFormData(prev => ({
+          ...prev,
+          preferredPaymentMethods: [...prev.preferredPaymentMethods, method]
+        }));
+        setShowStripeModal(true);
+      } else {
+        // If stripe is being disabled, just remove it
+        setFormData(prev => ({
+          ...prev,
+          preferredPaymentMethods: prev.preferredPaymentMethods.filter(m => m !== method)
+        }));
+      }
+    } else {
+      // For other payment methods, toggle normally
+      setFormData(prev => {
+        const methods = [...prev.preferredPaymentMethods];
+        if (methods.includes(method)) {
+          return {
+            ...prev,
+            preferredPaymentMethods: methods.filter(m => m !== method)
+          };
+        } else {
+          return {
+            ...prev,
+            preferredPaymentMethods: [...methods, method]
+          };
+        }
+      });
+    }
+  };
+
+  const handleCheckboxChange = (e) => {
+    const { name, checked } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: checked
+    }));
+  };
+
+  const testStripeConnection = async () => {
+    if (!formData.stripeSecretKey) {
+      Swal.fire({
+        title: 'Missing Configuration',
+        text: 'Please enter your Stripe secret key to test the connection.',
+        icon: 'warning',
+        confirmButtonColor: '#f59e0b'
+      });
+      return;
+    }
+
+    try {
+      const response = await fetch('/api/company/test-stripe', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          stripeSecretKey: formData.stripeSecretKey
+        }),
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        soundManager.playLogin();
+        Swal.fire({
+          title: 'Connection Successful!',
+          html: `
+            <div style="text-align: left; margin: 1rem 0;">
+              <p><strong>Account:</strong> ${result.account.display_name || result.account.id}</p>
+              <p><strong>Country:</strong> ${result.account.country}</p>
+              <p><strong>Currency:</strong> ${result.account.default_currency?.toUpperCase()}</p>
+              <p><strong>Status:</strong> ${result.account.charges_enabled ? 'Active' : 'Pending'}</p>
+            </div>
+          `,
+          icon: 'success',
+          confirmButtonColor: '#059669'
+        });
+      } else {
+        throw new Error(result.error || 'Failed to connect to Stripe');
+      }
+    } catch (error) {
+      console.error('Stripe test error:', error);
+      soundManager.playAction();
+      Swal.fire({
+        title: 'Connection Failed',
+        text: error.message || 'Failed to connect to Stripe. Please check your API key.',
+        icon: 'error',
+        confirmButtonColor: '#ef4444'
+      });
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -474,87 +590,99 @@ export default function CompanyProfile() {
                 </div>
               </div>
 
-              {/* Banking Information Section */}
+
+              {/* Payment Configuration Section */}
               <div className="company-profile-form-section">
                 <div className="company-profile-section-header">
-                  <Icon icon={['fas', 'university']} className="company-profile-section-icon" />
-                  <h2 className="company-profile-section-title">Banking Information</h2>
-                </div>
-                
-                <div className="company-profile-form-grid">
-                  <div className="company-profile-form-group">
-                    <label className="company-profile-form-label">Bank Name</label>
-                    <input
-                      type="text"
-                      name="bankName"
-                      value={formData.bankName}
-                      onChange={handleChange}
-                      className="company-profile-form-input"
-                      placeholder="Bank Name"
-                    />
-                  </div>
-
-                  <div className="company-profile-form-group">
-                    <label className="company-profile-form-label">Account Number</label>
-                    <input
-                      type="text"
-                      name="bankAccountNumber"
-                      value={formData.bankAccountNumber}
-                      onChange={handleChange}
-                      className="company-profile-form-input"
-                      placeholder="Account Number"
-                    />
-                  </div>
-
-                  <div className="company-profile-form-group">
-                    <label className="company-profile-form-label">Account Holder Name</label>
-                    <input
-                      type="text"
-                      name="bankAccountHolderName"
-                      value={formData.bankAccountHolderName}
-                      onChange={handleChange}
-                      className="company-profile-form-input"
-                      placeholder="Account Holder Name"
-                    />
-                  </div>
-
-                  <div className="company-profile-form-group">
-                    <label className="company-profile-form-label">Routing Number</label>
-                    <input
-                      type="text"
-                      name="bankRoutingNumber"
-                      value={formData.bankRoutingNumber}
-                      onChange={handleChange}
-                      className="company-profile-form-input"
-                      placeholder="Routing Number"
-                    />
-                  </div>
-
-                  <div className="company-profile-form-group">
-                    <label className="company-profile-form-label">SWIFT Code</label>
-                    <input
-                      type="text"
-                      name="bankSwiftCode"
-                      value={formData.bankSwiftCode}
-                      onChange={handleChange}
-                      className="company-profile-form-input"
-                      placeholder="SWIFT Code"
-                    />
-                  </div>
-
-                  <div className="company-profile-form-group company-profile-form-grid-full">
-                    <label className="company-profile-form-label">Bank Address</label>
-                    <textarea
-                      name="bankAddress"
-                      value={formData.bankAddress}
-                      onChange={handleChange}
-                      rows="3"
-                      className="company-profile-form-textarea"
-                      placeholder="Bank Address"
-                    />
-                  </div>
+                  <Icon icon={['fas', 'credit-card']} className="company-profile-section-icon" />
+                  <h2 className="company-profile-section-title">Payment Configuration</h2>
+                  <p className="company-profile-section-subtitle">Configure your preferred payment methods and Stripe integration</p>
                 </div>
 
+                {/* Payment Methods */}
+                <div className="company-profile-payment-methods">
+                  <p className="company-profile-subsection-description">Select which payment methods you want to accept from customers</p>
+                  
+                  <div className="company-profile-payment-grid">
+                    <label className="company-profile-payment-option">
+                      <input
+                        type="checkbox"
+                        checked={formData.preferredPaymentMethods.includes('stripe')}
+                        onChange={() => handlePaymentMethodChange('stripe')}
+                      />
+                      <div className="company-profile-payment-card">
+                        <div className="shimmer-overlay"></div>
+                        <Icon icon={['fas', 'credit-card']} />
+                        <div className="payment-card-content">
+                          <span>Stripe (Credit/Debit Cards)</span>
+                          <small>Online card payments with instant processing</small>
+                        </div>
+                        {formData.preferredPaymentMethods.includes('stripe') && (
+                          <button 
+                            type="button"
+                            className="company-profile-config-btn"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setShowStripeModal(true);
+                            }}
+                          >
+                            <Icon icon={['fas', 'cog']} />
+                          </button>
+                        )}
+                      </div>
+                    </label>
+
+                    <label className="company-profile-payment-option">
+                      <input
+                        type="checkbox"
+                        checked={formData.acceptBankTransfers}
+                        onChange={handleCheckboxChange}
+                        name="acceptBankTransfers"
+                      />
+                      <div className="company-profile-payment-card">
+                        <div className="shimmer-overlay"></div>
+                        <Icon icon={['fas', 'credit-card']} />
+                        <div className="payment-card-content">
+                          <span>Bank Transfer</span>
+                          <small>Direct bank to bank transfers</small>
+                        </div>
+                        {formData.acceptBankTransfers && (
+                          <button 
+                            type="button"
+                            className="company-profile-config-btn"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setShowBankModal(true);
+                            }}
+                          >
+                            <Icon icon={['fas', 'cog']} />
+                          </button>
+                        )}
+                      </div>
+                    </label>
+
+                    <label className="company-profile-payment-option">
+                      <input
+                        type="checkbox"
+                        checked={formData.acceptCashPayments}
+                        onChange={handleCheckboxChange}
+                        name="acceptCashPayments"
+                      />
+                      <div className="company-profile-payment-card">
+                        <div className="shimmer-overlay"></div>
+                        <Icon icon={['fas', 'money-bill-wave']} />
+                        <div className="payment-card-content">
+                          <span>Cash Payment</span>
+                          <small>In-person cash transactions</small>
+                        </div>
+                      </div>
+                    </label>
+                  </div>
+                </div>
+
+              </div>
+
+              <div className="company-profile-form-section">
                 <button
                   type="submit"
                   disabled={loading}
@@ -576,6 +704,249 @@ export default function CompanyProfile() {
             </form>
           </div>
         </div>
+
+        {/* Stripe Configuration Modal */}
+        {showStripeModal && (
+          <div className="company-profile-modal-overlay" onClick={() => setShowStripeModal(false)}>
+            <div className="company-profile-modal" onClick={(e) => e.stopPropagation()}>
+              <div className="company-profile-modal-header">
+                <h3>
+                  <Icon icon={['fab', 'stripe']} />
+                  Configure Stripe Payment
+                </h3>
+                <button 
+                  className="company-profile-modal-close"
+                  onClick={() => setShowStripeModal(false)}
+                >
+                  <Icon icon={['fas', 'times']} />
+                </button>
+              </div>
+
+              <div className="company-profile-modal-content">
+                <p className="company-profile-modal-description">
+                  Configure your Stripe API keys to accept credit and debit card payments securely.
+                </p>
+
+                <div className="company-profile-stripe-form">
+                  <div className="company-profile-form-group">
+                    <label className="company-profile-form-label">
+                      <Icon icon={['fas', 'key']} />
+                      Publishable Key
+                    </label>
+                    <input
+                      type="text"
+                      name="stripePublishableKey"
+                      value={formData.stripePublishableKey}
+                      onChange={handleChange}
+                      placeholder="pk_live_... or pk_test_..."
+                      className="company-profile-form-input company-profile-stripe-input"
+                    />
+                    <small className="company-profile-form-hint">Starts with pk_live_ (production) or pk_test_ (testing)</small>
+                  </div>
+
+                  <div className="company-profile-form-group">
+                    <label className="company-profile-form-label">
+                      <Icon icon={['fas', 'lock']} />
+                      Secret Key
+                    </label>
+                    <input
+                      type="password"
+                      name="stripeSecretKey"
+                      value={formData.stripeSecretKey}
+                      onChange={handleChange}
+                      placeholder="sk_live_... or sk_test_..."
+                      className="company-profile-form-input company-profile-stripe-input"
+                    />
+                    <small className="company-profile-form-hint">Starts with sk_live_ (production) or sk_test_ (testing)</small>
+                  </div>
+
+                  <div className="company-profile-form-group">
+                    <label className="company-profile-form-label">
+                      <Icon icon={['fas', 'webhook']} />
+                      Webhook Secret (Optional)
+                    </label>
+                    <input
+                      type="password"
+                      name="stripeWebhookSecret"
+                      value={formData.stripeWebhookSecret}
+                      onChange={handleChange}
+                      placeholder="whsec_..."
+                      className="company-profile-form-input company-profile-stripe-input"
+                    />
+                    <small className="company-profile-form-hint">For webhook endpoint verification (starts with whsec_)</small>
+                  </div>
+
+                  <div className="company-profile-form-group">
+                    <label className="company-profile-form-label">
+                      <Icon icon={['fas', 'percentage']} />
+                      Processing Fee (%)
+                    </label>
+                    <input
+                      type="number"
+                      name="paymentProcessingFee"
+                      value={formData.paymentProcessingFee}
+                      onChange={handleChange}
+                      min="0"
+                      max="10"
+                      step="0.1"
+                      className="company-profile-form-input company-profile-fee-input"
+                    />
+                    <small className="company-profile-form-hint">Additional fee to cover payment processing costs</small>
+                  </div>
+                </div>
+
+                <div className="company-profile-modal-actions">
+                  <button
+                    type="button"
+                    onClick={testStripeConnection}
+                    className="company-profile-test-stripe-btn"
+                    disabled={loading || !formData.stripeSecretKey}
+                  >
+                    <Icon icon={['fas', 'plug']} />
+                    Test Connection
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setShowStripeModal(false)}
+                    className="company-profile-modal-save-btn"
+                  >
+                    <Icon icon={['fas', 'check']} />
+                    Save Configuration
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Bank Configuration Modal */}
+        {showBankModal && (
+          <div className="company-profile-modal-overlay" onClick={() => setShowBankModal(false)}>
+            <div className="company-profile-modal" onClick={(e) => e.stopPropagation()}>
+              <div className="company-profile-modal-header">
+                <h3>
+                  <Icon icon={['fas', 'building-columns']} />
+                  Bank Account Information
+                </h3>
+                <button 
+                  className="company-profile-modal-close"
+                  onClick={() => setShowBankModal(false)}
+                >
+                  <Icon icon={['fas', 'times']} />
+                </button>
+              </div>
+
+              <div className="company-profile-modal-content">
+                <p className="company-profile-modal-description">
+                  Configure your bank account details for receiving bank transfer payments.
+                </p>
+
+                <div className="company-profile-stripe-form">
+                  <div className="company-profile-form-group">
+                    <label className="company-profile-form-label">
+                      <Icon icon={['fas', 'building-columns']} />
+                      Bank Name
+                    </label>
+                    <input
+                      type="text"
+                      name="bankName"
+                      value={formData.bankName}
+                      onChange={handleChange}
+                      className="company-profile-form-input company-profile-stripe-input"
+                      placeholder="Bank Name"
+                    />
+                  </div>
+
+                  <div className="company-profile-form-group">
+                    <label className="company-profile-form-label">
+                      <Icon icon={['fas', 'hashtag']} />
+                      Account Number
+                    </label>
+                    <input
+                      type="text"
+                      name="bankAccountNumber"
+                      value={formData.bankAccountNumber}
+                      onChange={handleChange}
+                      className="company-profile-form-input company-profile-stripe-input"
+                      placeholder="Account Number"
+                    />
+                  </div>
+
+                  <div className="company-profile-form-group">
+                    <label className="company-profile-form-label">
+                      <Icon icon={['fas', 'user']} />
+                      Account Holder Name
+                    </label>
+                    <input
+                      type="text"
+                      name="bankAccountHolderName"
+                      value={formData.bankAccountHolderName}
+                      onChange={handleChange}
+                      className="company-profile-form-input company-profile-stripe-input"
+                      placeholder="Account Holder Name"
+                    />
+                  </div>
+
+                  <div className="company-profile-form-group">
+                    <label className="company-profile-form-label">
+                      <Icon icon={['fas', 'route']} />
+                      Routing Number
+                    </label>
+                    <input
+                      type="text"
+                      name="bankRoutingNumber"
+                      value={formData.bankRoutingNumber}
+                      onChange={handleChange}
+                      className="company-profile-form-input company-profile-stripe-input"
+                      placeholder="Routing Number"
+                    />
+                  </div>
+
+                  <div className="company-profile-form-group">
+                    <label className="company-profile-form-label">
+                      <Icon icon={['fas', 'globe']} />
+                      SWIFT Code
+                    </label>
+                    <input
+                      type="text"
+                      name="bankSwiftCode"
+                      value={formData.bankSwiftCode}
+                      onChange={handleChange}
+                      className="company-profile-form-input company-profile-stripe-input"
+                      placeholder="SWIFT Code"
+                    />
+                  </div>
+
+                  <div className="company-profile-form-group">
+                    <label className="company-profile-form-label">
+                      <Icon icon={['fas', 'map-marker-alt']} />
+                      Bank Address
+                    </label>
+                    <textarea
+                      name="bankAddress"
+                      value={formData.bankAddress}
+                      onChange={handleChange}
+                      rows="3"
+                      className="company-profile-form-textarea"
+                      placeholder="Bank Address"
+                    />
+                  </div>
+                </div>
+
+                <div className="company-profile-modal-actions">
+                  <button
+                    type="button"
+                    onClick={() => setShowBankModal(false)}
+                    className="company-profile-modal-save-btn"
+                  >
+                    <Icon icon={['fas', 'check']} />
+                    Save Bank Details
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </Layout>
     </ProtectedRoute>
   );

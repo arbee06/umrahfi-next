@@ -534,3 +534,626 @@
     font-size: clamp(1.5rem, 4vw, 2rem);
   }
 }
+
+/* ===== PAYMENT CONFIGURATION STYLES ===== */
+
+/* Section styling */
+.company-profile-section-subtitle {
+  color: #64748b;
+  font-size: 0.875rem;
+  margin: 0.5rem 0 0 0;
+  font-weight: 400;
+}
+
+.company-profile-subsection-title {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #1e293b;
+  margin: 0 0 0.5rem 0;
+}
+
+.company-profile-subsection-description {
+  color: #64748b;
+  font-size: 0.875rem;
+  margin: 0 0 1.5rem 0;
+  line-height: 1.5;
+}
+
+/* Payment Methods Grid */
+.company-profile-payment-methods {
+  margin-bottom: 2.5rem;
+}
+
+.company-profile-payment-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.company-profile-payment-option {
+  display: block;
+  cursor: pointer;
+  position: relative;
+}
+
+.company-profile-payment-option input[type="checkbox"] {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.company-profile-payment-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 2rem 1.5rem;
+  border: 1.5px solid #f1f5f9;
+  border-radius: 1.5rem;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  background: linear-gradient(145deg, #ffffff 0%, #fafbfc 100%);
+  height: 180px;
+  overflow: hidden;
+  backdrop-filter: blur(10px);
+  box-shadow: 
+    0 1px 3px rgba(0, 0, 0, 0.05),
+    0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+/* Checkbox indicator */
+.company-profile-payment-card::after {
+  content: '';
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  width: 24px;
+  height: 24px;
+  border: 2px solid #e2e8f0;
+  border-radius: 50%;
+  background: white;
+  transition: all 0.3s ease;
+  z-index: 3;
+}
+
+.company-profile-payment-option input[type="checkbox"]:checked + .company-profile-payment-card::after {
+  background: #3b82f6;
+  border-color: #3b82f6;
+  background-image: url("data:image/svg+xml,%3csvg viewBox='0 0 16 16' fill='white' xmlns='http://www.w3.org/2000/svg'%3e%3cpath d='m13.854 3.646-7.5 7.5a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6 10.293l7.146-7.147a.5.5 0 0 1 .708.708z'/%3e%3c/svg%3e");
+  background-size: 14px 14px;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.company-profile-payment-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(145deg, rgba(59, 130, 246, 0.05) 0%, rgba(99, 102, 241, 0.05) 100%);
+  opacity: 0;
+  transition: all 0.4s ease;
+  border-radius: inherit;
+}
+
+/* Shimmer effect - using a different approach */
+.company-profile-payment-card .shimmer-overlay {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+  opacity: 0;
+  transition: all 0.6s ease;
+  transform: rotate(45deg);
+  z-index: 1;
+}
+
+.company-profile-payment-card svg {
+  font-size: 2.25rem;
+  color: #64748b;
+  margin-bottom: 1rem;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  z-index: 2;
+  position: relative;
+}
+
+.company-profile-payment-card .payment-card-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  z-index: 2;
+  position: relative;
+}
+
+.company-profile-payment-card span {
+  font-weight: 700;
+  color: #1e293b;
+  font-size: 1.1rem;
+  line-height: 1.3;
+  letter-spacing: -0.025em;
+}
+
+.company-profile-payment-card small {
+  color: #64748b;
+  font-size: 0.8rem;
+  line-height: 1.4;
+  font-weight: 500;
+  opacity: 0.9;
+}
+
+/* Checked state */
+.company-profile-payment-option input[type="checkbox"]:checked + .company-profile-payment-card {
+  border-color: #3b82f6;
+  background: linear-gradient(145deg, #f0f9ff 0%, #e0f2fe 100%);
+  transform: translateY(-4px) scale(1.02);
+  box-shadow: 
+    0 20px 25px -5px rgba(59, 130, 246, 0.15),
+    0 10px 10px -5px rgba(59, 130, 246, 0.1),
+    0 0 0 1px rgba(59, 130, 246, 0.05);
+}
+
+.company-profile-payment-option input[type="checkbox"]:checked + .company-profile-payment-card::before {
+  opacity: 1;
+}
+
+.company-profile-payment-option input[type="checkbox"]:checked + .company-profile-payment-card .shimmer-overlay {
+  opacity: 1;
+  animation: shimmer 2s ease-in-out;
+}
+
+.company-profile-payment-option input[type="checkbox"]:checked + .company-profile-payment-card svg {
+  color: #3b82f6;
+  transform: scale(1.15) translateY(-2px);
+}
+
+.company-profile-payment-option input[type="checkbox"]:checked + .company-profile-payment-card span {
+  color: #1e40af;
+}
+
+.company-profile-payment-option input[type="checkbox"]:checked + .company-profile-payment-card small {
+  color: #3b82f6;
+  opacity: 1;
+}
+
+/* Hover state */
+.company-profile-payment-option:hover .company-profile-payment-card {
+  border-color: #cbd5e1;
+  transform: translateY(-2px) scale(1.01);
+  box-shadow: 
+    0 10px 15px -3px rgba(0, 0, 0, 0.08),
+    0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+.company-profile-payment-option:hover .company-profile-payment-card svg {
+  color: #475569;
+  transform: scale(1.08) translateY(-1px);
+}
+
+.company-profile-payment-option:hover .company-profile-payment-card::before {
+  opacity: 0.3;
+}
+
+/* Animation for shimmer effect */
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%) translateY(-100%) rotate(45deg);
+  }
+  100% {
+    transform: translateX(100%) translateY(100%) rotate(45deg);
+  }
+}
+
+/* Stripe Configuration */
+.company-profile-stripe-config {
+  background: linear-gradient(135deg, #fafbfc 0%, #f4f6f8 100%);
+  padding: 2rem;
+  border-radius: 1.5rem;
+  border: 1px solid #e1e5e9;
+  margin-top: 2rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.company-profile-stripe-config::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #635bff 0%, #3b82f6 100%);
+}
+
+.company-profile-stripe-input {
+  font-family: 'SF Mono', 'Monaco', 'Menlo', 'Consolas', monospace !important;
+  font-size: 0.875rem !important;
+  background: #ffffff !important;
+  border: 1.5px solid #e1e5e9 !important;
+  border-radius: 0.875rem !important;
+  padding: 1rem 1.25rem !important;
+  transition: all 0.3s ease !important;
+  font-weight: 500 !important;
+}
+
+.company-profile-stripe-input:focus {
+  border-color: #635bff !important;
+  box-shadow: 0 0 0 3px rgba(99, 91, 255, 0.1) !important;
+  transform: translateY(-1px) !important;
+}
+
+.company-profile-fee-input {
+  max-width: 140px;
+  text-align: center;
+  font-weight: 600 !important;
+  color: #1e293b !important;
+}
+
+.company-profile-form-hint {
+  display: block;
+  color: #64748b;
+  font-size: 0.75rem;
+  margin-top: 0.5rem;
+  line-height: 1.4;
+  font-weight: 500;
+}
+
+.company-profile-stripe-actions {
+  margin-top: 2rem;
+  padding-top: 2rem;
+  border-top: 1px solid #e1e5e9;
+  display: flex;
+  justify-content: center;
+}
+
+.company-profile-test-stripe-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem 2rem;
+  background: linear-gradient(135deg, #635bff 0%, #5a52ff 100%);
+  color: white;
+  border: none;
+  border-radius: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  font-size: 0.9rem;
+  letter-spacing: 0.025em;
+  position: relative;
+  overflow: hidden;
+}
+
+.company-profile-test-stripe-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.6s ease;
+}
+
+.company-profile-test-stripe-btn:hover:not(:disabled) {
+  transform: translateY(-3px) scale(1.02);
+  box-shadow: 
+    0 10px 25px -5px rgba(99, 91, 255, 0.4),
+    0 8px 10px -6px rgba(99, 91, 255, 0.2);
+}
+
+.company-profile-test-stripe-btn:hover:not(:disabled)::before {
+  left: 100%;
+}
+
+.company-profile-test-stripe-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.company-profile-test-stripe-btn svg {
+  font-size: 1.1rem;
+  transition: transform 0.3s ease;
+}
+
+.company-profile-test-stripe-btn:hover:not(:disabled) svg {
+  transform: rotate(360deg);
+}
+
+/* Mobile Responsive for Payment Section */
+@media (max-width: 1024px) {
+  .company-profile-payment-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .company-profile-payment-card {
+    padding: 1.75rem 1.5rem;
+    height: 160px;
+  }
+
+  .company-profile-payment-card svg {
+    font-size: 2rem;
+    margin-bottom: 0.75rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .company-profile-payment-grid {
+    grid-template-columns: 1fr;
+    gap: 0.875rem;
+  }
+
+  .company-profile-payment-card {
+    padding: 1.5rem 1.25rem;
+    height: 140px;
+  }
+
+  .company-profile-payment-card svg {
+    font-size: 1.875rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .company-profile-payment-card span {
+    font-size: 1rem;
+  }
+
+  .company-profile-payment-card small {
+    font-size: 0.775rem;
+  }
+
+  .company-profile-stripe-config {
+    padding: 1.5rem;
+    margin-top: 1.5rem;
+  }
+
+  .company-profile-stripe-input {
+    padding: 0.875rem 1rem !important;
+    font-size: 0.8rem !important;
+  }
+
+  .company-profile-test-stripe-btn {
+    width: 100%;
+    justify-content: center;
+    padding: 1rem 1.5rem;
+  }
+
+  .company-profile-fee-input {
+    max-width: 120px;
+  }
+}
+
+@media (max-width: 480px) {
+  .company-profile-payment-card {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: 1.25rem 1rem;
+  }
+
+  .company-profile-payment-card svg {
+    align-self: flex-start;
+  }
+
+  .company-profile-stripe-config {
+    padding: 1.25rem;
+  }
+
+  .company-profile-form-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+}
+
+/* ===== MODAL STYLES ===== */
+
+.company-profile-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: fadeIn 0.3s ease;
+}
+
+.company-profile-modal {
+  background: white;
+  border-radius: 1.5rem;
+  max-width: 600px;
+  width: 90%;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 
+    0 25px 50px -12px rgba(0, 0, 0, 0.25),
+    0 0 0 1px rgba(255, 255, 255, 0.05);
+  animation: slideIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.company-profile-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 2rem 2rem 0 2rem;
+  border-bottom: 1px solid #f1f5f9;
+  margin-bottom: 2rem;
+}
+
+.company-profile-modal-header h3 {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0;
+}
+
+.company-profile-modal-close {
+  width: 40px;
+  height: 40px;
+  border: none;
+  background: #f8fafc;
+  border-radius: 50%;
+  color: #64748b;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.company-profile-modal-close:hover {
+  background: #f1f5f9;
+  color: #374151;
+  transform: scale(1.05);
+}
+
+.company-profile-modal-content {
+  padding: 0 2rem 2rem 2rem;
+}
+
+.company-profile-modal-description {
+  color: #64748b;
+  font-size: 0.9rem;
+  line-height: 1.6;
+  margin: 0 0 2rem 0;
+}
+
+.company-profile-stripe-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.company-profile-modal-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
+  padding-top: 2rem;
+  border-top: 1px solid #f1f5f9;
+}
+
+.company-profile-modal-save-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.875rem 1.5rem;
+  background: linear-gradient(135deg, #059669 0%, #047857 100%);
+  color: white;
+  border: none;
+  border-radius: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 0.875rem;
+}
+
+.company-profile-modal-save-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(5, 150, 105, 0.3);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideIn {
+  from { 
+    opacity: 0;
+    transform: translateY(-20px) scale(0.95);
+  }
+  to { 
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Configuration Button */
+.company-profile-config-btn {
+  position: absolute;
+  top: 1rem;
+  left: 1rem;
+  width: 24px;
+  height: 24px;
+  border: none;
+  background: rgba(71, 85, 105, 0.8);
+  color: white;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  font-size: 0.7rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  line-height: 1;
+}
+
+.company-profile-config-btn svg {
+  margin: 0;
+  padding: 0;
+  vertical-align: middle;
+}
+
+.company-profile-config-btn:hover {
+  background: rgba(51, 65, 85, 0.9);
+  transform: scale(1.05);
+}
+
+.company-profile-config-btn:active {
+  transform: scale(0.95);
+}
+
+/* Mobile Modal */
+@media (max-width: 768px) {
+  .company-profile-modal {
+    width: 95%;
+    margin: 1rem;
+  }
+
+  .company-profile-modal-header {
+    padding: 1.5rem 1.5rem 0 1.5rem;
+  }
+
+  .company-profile-modal-content {
+    padding: 0 1.5rem 1.5rem 1.5rem;
+  }
+
+  .company-profile-modal-actions {
+    flex-direction: column;
+  }
+
+  .company-profile-test-stripe-btn,
+  .company-profile-modal-save-btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .company-profile-config-btn {
+    width: 20px;
+    height: 20px;
+    font-size: 0.6rem;
+    top: 0.75rem;
+    left: 0.75rem;
+  }
+}

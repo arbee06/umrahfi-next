@@ -98,6 +98,50 @@ const User = sequelize.define('User', {
   resetTokenExpiry: {
     type: DataTypes.DATE,
     allowNull: true
+  },
+  // Payment Configuration for Companies
+  preferredPaymentMethods: {
+    type: DataTypes.JSON,
+    allowNull: true,
+    comment: 'Array of preferred payment methods: stripe, bank_transfer, cash',
+    get() {
+      const value = this.getDataValue('preferredPaymentMethods');
+      if (value === null || value === undefined) {
+        return ['stripe', 'bank_transfer'];
+      }
+      return Array.isArray(value) ? value : ['stripe', 'bank_transfer'];
+    }
+  },
+  stripePublishableKey: {
+    type: DataTypes.STRING(500),
+    allowNull: true,
+    comment: 'Company Stripe publishable key'
+  },
+  stripeSecretKey: {
+    type: DataTypes.STRING(500),
+    allowNull: true,
+    comment: 'Company Stripe secret key (encrypted)'
+  },
+  stripeWebhookSecret: {
+    type: DataTypes.STRING(500),
+    allowNull: true,
+    comment: 'Company Stripe webhook endpoint secret'
+  },
+  paymentProcessingFee: {
+    type: DataTypes.DECIMAL(5, 2),
+    allowNull: true,
+    defaultValue: 2.9,
+    comment: 'Payment processing fee percentage'
+  },
+  acceptCashPayments: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: true,
+    comment: 'Whether company accepts cash payments'
+  },
+  acceptBankTransfers: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: true,
+    comment: 'Whether company accepts bank transfers'
   }
 }, {
   tableName: 'users',

@@ -3,7 +3,7 @@ import { useStripe, useElements, CardElement } from '@stripe/react-stripe-js';
 import Swal from 'sweetalert2';
 import soundManager from '@/utils/soundUtils';
 
-export default function StripePaymentForm({ amount, orderId, onSuccess, onError }) {
+export default function StripePaymentForm({ amount, orderId, packageId, onSuccess, onError }) {
   const stripe = useStripe();
   const elements = useElements();
   const [processing, setProcessing] = useState(false);
@@ -84,7 +84,8 @@ export default function StripePaymentForm({ amount, orderId, onSuccess, onError 
         },
         body: JSON.stringify({
           amount,
-          ...(orderId && { orderId }) // Only include orderId if it exists
+          ...(orderId && { orderId }), // Only include orderId if it exists
+          ...(packageId && { packageId }) // Include packageId for company-specific Stripe configuration
         }),
       });
 

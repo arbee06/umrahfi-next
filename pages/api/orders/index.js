@@ -90,7 +90,7 @@ export default async function handler(req, res) {
             {
               model: User,
               as: 'company',
-              attributes: ['id', 'companyName']
+              attributes: ['id', 'companyName', 'preferredPaymentMethods', 'acceptCashPayments', 'acceptBankTransfers']
             }
           ]
         });
@@ -101,6 +101,31 @@ export default async function handler(req, res) {
 
         if (packageData.availableSeats < numberOfTravelers) {
           return res.status(400).json({ error: 'Not enough seats available' });
+        }
+
+        // Validate payment method against company preferences
+        const company = packageData.company;
+        const acceptedMethods = [];
+        
+        if (company.preferredPaymentMethods && company.preferredPaymentMethods.includes('stripe')) {
+          acceptedMethods.push('stripe');
+        }
+        if (company.acceptBankTransfers) {
+          acceptedMethods.push('bank_transfer');
+        }
+        if (company.acceptCashPayments) {
+          acceptedMethods.push('cash');
+        }
+        
+        // Default to all methods if no preferences set
+        if (acceptedMethods.length === 0) {
+          acceptedMethods.push('stripe', 'bank_transfer', 'cash');
+        }
+        
+        if (paymentMethod && !acceptedMethods.includes(paymentMethod)) {
+          return res.status(400).json({ 
+            error: `Payment method '${paymentMethod}' is not accepted by this company. Accepted methods: ${acceptedMethods.join(', ')}` 
+          });
         }
 
         // Generate unique order number
