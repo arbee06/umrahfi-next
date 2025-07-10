@@ -57,6 +57,19 @@ export default function BookPackage() {
     }
   }, [packageId]);
 
+  // Update payment method when package data is loaded
+  useEffect(() => {
+    if (packageData?.company && !completingOrderId) {
+      const defaultMethod = getDefaultPaymentMethod();
+      if (defaultMethod !== bookingData.paymentMethod) {
+        setBookingData(prev => ({
+          ...prev,
+          paymentMethod: defaultMethod
+        }));
+      }
+    }
+  }, [packageData]);
+
   useEffect(() => {
     const { completeOrder } = router.query;
     if (completeOrder && router.isReady) {
@@ -140,6 +153,37 @@ export default function BookPackage() {
     } finally {
       setLoading(false);
     }
+  };
+
+  // Helper function to get available payment methods based on company preferences
+  const getAvailablePaymentMethods = () => {
+    if (!packageData?.company) return [];
+    
+    const company = packageData.company;
+    const availableMethods = [];
+    
+    // Check preferred payment methods (for Stripe)
+    const preferredMethods = company.preferredPaymentMethods || [];
+    if (preferredMethods.includes('stripe')) {
+      availableMethods.push('stripe');
+    }
+    
+    // Check individual flags
+    if (company.acceptCashPayments !== false) {
+      availableMethods.push('cash');
+    }
+    
+    if (company.acceptBankTransfers !== false) {
+      availableMethods.push('bank_transfer');
+    }
+    
+    return availableMethods;
+  };
+
+  // Helper function to get the first available payment method as default
+  const getDefaultPaymentMethod = () => {
+    const availableMethods = getAvailablePaymentMethods();
+    return availableMethods.length > 0 ? availableMethods[0] : 'cash';
   };
 
   const fetchExistingOrder = async (orderId) => {
@@ -1977,82 +2021,88 @@ export default function BookPackage() {
                             Payment Method
                           </label>
                         <div className="customer-book-payment-options">
-                          <div className="customer-book-payment-option">
-                            <input
-                              type="radio"
-                              id="stripe"
-                              name="paymentMethod"
-                              value="stripe"
-                              checked={bookingData.paymentMethod === 'stripe'}
-                              onChange={(e) => setBookingData({
-                                ...bookingData,
-                                paymentMethod: e.target.value,
-                                paymentReceiptFile: null
-                              })}
-                            />
-                            <label htmlFor="stripe" className="customer-book-payment-label">
-                              <div className="customer-book-payment-icon">
-                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
-                                </svg>
-                              </div>
-                              <div className="customer-book-payment-info">
-                                <div className="customer-book-payment-title">Online Payment</div>
-                                <div className="customer-book-payment-desc">Pay securely with Stripe</div>
-                              </div>
-                            </label>
-                          </div>
+                          {getAvailablePaymentMethods().includes('stripe') && (
+                            <div className="customer-book-payment-option">
+                              <input
+                                type="radio"
+                                id="stripe"
+                                name="paymentMethod"
+                                value="stripe"
+                                checked={bookingData.paymentMethod === 'stripe'}
+                                onChange={(e) => setBookingData({
+                                  ...bookingData,
+                                  paymentMethod: e.target.value,
+                                  paymentReceiptFile: null
+                                })}
+                              />
+                              <label htmlFor="stripe" className="customer-book-payment-label">
+                                <div className="customer-book-payment-icon">
+                                  <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                                  </svg>
+                                </div>
+                                <div className="customer-book-payment-info">
+                                  <div className="customer-book-payment-title">Online Payment</div>
+                                  <div className="customer-book-payment-desc">Pay securely with Stripe</div>
+                                </div>
+                              </label>
+                            </div>
+                          )}
                           
-                          <div className="customer-book-payment-option">
-                            <input
-                              type="radio"
-                              id="cash"
-                              name="paymentMethod"
-                              value="cash"
-                              checked={bookingData.paymentMethod === 'cash'}
-                              onChange={(e) => setBookingData({
-                                ...bookingData,
-                                paymentMethod: e.target.value,
-                                paymentReceiptFile: null
-                              })}
-                            />
-                            <label htmlFor="cash" className="customer-book-payment-label">
-                              <div className="customer-book-payment-icon">
-                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
-                                </svg>
-                              </div>
-                              <div className="customer-book-payment-info">
-                                <div className="customer-book-payment-title">Cash Payment</div>
-                                <div className="customer-book-payment-desc">Pay in cash upon arrival or at office</div>
-                              </div>
-                            </label>
-                          </div>
+                          {getAvailablePaymentMethods().includes('cash') && (
+                            <div className="customer-book-payment-option">
+                              <input
+                                type="radio"
+                                id="cash"
+                                name="paymentMethod"
+                                value="cash"
+                                checked={bookingData.paymentMethod === 'cash'}
+                                onChange={(e) => setBookingData({
+                                  ...bookingData,
+                                  paymentMethod: e.target.value,
+                                  paymentReceiptFile: null
+                                })}
+                              />
+                              <label htmlFor="cash" className="customer-book-payment-label">
+                                <div className="customer-book-payment-icon">
+                                  <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
+                                  </svg>
+                                </div>
+                                <div className="customer-book-payment-info">
+                                  <div className="customer-book-payment-title">Cash Payment</div>
+                                  <div className="customer-book-payment-desc">Pay in cash upon arrival or at office</div>
+                                </div>
+                              </label>
+                            </div>
+                          )}
                           
-                          <div className="customer-book-payment-option">
-                            <input
-                              type="radio"
-                              id="bank_transfer"
-                              name="paymentMethod"
-                              value="bank_transfer"
-                              checked={bookingData.paymentMethod === 'bank_transfer'}
-                              onChange={(e) => setBookingData({
-                                ...bookingData,
-                                paymentMethod: e.target.value
-                              })}
-                            />
-                            <label htmlFor="bank_transfer" className="customer-book-payment-label">
-                              <div className="customer-book-payment-icon">
-                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z" />
-                                </svg>
-                              </div>
-                              <div className="customer-book-payment-info">
-                                <div className="customer-book-payment-title">Bank Transfer</div>
-                                <div className="customer-book-payment-desc">Transfer money directly to our bank account</div>
-                              </div>
-                            </label>
-                          </div>
+                          {getAvailablePaymentMethods().includes('bank_transfer') && (
+                            <div className="customer-book-payment-option">
+                              <input
+                                type="radio"
+                                id="bank_transfer"
+                                name="paymentMethod"
+                                value="bank_transfer"
+                                checked={bookingData.paymentMethod === 'bank_transfer'}
+                                onChange={(e) => setBookingData({
+                                  ...bookingData,
+                                  paymentMethod: e.target.value
+                                })}
+                              />
+                              <label htmlFor="bank_transfer" className="customer-book-payment-label">
+                                <div className="customer-book-payment-icon">
+                                  <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z" />
+                                  </svg>
+                                </div>
+                                <div className="customer-book-payment-info">
+                                  <div className="customer-book-payment-title">Bank Transfer</div>
+                                  <div className="customer-book-payment-desc">Transfer money directly to our bank account</div>
+                                </div>
+                              </label>
+                            </div>
+                          )}
                         </div>
                       </div>
                       )}

@@ -11,7 +11,16 @@ export default async function handler(req, res) {
           include: [{
             model: User,
             as: 'company',
-            attributes: ['companyName', 'email', 'phone', 'companyAddress']
+            attributes: [
+              'companyName', 
+              'email', 
+              'phone', 
+              'companyAddress',
+              'preferredPaymentMethods',
+              'acceptCashPayments',
+              'acceptBankTransfers',
+              'stripePublishableKey'
+            ]
           }]
         });
 
