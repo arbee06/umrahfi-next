@@ -15,6 +15,8 @@ export default function PackageDetails() {
   const [loading, setLoading] = useState(true);
   const [selectedImage, setSelectedImage] = useState(null);
   const [imageModalOpen, setImageModalOpen] = useState(false);
+  const [reviews, setReviews] = useState([]);
+  const [reviewsLoading, setReviewsLoading] = useState(true);
   
   const handleBackClick = () => {
     // If there's a previous page in history, go back
@@ -46,10 +48,27 @@ export default function PackageDetails() {
     try {
       const response = await packageService.getPackageById(packageId);
       setPackageData(response.package);
+      
+      // Fetch reviews for this package
+      fetchReviews(packageId);
     } catch (error) {
       console.error('Error fetching package:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchReviews = async (packageId) => {
+    try {
+      const response = await fetch(`/api/reviews?packageId=${packageId}`);
+      if (response.ok) {
+        const reviewsData = await response.json();
+        setReviews(reviewsData);
+      }
+    } catch (error) {
+      console.error('Error fetching reviews:', error);
+    } finally {
+      setReviewsLoading(false);
     }
   };
 
@@ -66,6 +85,26 @@ export default function PackageDetails() {
       style: 'currency',
       currency: 'USD'
     }).format(price);
+  };
+
+  const renderStars = (rating) => {
+    return (
+      <div className="package-review-stars">
+        {[1, 2, 3, 4, 5].map((star) => (
+          <Icon 
+            key={star} 
+            icon="star" 
+            className={star <= rating ? 'star-filled' : 'star-empty'} 
+          />
+        ))}
+      </div>
+    );
+  };
+
+  const calculateAverageRating = () => {
+    if (reviews.length === 0) return 0;
+    const sum = reviews.reduce((acc, review) => acc + review.rating, 0);
+    return (sum / reviews.length).toFixed(1);
   };
 
   const openImageModal = (image) => {
@@ -211,19 +250,6 @@ export default function PackageDetails() {
                       <span className="package-details-seats">{packageData.availableSeats}</span> of {packageData.totalSeats}
                     </div>
                   </div>
-                  {(packageData.departureAirport || packageData.arrivalAirport) && (
-                    <div className="package-details-info-item">
-                      <div className="package-details-info-label">Flight Route</div>
-                      <div className="package-details-info-value">
-                        {packageData.departureAirport && getAirportByCode(packageData.departureAirport) ? 
-                          `${packageData.departureAirport} (${getAirportByCode(packageData.departureAirport).city})` : 
-                          packageData.departureAirport || 'Various'
-                        }
-                        {packageData.transitAirport && ` → ${packageData.transitAirport}`}
-                        {packageData.arrivalAirport && ` → ${packageData.arrivalAirport} (${getAirportByCode(packageData.arrivalAirport)?.city || 'Saudi Arabia'})`}
-                      </div>
-                    </div>
-                  )}
                 </div>
 
                 {/* Modern Image Gallery at bottom of Trip Information */}
@@ -231,7 +257,7 @@ export default function PackageDetails() {
                   <div className="package-gallery-modern">
                     <div className="package-gallery-header">
                       <h4 className="package-gallery-subtitle">
-                        <Icon icon="camera" />
+                        <Icon icon={['fas', 'camera']} />
                         Package Gallery ({packageData.images.length} photos)
                       </h4>
                     </div>
@@ -352,30 +378,114 @@ export default function PackageDetails() {
                   <h3>Accommodation & Services</h3>
                 </div>
                 <div className="package-details-info-grid">
-                  <div className="package-details-info-item">
-                    <div className="package-details-info-label">Hotel</div>
-                    <div className="package-details-info-value">{packageData.hotelName}</div>
-                  </div>
-                  <div className="package-details-info-item">
-                    <div className="package-details-info-label">Rating</div>
-                    <div className="package-details-info-value">
-                      <div className="package-details-rating">
-                        {[...Array(packageData.hotelRating)].map((_, i) => (
-                          <svg key={i} fill="currentColor" viewBox="0 0 20 20">
-                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                          </svg>
-                        ))}
-                        <span>({packageData.hotelRating}★)</span>
+                  {(packageData.makkahHotels?.length > 0 || packageData.madinahHotels?.length > 0) && (
+                    <div className="package-details-info-item package-details-hotels-section">
+                      <div className="package-details-info-label">Accommodation Options</div>
+                      <div className="package-details-info-value">
+                        <div className="package-details-hotels-grid">
+                          {packageData.makkahHotels?.length > 0 && (
+                            <div className="package-details-hotel-group">
+                              <div className="package-details-hotel-group-content">
+                                <h4 className="package-details-hotel-city">
+                                  <span className="package-details-city-header">Makkah Hotels</span>
+                                  <span className="package-details-city-days">{packageData.makkahDays || 7} days</span>
+                                </h4>
+                                <div className="package-details-hotel-list">
+                                  {packageData.makkahHotels.map((hotel, index) => (
+                                    <div key={index} className="package-details-hotel-item">
+                                      <div className="package-details-hotel-name">{hotel.name}</div>
+                                      <div className="package-details-hotel-rating">
+                                        {[...Array(parseInt(hotel.rating))].map((_, i) => (
+                                          <Icon key={i} icon={['fas', 'star']} className="package-details-star-filled" />
+                                        ))}
+                                        <span className="package-details-rating-text">({hotel.rating}★)</span>
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            </div>
+                          )}
+                          {packageData.madinahHotels?.length > 0 && (
+                            <div className="package-details-hotel-group">
+                              <div className="package-details-hotel-group-content">
+                                <h4 className="package-details-hotel-city">
+                                  <span className="package-details-city-header">Madinah Hotels</span>
+                                  <span className="package-details-city-days">{packageData.madinaDays || 3} days</span>
+                                </h4>
+                                <div className="package-details-hotel-list">
+                                  {packageData.madinahHotels.map((hotel, index) => (
+                                    <div key={index} className="package-details-hotel-item">
+                                      <div className="package-details-hotel-name">{hotel.name}</div>
+                                      <div className="package-details-hotel-rating">
+                                        {[...Array(parseInt(hotel.rating))].map((_, i) => (
+                                          <Icon key={i} icon={['fas', 'star']} className="package-details-star-filled" />
+                                        ))}
+                                        <span className="package-details-rating-text">({hotel.rating}★)</span>
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            </div>
+                          )}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                  <div className="package-details-info-item">
-                    <div className="package-details-info-label">Meal Plan</div>
-                    <div className="package-details-info-value">{packageData.mealPlan}</div>
-                  </div>
-                  <div className="package-details-info-item">
-                    <div className="package-details-info-label">Transportation</div>
-                    <div className="package-details-info-value">{packageData.transportation}</div>
+                  )}
+                  <div className="package-details-services-card">
+                    <div className="package-details-services-compact">
+                      {/* Flight Options Section */}
+                      {(packageData.departureAirports?.length > 0 || packageData.arrivalAirports?.length > 0) && (
+                        <div className="package-details-flights-section">
+                          <div className="package-details-service-label">Flight Options</div>
+                          <div className="package-details-flights-grid">
+                            {packageData.departureAirports?.length > 0 && (
+                              <div className="package-details-flight-item">
+                                <span className="package-details-flight-label">Departure:</span>
+                                <div className="package-details-airport-list">
+                                  {packageData.departureAirports.map((airport, index) => (
+                                    <span key={index} className="package-details-airport-tag">
+                                      {airport && getAirportByCode(airport) 
+                                        ? `${airport} (${getAirportByCode(airport).city})` 
+                                        : airport
+                                      }
+                                    </span>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+                            {packageData.arrivalAirports?.length > 0 && (
+                              <div className="package-details-flight-item">
+                                <span className="package-details-flight-label">Arrival:</span>
+                                <div className="package-details-airport-list">
+                                  {packageData.arrivalAirports.map((airport, index) => (
+                                    <span key={index} className="package-details-airport-tag">
+                                      {airport && getAirportByCode(airport) 
+                                        ? `${airport} (${getAirportByCode(airport).city})` 
+                                        : airport
+                                      }
+                                    </span>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      )}
+                      
+                      {/* Transportation and Meal Plan */}
+                      <div className="package-details-other-services">
+                        <div className="package-details-service-compact">
+                          <span className="package-details-service-label">Transportation</span>
+                          <span className="package-details-service-value">{packageData.transportation}</span>
+                        </div>
+                        <div className="package-details-service-compact">
+                          <span className="package-details-service-label">Meal Plan</span>
+                          <span className="package-details-service-value">{packageData.mealPlan}</span>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -450,6 +560,7 @@ export default function PackageDetails() {
                   </div>
                 )}
               </div>
+
             </div>
 
             {/* Right Column - Booking & Company Info */}
@@ -561,6 +672,96 @@ export default function PackageDetails() {
                       <a href={`tel:${packageData.company?.phone}`}>{packageData.company?.phone}</a>
                     </div>
                   </div>
+                </div>
+              </div>
+
+              {/* Customer Reviews Section */}
+              <div className="package-details-card">
+                <div className="package-details-card-header">
+                  <div className="package-reviews-header-left">
+                    <div className="package-details-card-icon">
+                      <Icon icon={['fas', 'star']} />
+                    </div>
+                    <h3>Customer Reviews</h3>
+                  </div>
+                  {reviews.length > 0 && (
+                    <div className="package-reviews-summary">
+                      <div className="package-reviews-average">
+                        <Icon icon={['fas', 'star']} className="package-reviews-single-star" />
+                        <span className="package-reviews-rating">{calculateAverageRating()}</span>
+                        <span className="package-reviews-count">({reviews.length} {reviews.length === 1 ? 'review' : 'reviews'})</span>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                <div className="package-reviews-content">
+                  {reviewsLoading ? (
+                    <div className="package-reviews-loading">
+                      <Icon icon={['fas', 'spinner']} spin />
+                      <span>Loading reviews...</span>
+                    </div>
+                  ) : reviews.length === 0 ? (
+                    <div className="package-reviews-empty">
+                      <Icon icon={['fas', 'comment-alt']} />
+                      <h4>No reviews yet</h4>
+                      <p>Be the first to book this package and share your experience!</p>
+                    </div>
+                  ) : (
+                    <div className="package-reviews-list">
+                      {reviews.slice(0, 1).map((review) => (
+                        <div key={review.id} className="package-review-item">
+                          <div className="package-review-header">
+                            <div className="package-review-user">
+                              <div className="package-review-avatar">
+                                {review.customer?.name?.charAt(0) || 'U'}
+                              </div>
+                              <div className="package-review-user-info">
+                                <div className="package-review-name">{review.customer?.name || 'Anonymous'}</div>
+                                <div className="package-review-date">{formatDate(review.createdAt)}</div>
+                              </div>
+                            </div>
+                            {renderStars(review.rating)}
+                          </div>
+                          
+                          {review.title && (
+                            <h5 className="package-review-title">{review.title}</h5>
+                          )}
+                          
+                          {review.comment && (
+                            <p className="package-review-comment">{review.comment}</p>
+                          )}
+                          
+                          <div className="package-review-categories">
+                            <div className="package-review-category">
+                              <span>Service</span>
+                              {renderStars(review.serviceRating)}
+                            </div>
+                            <div className="package-review-category">
+                              <span>Accommodation</span>
+                              {renderStars(review.accommodationRating)}
+                            </div>
+                            <div className="package-review-category">
+                              <span>Transportation</span>
+                              {renderStars(review.transportRating)}
+                            </div>
+                            <div className="package-review-category">
+                              <span>Value</span>
+                              {renderStars(review.valueRating)}
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                      
+                      {reviews.length > 0 && (
+                        <div className="package-reviews-show-more">
+                          <Link href={`/packages/${id}/reviews`} className="package-reviews-show-more-btn">
+                            {reviews.length === 1 ? 'View this review' : `View all ${reviews.length} reviews`}
+                          </Link>
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
               </div>
             </div>

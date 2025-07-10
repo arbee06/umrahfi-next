@@ -913,6 +913,23 @@
   flex-shrink: 0;
 }
 
+.packages-title-link {
+  text-decoration: none !important;
+}
+
+.packages-title-link:hover {
+  text-decoration: none !important;
+}
+
+.packages-package-title-clickable {
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.packages-package-title-clickable:hover {
+  color: var(--primary-600);
+}
+
 /* Fixed height description with gradient fade */
 .packages-package-description {
   color: var(--gray-600);
@@ -1373,6 +1390,170 @@
     padding: 1rem;
   }
 }
+
+/* Modern Airport and Hotel Options Display */
+.packages-airport-options,
+.packages-hotel-options {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+}
+
+.packages-airport-group,
+.packages-hotel-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.packages-airport-group-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+}
+
+.packages-airport-pills,
+.packages-hotel-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.packages-airport-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.75rem;
+  border-radius: 1rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  border: 1px solid;
+  transition: all 0.2s ease;
+}
+
+.packages-airport-pill.departure {
+  background: #dbeafe;
+  color: #1e40af;
+  border-color: #3b82f6;
+}
+
+.packages-airport-pill.arrival {
+  background: #dcfce7;
+  color: #166534;
+  border-color: #22c55e;
+}
+
+.packages-airport-pill-more {
+  font-size: 0.75rem;
+  color: #6b7280;
+  font-weight: 500;
+  padding: 0.25rem 0.5rem;
+  background: #f3f4f6;
+  border-radius: 0.75rem;
+  border: 1px solid #e5e7eb;
+}
+
+.packages-hotel-city {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.25rem;
+  justify-content: space-between;
+}
+
+.packages-city-icon {
+  font-size: 0.875rem;
+}
+
+.packages-city-icon.makkah {
+  color: #059669;
+}
+
+.packages-city-icon.madinah {
+  color: #dc2626;
+}
+
+.packages-hotel-city-name {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #374151;
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+  flex: 1;
+}
+
+.packages-city-days-badge {
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 0.2rem 0.6rem;
+  border-radius: 0.5rem;
+  background: linear-gradient(135deg, #007AFF 0%, #0056CC 100%);
+  color: white;
+  white-space: nowrap;
+}
+
+.packages-hotel-pill {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.75rem;
+  font-size: 0.75rem;
+  border: 1px solid;
+  transition: all 0.2s ease;
+  min-width: 120px;
+}
+
+.packages-hotel-pill.makkah {
+  background: #f0fdf4;
+  color: #166534;
+  border-color: #22c55e;
+}
+
+.packages-hotel-pill.madinah {
+  background: #fef2f2;
+  color: #dc2626;
+  border-color: #ef4444;
+}
+
+.packages-hotel-pill-name {
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.packages-hotel-pill-rating {
+  display: flex;
+  gap: 0.125rem;
+}
+
+.packages-hotel-star {
+  font-size: 0.75rem;
+  color: #fbbf24;
+}
+
+.packages-hotel-pill-more {
+  font-size: 0.75rem;
+  color: #6b7280;
+  font-weight: 500;
+  padding: 0.5rem 0.75rem;
+  background: #f3f4f6;
+  border-radius: 0.75rem;
+  border: 1px solid #e5e7eb;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 120px;
+}
+
+.packages-hotel-fallback {
+  font-size: 0.875rem;
+  color: #6b7280;
+  font-style: italic;
+}
+
 
 /* Reduced motion support */
 @media (prefers-reduced-motion: reduce) {

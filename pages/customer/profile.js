@@ -5,6 +5,7 @@ import Layout from '../../components/Layout';
 import ProtectedRoute from '../../components/ProtectedRoute';
 import { useAuth } from '../../utils/AuthContext';
 import authService from '../../services/authService';
+import CountrySelect from '../../components/CountrySelect';
 import Swal from 'sweetalert2';
 import soundManager from '../../utils/soundUtils';
 import Icon from '../../components/FontAwesome';
@@ -20,6 +21,7 @@ export default function CustomerProfile() {
     email: '',
     phone: '',
     address: '',
+    country: '',
     bankName: '',
     bankAccountNumber: '',
     bankAccountHolderName: '',
@@ -36,6 +38,7 @@ export default function CustomerProfile() {
       email: user.email || '',
       phone: user.phone || '',
       address: user.address || '',
+      country: user.country || '',
       bankName: user.bankName || '',
       bankAccountNumber: user.bankAccountNumber || '',
       bankAccountHolderName: user.bankAccountHolderName || '',
@@ -299,6 +302,16 @@ export default function CustomerProfile() {
                     <Icon icon={['fas', 'info-circle']} />
                     Email address cannot be changed for security reasons
                   </small>
+                </div>
+
+                <div className="customer-profile-form-group">
+                  <label className="customer-profile-form-label">Country</label>
+                  <CountrySelect
+                    value={formData.country}
+                    onChange={(value) => setFormData({ ...formData, country: value })}
+                    className="customer-profile-form-input"
+                    placeholder="Select your country"
+                  />
                 </div>
 
                 <div className="customer-profile-form-group customer-profile-form-grid-full">

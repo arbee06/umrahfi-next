@@ -1,5 +1,105 @@
 /* File: styles/pages/register.css */
 
+/* Country Select Dropdown Styles */
+.register-country-select {
+  position: relative;
+  width: 100%;
+}
+
+.register-country-select-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.register-country-select-input-wrapper .register-form-input-modern {
+  padding-right: 2.5rem;
+}
+
+.register-country-select-arrow {
+  position: absolute;
+  right: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #9ca3af;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  padding: 0.25rem;
+  border-radius: 0.25rem;
+}
+
+.register-country-select-arrow:hover {
+  color: #6b7280;
+  background-color: #f3f4f6;
+}
+
+.register-country-select-arrow.open {
+  transform: translateY(-50%) rotate(180deg);
+  color: #3b82f6;
+}
+
+.register-country-select-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  background: white;
+  border: 2px solid #3b82f6;
+  border-top: none;
+  border-radius: 0 0 0.75rem 0.75rem;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+  max-height: 300px;
+  overflow: hidden;
+}
+
+.register-country-select-options {
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.register-country-select-option {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.register-country-select-option:last-child {
+  border-bottom: none;
+}
+
+.register-country-select-option:hover,
+.register-country-select-option.highlighted {
+  background-color: #dbeafe;
+  color: #1e40af;
+}
+
+.register-country-select-option.selected {
+  background-color: #bfdbfe;
+  color: #1d4ed8;
+  font-weight: 600;
+}
+
+.register-country-name {
+  flex: 1;
+  font-size: 0.875rem;
+}
+
+.register-country-select-no-results {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 2rem;
+  color: #6b7280;
+  font-size: 0.875rem;
+  text-align: center;
+}
+
 /* Register Page Specific Styles */
 .register-auth-container {
   min-height: 100vh;

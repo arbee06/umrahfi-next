@@ -70,6 +70,48 @@
     "continent": "EU"
   },
   {
+    "iata": "MUC",
+    "name": "Munich Airport",
+    "city": "Munich",
+    "country": "DE",
+    "continent": "EU"
+  },
+  {
+    "iata": "BER",
+    "name": "Berlin Brandenburg Airport",
+    "city": "Berlin",
+    "country": "DE",
+    "continent": "EU"
+  },
+  {
+    "iata": "HAM",
+    "name": "Hamburg Airport",
+    "city": "Hamburg",
+    "country": "DE",
+    "continent": "EU"
+  },
+  {
+    "iata": "DUS",
+    "name": "Düsseldorf Airport",
+    "city": "Düsseldorf",
+    "country": "DE",
+    "continent": "EU"
+  },
+  {
+    "iata": "CGN",
+    "name": "Cologne Bonn Airport",
+    "city": "Cologne",
+    "country": "DE",
+    "continent": "EU"
+  },
+  {
+    "iata": "STR",
+    "name": "Stuttgart Airport",
+    "city": "Stuttgart",
+    "country": "DE",
+    "continent": "EU"
+  },
+  {
     "iata": "AMS",
     "name": "Amsterdam Airport Schiphol",
     "city": "Amsterdam",

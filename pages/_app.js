@@ -6,6 +6,7 @@ import '@/styles/packages.css';
 import '@/styles/forgot-password.css';
 import '@/styles/reset-password.css';
 import '@/styles/package-details.css'
+import '@/styles/package-reviews.css'
 import '@/styles/company-dashboard.css'
 import '@/styles/company-orders.css'
 import '@/styles/company-packages.css'
@@ -23,6 +24,8 @@ import '@/styles/customer-profile.css';
 import '@/styles/customer-dashboard.css'
 import '@/styles/customer-order-details.css'
 import '@/styles/customer-booking.css'
+import '@/styles/customer-review.css'
+import '@/styles/company-public-profile.css'
 import '@/styles/admin-dashboard.css'
 import '@/styles/fontawesome-custom.css'
 import '@/styles/date-range-picker.css'

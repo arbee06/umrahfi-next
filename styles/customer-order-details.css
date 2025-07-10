@@ -568,6 +568,86 @@
   height: 1.25rem;
 }
 
+/* Review Button and Status */
+.order-details-btn-review {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.875rem 1.5rem;
+  background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+  color: white;
+  border: none;
+  border-radius: 0.75rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: center;
+  justify-content: center;
+  box-shadow: 0 2px 4px rgba(245, 158, 11, 0.2);
+}
+
+.order-details-btn-review:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 6px rgba(245, 158, 11, 0.3);
+}
+
+.order-review-status {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem;
+  background: #f0fdf4;
+  border: 1px solid #22c55e;
+  border-radius: 0.75rem;
+  color: #166534;
+  font-weight: 500;
+  font-size: 0.875rem;
+}
+
+.review-complete-icon {
+  font-size: 1.25rem;
+  color: #22c55e;
+}
+
+/* Inline Review Button */
+.order-details-btn-review-inline {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+  color: white;
+  text-decoration: none;
+  border-radius: 1rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 4px rgba(245, 158, 11, 0.2);
+}
+
+.order-details-btn-review-inline:hover {
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 6px rgba(245, 158, 11, 0.3);
+  color: white;
+  text-decoration: none;
+}
+
+.order-review-status-inline {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: #f0fdf4;
+  border: 1px solid #22c55e;
+  border-radius: 1rem;
+  color: #166534;
+  font-weight: 500;
+  font-size: 0.875rem;
+}
+
 @media (max-width: 480px) {
   .order-details-title {
     font-size: 1.5rem;

@@ -1,9 +1,10 @@
 // File: pages/register.js
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
 import Layout from '@/components/Layout';
 import { useAuth } from '@/utils/AuthContext';
+import { getCountries } from '@/utils/countries';
 import Icon from '@/components/FontAwesome';
 
 export default function Register() {
@@ -16,6 +17,7 @@ export default function Register() {
     password: '',
     phone: '',
     address: '',
+    country: '',
     companyName: '',
     companyLicense: '',
     companyAddress: ''
@@ -27,6 +29,13 @@ export default function Register() {
   const [profilePicture, setProfilePicture] = useState(null);
   const [profilePicturePreview, setProfilePicturePreview] = useState(null);
   const [uploadingPicture, setUploadingPicture] = useState(false);
+  
+  // Country dropdown states
+  const [countries] = useState(() => getCountries());
+  const [isCountryOpen, setIsCountryOpen] = useState(false);
+  const [countrySearch, setCountrySearch] = useState('');
+  const [filteredCountries, setFilteredCountries] = useState(getCountries());
+  const countryDropdownRef = useRef(null);
 
   useEffect(() => {
     if (router.query.type) {
@@ -34,11 +43,55 @@ export default function Register() {
     }
   }, [router.query.type]);
 
+  // Country dropdown effects
+  useEffect(() => {
+    const filtered = countries.filter(country =>
+      country.name.toLowerCase().includes(countrySearch.toLowerCase())
+    );
+    setFilteredCountries(filtered);
+  }, [countrySearch, countries]);
+
+  useEffect(() => {
+    if (formData.country && !isCountryOpen) {
+      setCountrySearch(formData.country);
+    }
+  }, [formData.country, isCountryOpen]);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (countryDropdownRef.current && !countryDropdownRef.current.contains(event.target)) {
+        setIsCountryOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
   const handleChange = (e) => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value
     });
+  };
+
+  // Country dropdown handlers
+  const handleCountryInputChange = (e) => {
+    setCountrySearch(e.target.value);
+    if (!isCountryOpen) setIsCountryOpen(true);
+  };
+
+  const handleCountryInputFocus = () => {
+    setIsCountryOpen(true);
+    setCountrySearch('');
+  };
+
+  const handleCountrySelect = (country) => {
+    setFormData({
+      ...formData,
+      country: country.name
+    });
+    setCountrySearch(country.name);
+    setIsCountryOpen(false);
   };
 
   const handleProfilePictureChange = (e) => {
@@ -375,21 +428,74 @@ export default function Register() {
 
                       <div className="register-form-group-modern">
                         <label className="register-form-label-modern">
-                          <span className="register-label-text">Location</span>
+                          <span className="register-label-text">Country</span>
                         </label>
                         <div className="register-input-wrapper-modern">
                           <div className="register-input-icon">
-                            <Icon icon="map-marker-alt" />
+                            <Icon icon="globe" />
                           </div>
-                          <input
-                            type="text"
-                            name="address"
-                            value={formData.address}
-                            onChange={handleChange}
-                            className="register-form-input-modern"
-                            placeholder="City, Country"
-                          />
+                          <div className="register-country-select" ref={countryDropdownRef}>
+                            <div className="register-country-select-input-wrapper">
+                              <input
+                                type="text"
+                                value={countrySearch}
+                                onChange={handleCountryInputChange}
+                                onFocus={handleCountryInputFocus}
+                                placeholder="Select your country"
+                                required
+                                className="register-form-input-modern"
+                              />
+                              <div 
+                                className={`register-country-select-arrow ${isCountryOpen ? 'open' : ''}`}
+                                onClick={() => setIsCountryOpen(!isCountryOpen)}
+                              >
+                                <Icon icon="chevron-down" />
+                              </div>
+                            </div>
+                            
+                            {isCountryOpen && (
+                              <div className="register-country-select-dropdown">
+                                {filteredCountries.length > 0 ? (
+                                  <div className="register-country-select-options">
+                                    {filteredCountries.map((country) => (
+                                      <div
+                                        key={country.code}
+                                        className={`register-country-select-option ${formData.country === country.name ? 'selected' : ''}`}
+                                        onClick={() => handleCountrySelect(country)}
+                                      >
+                                        <span className="register-country-name">{country.name}</span>
+                                      </div>
+                                    ))}
+                                  </div>
+                                ) : (
+                                  <div className="register-country-select-no-results">
+                                    <Icon icon="search" />
+                                    <span>No countries found for "{countrySearch}"</span>
+                                  </div>
+                                )}
+                              </div>
+                            )}
+                          </div>
                         </div>
+                      </div>
+                    </div>
+
+                    <div className="register-form-group-modern">
+                      <label className="register-form-label-modern">
+                        <span className="register-label-text">Address</span>
+                      </label>
+                      <div className="register-input-wrapper-modern">
+                        <div className="register-input-icon">
+                          <Icon icon="map-marker-alt" />
+                        </div>
+                        <input
+                          type="text"
+                          name="address"
+                          value={formData.address}
+                          onChange={handleChange}
+                          className="register-form-input-modern"
+                          placeholder="Your city and address"
+                        />
                       </div>
                     </div>
                   </div>

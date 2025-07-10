@@ -18,6 +18,7 @@ export default async function handler(req, res) {
       name,
       phone,
       address,
+      country,
       companyName,
       companyLicense,
       companyAddress,
@@ -39,7 +40,8 @@ export default async function handler(req, res) {
     const updateData = {
       name: name || user.name,
       phone: phone || user.phone,
-      address: address || user.address
+      address: address || user.address,
+      country: country || user.country
     };
 
     // Add company-specific fields if user is a company

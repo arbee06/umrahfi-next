@@ -14,6 +14,7 @@ export default function OrderDetails() {
   const { user } = useAuth();
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [review, setReview] = useState(null);
 
   useEffect(() => {
     if (!router.isReady) return;
@@ -29,6 +30,28 @@ export default function OrderDetails() {
     try {
       const response = await orderService.getOrderById(orderId);
       setOrder(response.order);
+      
+      // If order is completed, check for existing review
+      if (response.order.status === 'completed') {
+        try {
+          const reviewResponse = await fetch(`/api/reviews?orderId=${orderId}`);
+          if (reviewResponse.ok) {
+            const reviewsData = await reviewResponse.json();
+            // Handle different response formats
+            const reviews = Array.isArray(reviewsData) ? reviewsData : reviewsData.reviews || [];
+            console.log('Found reviews:', reviews.length); // Debug log
+            if (reviews.length > 0) {
+              setReview(reviews[0]);
+              console.log('Review found and set:', reviews[0]); // Debug log
+            } else {
+              setReview(null); // Explicitly set to null if no review
+            }
+          }
+        } catch (error) {
+          console.error('Error fetching review:', error);
+          setReview(null); // Set to null on error
+        }
+      }
     } catch (error) {
       console.error('Error fetching order details:', error);
     } finally {
@@ -348,9 +371,23 @@ export default function OrderDetails() {
                   <Icon icon={['fas', statusBadge.icon]} className="status-icon" />
                   <span>{statusBadge.text}</span>
                 </div>
-                {/* <div className={`order-details-payment-badge ${paymentBadge.class}`}>
-                  {paymentBadge.text}
-                </div> */}
+                {order.status === 'completed' && (
+                  !review ? (
+                    <Link 
+                      href={`/customer/orders/${id}/review`} 
+                      className="order-details-btn-review-inline"
+                      onClick={() => {
+                        // Store that user came from order details
+                        if (typeof window !== 'undefined') {
+                          sessionStorage.setItem('reviewBackPath', `/customer/orders/${id}`);
+                        }
+                      }}
+                    >
+                      <Icon icon={['fas', 'star']} />
+                      Write Review
+                    </Link>
+                  ) : null
+                )}
               </div>
             </div>
           </div>
@@ -381,6 +418,20 @@ export default function OrderDetails() {
                       <div className="info-value">{order.package?.duration} days</div>
                     </div>
                     <div className="info-item">
+                      <div className="info-label">
+                        <Icon icon={['fas', 'kaaba']} className="info-icon" />
+                        Makkah Days
+                      </div>
+                      <div className="info-value">{order.package?.makkahDays || 'N/A'} days</div>
+                    </div>
+                    <div className="info-item">
+                      <div className="info-label">
+                        <Icon icon={['fas', 'mosque']} className="info-icon" />
+                        Madina Days
+                      </div>
+                      <div className="info-value">{order.package?.madinaDays || 'N/A'} days</div>
+                    </div>
+                    <div className="info-item">
                       <div className="info-label">Hotel</div>
                       <div className="info-value">{order.package?.hotelName} ({order.package?.hotelRating}★)</div>
                     </div>
@@ -391,7 +442,7 @@ export default function OrderDetails() {
               {/* Traveler Information */}
               <div className="order-details-card">
                 <div className="order-details-card-header">
-                  <h3>Traveler Information ({order.numberOfAdults || 0} Adults{order.numberOfChildren > 0 ? `, ${order.numberOfChildren} Children` : ''})</h3>
+                  <h3>Traveler Information ({(order.numberOfAdults || 0) + (order.numberOfChildren || 0)} Travelers - {order.numberOfAdults || 0} Adults{order.numberOfChildren > 0 ? `, ${order.numberOfChildren} Children` : ''})</h3>
                 </div>
                 <div className="order-details-card-content">
                   <div className="travelers-list">

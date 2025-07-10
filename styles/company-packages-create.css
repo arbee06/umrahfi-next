@@ -361,6 +361,21 @@
   font-family: inherit;
 }
 
+.create-package-form-display {
+  width: 100%;
+  min-height: 60px;
+  padding: 1rem 1rem 1rem 3rem;
+  font-size: 0.875rem;
+  background: var(--gray-100);
+  border: 2px solid var(--gray-200);
+  border-radius: 0.875rem;
+  color: var(--gray-700);
+  font-family: inherit;
+  display: flex;
+  align-items: center;
+  font-weight: 500;
+}
+
 .create-package-form-textarea {
   resize: vertical;
   min-height: 100px;
@@ -377,6 +392,30 @@
 }
 
 /* Itinerary Specific Styles */
+.create-package-field-description {
+  font-size: 0.875rem;
+  color: var(--gray-600);
+  margin-top: 0.25rem;
+  margin-bottom: 1rem;
+}
+
+.create-package-airports-section,
+.create-package-hotels-section {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.create-package-hotel-item {
+  margin-bottom: 0.75rem;
+}
+
+.create-package-hotel-row {
+  display: flex;
+  gap: 0.75rem;
+  align-items: flex-start;
+}
+
 .create-package-itinerary-list {
   display: flex;
   flex-direction: column;
@@ -931,5 +970,255 @@
   .create-package-card {
     box-shadow: none;
     border: 1px solid var(--gray-300);
+  }
+}
+
+/* CountrySelect Component Styles */
+.country-select {
+  position: relative;
+  width: 100%;
+}
+
+.country-select-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.country-select-input-wrapper input {
+  width: 100%;
+  padding-right: 2.5rem;
+  border: 2px solid var(--gray-200);
+  border-radius: 0.875rem;
+  padding: 1rem 1rem 1rem 3rem;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  background: white;
+  color: var(--gray-900);
+  font-family: inherit;
+}
+
+.country-select-input-wrapper input:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  transform: translateY(-1px);
+}
+
+.country-select-arrow {
+  position: absolute;
+  right: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--gray-400);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  padding: 0.25rem;
+  border-radius: 0.25rem;
+  z-index: 1;
+}
+
+.country-select-arrow:hover {
+  color: var(--gray-600);
+  background-color: var(--gray-50);
+}
+
+.country-select-arrow.open {
+  transform: translateY(-50%) rotate(180deg);
+  color: var(--primary);
+}
+
+.country-select-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  background: white;
+  border: 2px solid var(--primary);
+  border-top: none;
+  border-radius: 0 0 0.875rem 0.875rem;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  max-height: 200px;
+  overflow-y: auto;
+  margin-top: -1px;
+}
+
+.country-select-options {
+  padding: 0.5rem 0;
+}
+
+.country-select-option {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border-bottom: 1px solid var(--gray-100);
+}
+
+.country-select-option:last-child {
+  border-bottom: none;
+}
+
+.country-select-option:hover,
+.country-select-option.highlighted {
+  background-color: var(--gray-50);
+  color: var(--primary);
+}
+
+.country-select-option.selected {
+  background-color: var(--primary-50);
+  color: var(--primary-dark);
+  font-weight: 600;
+}
+
+.country-flag {
+  font-size: 1.25rem;
+  flex-shrink: 0;
+}
+
+.country-name {
+  flex: 1;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.country-select-no-results {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 2rem 1rem;
+  color: var(--gray-500);
+  font-size: 0.875rem;
+  text-align: center;
+}
+
+/* Ensure proper z-index and containment */
+.create-package-form-group:has(.country-select) {
+  position: relative;
+  z-index: 10;
+}
+
+.country-select-container {
+  position: relative;
+  width: 100%;
+  overflow: visible;
+}
+
+/* Ensure the input wrapper accommodates the dropdown */
+.create-package-input-wrapper:has(.country-select-container) {
+  position: relative;
+  overflow: visible;
+}
+
+/* Override any overflow hidden that might clip the dropdown */
+.create-package-form-section:has(.country-select) {
+  overflow: visible;
+}
+
+.create-package-step:has(.country-select) {
+  overflow: visible;
+}
+
+.create-package-card:has(.country-select) {
+  overflow: visible;
+}
+
+/* Autocomplete Styles for Inclusions/Exclusions */
+.create-package-autocomplete-wrapper {
+  position: relative;
+}
+
+.create-package-autocomplete-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  background: white;
+  border: 2px solid var(--primary);
+  border-top: none;
+  border-radius: 0 0 0.875rem 0.875rem;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  max-height: 200px;
+  overflow-y: auto;
+  margin-top: -1px;
+}
+
+.create-package-autocomplete-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border-bottom: 1px solid var(--gray-100);
+  font-size: 0.875rem;
+}
+
+.create-package-autocomplete-item:last-child {
+  border-bottom: none;
+}
+
+.create-package-autocomplete-item:hover,
+.create-package-autocomplete-item.selected {
+  background-color: var(--gray-50);
+  color: var(--primary);
+}
+
+.create-package-suggestion-icon {
+  font-size: 0.875rem;
+  color: var(--gray-400);
+  flex-shrink: 0;
+}
+
+.create-package-autocomplete-item:hover .create-package-suggestion-icon,
+.create-package-autocomplete-item.selected .create-package-suggestion-icon {
+  color: var(--primary);
+}
+
+.create-package-autocomplete-item span {
+  flex: 1;
+  line-height: 1.4;
+}
+
+/* Ensure autocomplete containers have proper overflow */
+.create-package-list-item:has(.create-package-autocomplete-wrapper) {
+  position: relative;
+  z-index: 10;
+}
+
+.create-package-form-section:has(.create-package-autocomplete-wrapper) {
+  overflow: visible;
+}
+
+/* Responsive adjustments for autocomplete */
+@media (max-width: 768px) {
+  .create-package-autocomplete-dropdown {
+    max-height: 150px;
+  }
+  
+  .create-package-autocomplete-item {
+    padding: 0.625rem 0.75rem;
+    font-size: 0.8rem;
+  }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .country-select-dropdown {
+    max-height: 150px;
+  }
+  
+  .country-select-option {
+    padding: 0.625rem 0.75rem;
+  }
+  
+  .country-name {
+    font-size: 0.8rem;
   }
 }

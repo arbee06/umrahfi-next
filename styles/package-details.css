@@ -1,4 +1,331 @@
 /* Package Details Page Specific Styles */
+
+/* Special styling for Trip Information card */
+.package-details-card:has(.package-details-info-label:contains("Price per Person")) {
+  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+}
+
+.package-details-info-grid .package-details-info-item:has(.package-details-price) {
+  background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+  border-color: #93c5fd;
+}
+
+.package-details-info-grid .package-details-info-item:has(.package-details-holy-cities) {
+  background: linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%);
+  border-color: #a5b4fc;
+}
+
+/* Hotel City Header with Days */
+.package-details-hotel-city {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.25rem;
+  padding: 0.75rem 1rem;
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  border-radius: 0.75rem;
+  border: 1px solid #e2e8f0;
+}
+
+.package-details-city-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.package-details-city-header svg,
+.package-details-city-header .fa-icon {
+  font-size: 1.25rem;
+  color: #3b82f6;
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+.package-details-city-days {
+  font-size: 0.875rem;
+  font-weight: 700;
+  padding: 0.5rem 1rem;
+  border-radius: 2rem;
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  color: white;
+  white-space: nowrap;
+  box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.5);
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: .8;
+  }
+}
+
+/* Holy Cities Display */
+.package-details-holy-cities {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.package-details-holy-cities .package-details-city-days {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  animation: none;
+  transition: all 0.2s ease;
+}
+
+.package-details-holy-cities .package-details-city-days:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 12px -2px rgba(59, 130, 246, 0.6);
+}
+
+.package-details-holy-cities .package-details-city-days svg {
+  font-size: 1.125rem;
+}
+
+@media (max-width: 768px) {
+  .package-details-hotel-city {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: 0.5rem 0.75rem;
+  }
+  
+  .package-details-city-days {
+    font-size: 0.75rem;
+    padding: 0.375rem 0.75rem;
+  }
+}
+
+/* Airport and Hotel Options Styling */
+.package-details-flight-options {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* Ensure hotel cards have equal height */
+.package-details-hotels-grid .package-details-hotel-list {
+  flex: 1;
+}
+
+.package-details-airport-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.package-details-airport-label {
+  font-weight: 600;
+  color: #1d1d1f;
+  display: block;
+  font-size: 13px;
+  margin-bottom: 4px;
+  text-transform: none;
+  letter-spacing: -0.01em;
+}
+
+.package-details-airport-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.package-details-airport-tag {
+  background: #007aff;
+  color: white;
+  padding: 4px 10px;
+  border-radius: 16px;
+  font-size: 12px;
+  font-weight: 500;
+  border: none;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+  display: inline-block;
+}
+
+.package-details-airport-tag:hover {
+  background: #0056cc;
+}
+
+.package-details-hotels-section {
+  grid-column: 1 / -1;
+  margin-bottom: 1rem;
+}
+
+.package-details-hotels-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.5rem;
+  margin-top: 1.5rem;
+  align-items: stretch;
+}
+
+.package-details-hotel-group {
+  background: #ffffff;
+  border-radius: 16px;
+  border: 1px solid #f0f0f0;
+  box-shadow: 0 2px 16px rgba(0, 0, 0, 0.04);
+  transition: all 0.2s ease;
+  height: 100%;
+  overflow: hidden;
+}
+
+.package-details-hotel-group:hover {
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+  transform: translateY(-2px);
+}
+
+.package-details-hotel-group-content {
+  padding: 24px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.package-details-hotel-group:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+}
+
+.package-details-hotel-city {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 0;
+  padding: 0;
+  border: none;
+}
+
+.package-details-city-header {
+  font-size: 20px;
+  font-weight: 600;
+  color: #1d1d1f;
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+}
+
+.package-details-city-days {
+  background: #007aff;
+  color: white;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: 500;
+  border: none;
+  box-shadow: none;
+}
+
+.package-details-hotel-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.package-details-hotel-item {
+  background: #f8f9fa;
+  padding: 16px;
+  border-radius: 12px;
+  border: 1px solid #e9ecef;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.package-details-hotel-item:hover {
+  background: #f1f3f4;
+  border-color: #dee2e6;
+}
+
+.package-details-hotel-item::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.package-details-hotel-item:hover {
+  transform: translateX(4px);
+  border-color: #cbd5e1;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.package-details-hotel-item:hover::before {
+  opacity: 1;
+}
+
+.package-details-hotel-name {
+  font-weight: 500;
+  color: #1d1d1f;
+  margin-bottom: 8px;
+  font-size: 16px;
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+}
+
+.package-details-hotel-rating {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.package-details-star-filled {
+  color: #ff9500;
+  font-size: 14px;
+  filter: none;
+}
+
+.package-details-rating-text {
+  color: #8e8e93;
+  font-size: 14px;
+  margin-left: 6px;
+  font-weight: 400;
+  text-shadow: none;
+}
+
+@media (max-width: 768px) {
+  .package-details-hotels-grid {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+  
+  .package-details-hotel-group {
+    padding: 1.25rem;
+  }
+  
+  .package-details-info-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  
+  .package-details-info-item {
+    padding: 1rem;
+  }
+  
+  .package-details-flight-options {
+    gap: 0.75rem;
+  }
+  
+  .package-details-airport-list {
+    gap: 0.25rem;
+  }
+  
+  .package-details-airport-tag {
+    font-size: 0.8rem;
+    padding: 0.2rem 0.6rem;
+  }
+}
 .package-details-container {
   min-height: 100vh;
   position: relative;
@@ -224,8 +551,6 @@
 }
 
 .package-details-sidebar {
-  position: sticky;
-  top: 2rem;
   display: flex;
   flex-direction: column;
   gap: 2rem;
@@ -236,10 +561,15 @@
   background: white;
   border-radius: 1.5rem;
   padding: 2rem;
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  border: 1px solid #e2e8f0;
   position: relative;
   overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.package-details-card:hover {
+  box-shadow: 0 25px 30px -5px rgba(0, 0, 0, 0.12), 0 15px 15px -5px rgba(0, 0, 0, 0.06);
 }
 
 .package-details-card::before {
@@ -248,8 +578,8 @@
   top: 0;
   left: 0;
   right: 0;
-  height: 3px;
-  background: linear-gradient(90deg, var(--primary), var(--secondary));
+  height: 4px;
+  background: linear-gradient(90deg, #3b82f6, #8b5cf6, #ec4899);
 }
 
 .package-details-card-header {
@@ -259,18 +589,20 @@
   margin-bottom: 1.5rem;
   padding-bottom: 1rem;
   border-bottom: 1px solid var(--gray-100);
+  flex-wrap: wrap;
 }
 
 .package-details-card-icon {
-  width: 2.5rem;
-  height: 2.5rem;
-  background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
-  border-radius: 0.75rem;
+  width: 3rem;
+  height: 3rem;
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  border-radius: 1rem;
   display: flex;
   align-items: center;
   justify-content: center;
   color: white;
   flex-shrink: 0;
+  box-shadow: 0 8px 16px -4px rgba(59, 130, 246, 0.4);
 }
 
 .package-details-card-icon.package-details-icon-success {
@@ -287,43 +619,235 @@
 }
 
 .package-details-card-header h3 {
-  font-size: 1.25rem;
-  font-weight: 700;
-  color: var(--gray-900);
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #1e293b;
   margin: 0;
+  letter-spacing: -0.025em;
 }
 
 /* Information Grid */
 .package-details-info-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  grid-template-columns: 2fr 1fr 1fr;
+  gap: 1rem;
+  margin-top: 0.5rem;
+  align-items: start;
+}
+
+/* Accommodation section gets special layout */
+.package-details-card:has(.package-details-hotels-section) .package-details-info-grid {
+  grid-template-columns: 1fr;
   gap: 1.5rem;
+}
+
+/* Services card - unified card for meal plan, transportation, and flights */
+.package-details-services-card {
+  background: #ffffff;
+  padding: 16px 20px;
+  border-radius: 16px;
+  border: 1px solid #f0f0f0;
+  box-shadow: 0 2px 16px rgba(0, 0, 0, 0.04);
+  transition: all 0.2s ease;
+  grid-column: 1 / -1;
+  margin-top: 8px;
+}
+
+.package-details-services-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+}
+
+.package-details-services-compact {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: 40px;
+  align-items: flex-start;
+  justify-items: center;
+}
+
+/* Flight Options Section - Left Side */
+.package-details-flights-section {
+  justify-self: start;
+  min-width: 0;
+}
+
+.package-details-flights-grid {
+  display: flex;
+  gap: 20px;
+  margin-top: 8px;
+}
+
+.package-details-flight-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 0 0 auto;
+}
+
+.package-details-flight-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #1d1d1f;
+  margin-bottom: 4px;
+}
+
+/* Transportation and Meal Plan - Right Side */
+.package-details-other-services {
+  display: contents;
+}
+
+.package-details-service-compact {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.package-details-service-compact:last-child {
+  justify-self: end;
+}
+
+.package-details-service-label {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #8e8e93;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.package-details-service-label::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  background: #007aff;
+  border-radius: 50%;
+}
+
+.package-details-service-value {
+  font-size: 15px;
+  font-weight: 500;
+  color: #1d1d1f;
+  letter-spacing: -0.01em;
+}
+
+@media (max-width: 1024px) {
+  .package-details-info-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .package-details-services-compact {
+    flex-direction: column;
+    gap: 16px;
+  }
+  .package-details-flights-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .package-details-info-grid {
+    grid-template-columns: 1fr;
+  }
+  .package-details-other-services {
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    min-width: auto;
+  }
 }
 
 .package-details-info-item {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 12px;
+  padding: 20px;
+  background: #ffffff;
+  border-radius: 16px;
+  border: 1px solid #f0f0f0;
+  transition: all 0.2s ease;
+  height: fit-content;
+  box-shadow: 0 2px 16px rgba(0, 0, 0, 0.04);
+}
+
+.package-details-info-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+}
+
+/* Compact style for meal plan and transportation */
+.package-details-info-item.compact {
+  padding: 16px 20px;
+  text-align: left;
+  flex: 0 0 auto;
+  min-width: 140px;
+}
+
+.package-details-info-item:not(.compact) {
+  flex: 1;
+  min-width: 200px;
+}
+
+.package-details-info-item.compact .package-details-info-label {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #8e8e93;
+  margin-bottom: 6px;
+  justify-content: flex-start;
+}
+
+.package-details-info-item.compact .package-details-info-label::before {
+  display: none;
+}
+
+.package-details-info-item.compact .package-details-info-value {
+  font-size: 15px;
+  font-weight: 500;
+  color: #1d1d1f;
+  letter-spacing: -0.01em;
+}
+
+.package-details-info-item:hover {
+  background: #f1f5f9;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
 }
 
 .package-details-info-label {
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: var(--gray-500);
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #64748b;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.1em;
+  margin-bottom: 0.75rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.package-details-info-label::before {
+  content: '';
+  width: 8px;
+  height: 8px;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  border-radius: 50%;
+  opacity: 0.7;
 }
 
 .package-details-info-value {
-  font-size: 1rem;
-  font-weight: 600;
-  color: var(--gray-900);
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: #1e293b;
+  line-height: 1.2;
 }
 
 .package-details-price {
-  font-size: 1.5rem;
+  font-size: 2rem;
   font-weight: 800;
-  color: var(--primary);
+  color: #3b82f6;
+  font-family: system-ui, -apple-system, sans-serif;
 }
 
 .package-details-seats {
@@ -786,5 +1310,233 @@
   
   .package-details-breadcrumb-link:hover {
     transform: none;
+  }
+}
+
+/* Package Reviews Styles */
+.package-reviews-summary {
+  display: inline-flex;
+  align-items: center;
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  padding: 0.375rem 0.75rem;
+  border-radius: 0.5rem;
+  border: 1px solid #f59e0b;
+  font-size: 0.875rem;
+  white-space: nowrap;
+}
+
+.package-reviews-header-left {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.package-reviews-average {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+}
+
+.package-reviews-single-star {
+  color: #fbbf24;
+  font-size: 0.875rem;
+}
+
+.package-review-stars {
+  display: flex;
+  gap: 0.25rem;
+}
+
+.package-review-stars .star-filled {
+  color: #fbbf24;
+}
+
+.package-review-stars .star-empty {
+  color: #d1d5db;
+}
+
+.package-reviews-rating {
+  font-weight: 700;
+  font-size: 0.875rem;
+  color: #92400e;
+}
+
+.package-reviews-count {
+  color: #92400e;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.package-reviews-content {
+  padding: 1rem 0;
+}
+
+.package-reviews-loading,
+.package-reviews-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 3rem 0;
+  text-align: center;
+  color: #6b7280;
+}
+
+.package-reviews-loading span,
+.package-reviews-empty h4 {
+  margin-top: 1rem;
+  font-size: 1.125rem;
+  font-weight: 600;
+}
+
+.package-reviews-empty p {
+  margin-top: 0.5rem;
+  color: #9ca3af;
+}
+
+.package-reviews-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.package-review-item {
+  padding: 1rem;
+  background: #f9fafb;
+  border-radius: 0.75rem;
+  border: 1px solid #e5e7eb;
+}
+
+.package-review-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1rem;
+}
+
+.package-review-user {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.package-review-avatar {
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+.package-review-name {
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.package-review-date {
+  font-size: 0.875rem;
+  color: #6b7280;
+}
+
+.package-review-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #1f2937;
+  margin: 0 0 0.75rem 0;
+}
+
+.package-review-comment {
+  color: #374151;
+  line-height: 1.6;
+  margin: 0 0 1.5rem 0;
+}
+
+.package-review-categories {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.5rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid #e5e7eb;
+}
+
+.package-review-category {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.package-review-category span {
+  font-size: 0.75rem;
+  color: #6b7280;
+  font-weight: 500;
+  min-width: 80px;
+}
+
+.package-reviews-show-more {
+  text-align: center;
+  padding-top: 1rem;
+}
+
+.package-reviews-show-more-btn {
+  display: inline-block;
+  padding: 0.75rem 1.5rem;
+  background: #f3f4f6;
+  border: 1px solid #d1d5db;
+  border-radius: 0.75rem;
+  color: #374151;
+  font-weight: 500;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.package-reviews-show-more-btn:hover {
+  background: #e5e7eb;
+  border-color: #9ca3af;
+}
+
+@media (max-width: 768px) {
+  .package-details-card-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+  
+  .package-reviews-header-left {
+    width: 100%;
+  }
+  
+  .package-reviews-summary {
+    margin-left: 0;
+    margin-top: 0;
+    align-self: flex-start;
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .package-review-header {
+    flex-direction: column;
+    gap: 1rem;
+    align-items: flex-start;
+  }
+  
+  .package-review-categories {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+  
+  .package-review-category {
+    padding: 0.5rem 0;
+    border-bottom: 1px solid #f3f4f6;
+  }
+  
+  .package-review-category:last-child {
+    border-bottom: none;
   }
 }

@@ -886,29 +886,362 @@
 }
 
 /* Orders List - Clean Layout with Correct Order */
+/* Modern Orders List */
 .customer-orders-list {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
+  display: grid;
+  gap: 1.5rem;
+  grid-template-columns: 1fr;
+  transition: opacity 0.3s ease, transform 0.3s ease;
 }
 
-.customer-orders-list-item {
-  background: white;
-  border-radius: 1rem;
-  padding: 1.5rem;
-  border: 1px solid #f3f4f6;
-  transition: all 0.3s ease;
+.customer-orders-list.filtering {
+  opacity: 0.7;
+  transform: scale(0.98);
+}
+
+/* Modern Order Card */
+.customer-orders-card {
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.85) 100%);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 1.5rem;
+  overflow: hidden;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 
+    0 4px 6px -1px rgba(0, 0, 0, 0.1),
+    0 2px 4px -1px rgba(0, 0, 0, 0.06),
+    0 0 0 1px rgba(255, 255, 255, 0.05);
+  position: relative;
+}
+
+.customer-orders-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #6366f1, #8b5cf6, #ec4899, #f59e0b);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.customer-orders-card:hover {
+  transform: translateY(-6px) scale(1.02);
+  box-shadow: 
+    0 20px 25px -5px rgba(0, 0, 0, 0.1),
+    0 10px 10px -5px rgba(0, 0, 0, 0.04),
+    0 0 0 1px rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.customer-orders-card:hover::before {
+  opacity: 1;
+}
+
+/* Card Header */
+.customer-orders-card-header {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
+  padding: 1.5rem 1.5rem 0;
   gap: 1rem;
 }
 
-.customer-orders-list-item:hover {
-  background: #f9fafb;
-  border-color: #e5e7eb;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+.customer-orders-card-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.customer-orders-card-id {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: #6366f1;
+  background: rgba(99, 102, 241, 0.1);
+  padding: 0.375rem 0.75rem;
+  border-radius: 0.75rem;
+  display: inline-block;
+  width: fit-content;
+}
+
+.customer-orders-card-date {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+.customer-orders-card-date svg {
+  font-size: 0.875rem;
+}
+
+.customer-orders-card-status {
+  flex-shrink: 0;
+}
+
+/* Status Badges for Cards */
+.customer-orders-card .customer-orders-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border-radius: 1rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-transform: capitalize;
+  letter-spacing: 0.025em;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+  position: relative;
+  overflow: hidden;
+}
+
+.customer-orders-card .customer-orders-status-badge::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+  transition: left 0.6s ease;
+}
+
+.customer-orders-card:hover .customer-orders-status-badge::before {
+  left: 100%;
+}
+
+.customer-orders-card .customer-orders-status-badge.draft {
+  background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+  color: white;
+  box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.25);
+}
+
+.customer-orders-card .customer-orders-status-badge.pending {
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  color: white;
+  box-shadow: 0 4px 6px -1px rgba(245, 158, 11, 0.25);
+}
+
+.customer-orders-card .customer-orders-status-badge.confirmed {
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: white;
+  box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.25);
+}
+
+.customer-orders-card .customer-orders-status-badge.cancelled {
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+  color: white;
+  box-shadow: 0 4px 6px -1px rgba(239, 68, 68, 0.25);
+}
+
+.customer-orders-card .customer-orders-status-badge.completed {
+  background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+  color: white;
+  box-shadow: 0 4px 6px -1px rgba(139, 92, 246, 0.25);
+}
+
+.customer-orders-card .customer-orders-status-badge svg {
+  font-size: 1rem;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1));
+}
+
+/* Card Content */
+.customer-orders-card-content {
+  display: flex;
+  gap: 2rem;
+  padding: 1.5rem;
+  align-items: flex-start;
+}
+
+.customer-orders-package-info {
+  flex: 1;
+}
+
+.customer-orders-package-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #1f2937;
+  margin: 0 0 1rem 0;
+  line-height: 1.3;
+}
+
+.customer-orders-package-details {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.customer-orders-detail-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.875rem;
+  color: #6b7280;
+}
+
+.customer-orders-detail-item svg {
+  font-size: 1rem;
+  color: #9ca3af;
+  width: 1rem;
+  flex-shrink: 0;
+}
+
+/* Price Section */
+.customer-orders-price-section {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.75rem;
+  min-width: 140px;
+}
+
+.customer-orders-price {
+  text-align: right;
+}
+
+.customer-orders-price-label {
+  display: block;
+  font-size: 0.75rem;
+  color: #9ca3af;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.25rem;
+}
+
+.customer-orders-price-value {
+  display: block;
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #059669;
+  background: linear-gradient(135deg, #059669, #10b981);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.customer-orders-payment-status {
+  padding: 0.375rem 0.75rem;
+  border-radius: 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+  border: 1px solid transparent;
+  transition: all 0.2s ease;
+}
+
+.customer-orders-payment-status.pending {
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(245, 158, 11, 0.05));
+  color: #d97706;
+  border-color: rgba(245, 158, 11, 0.2);
+}
+
+.customer-orders-payment-status.completed {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(16, 185, 129, 0.05));
+  color: #059669;
+  border-color: rgba(16, 185, 129, 0.2);
+}
+
+.customer-orders-payment-status.partial {
+  background: linear-gradient(135deg, rgba(249, 115, 22, 0.1), rgba(249, 115, 22, 0.05));
+  color: #ea580c;
+  border-color: rgba(249, 115, 22, 0.2);
+}
+
+.customer-orders-payment-status.refunded {
+  background: linear-gradient(135deg, rgba(107, 114, 128, 0.1), rgba(107, 114, 128, 0.05));
+  color: #4b5563;
+  border-color: rgba(107, 114, 128, 0.2);
+}
+
+/* Card Actions */
+.customer-orders-card-actions {
+  display: flex;
+  gap: 1rem;
+  padding: 0 1.5rem 1.5rem;
+  border-top: 1px solid rgba(0, 0, 0, 0.05);
+  margin-top: auto;
+  background: linear-gradient(180deg, transparent 0%, rgba(0, 0, 0, 0.02) 100%);
+}
+
+.customer-orders-action-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.875rem 1.5rem;
+  border: none;
+  border-radius: 0.875rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+
+.customer-orders-action-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+  transition: left 0.5s ease;
+}
+
+.customer-orders-action-btn:hover::before {
+  left: 100%;
+}
+
+.customer-orders-action-btn.primary {
+  background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+  color: white;
+  box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.3);
+}
+
+.customer-orders-action-btn.primary:hover {
+  background: linear-gradient(135deg, #1d4ed8, #1e40af);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 15px -3px rgba(59, 130, 246, 0.4);
+}
+
+.customer-orders-action-btn.review {
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  color: white;
+  box-shadow: 0 4px 6px -1px rgba(245, 158, 11, 0.3);
+}
+
+.customer-orders-action-btn.review:hover {
+  background: linear-gradient(135deg, #d97706, #b45309);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 15px -3px rgba(245, 158, 11, 0.4);
+}
+
+.customer-orders-action-btn.payment {
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: white;
+  box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.3);
+}
+
+.customer-orders-action-btn.payment:hover {
+  background: linear-gradient(135deg, #059669, #047857);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 15px -3px rgba(16, 185, 129, 0.4);
+}
+
+.customer-orders-action-btn svg {
+  font-size: 1rem;
 }
 
 .customer-orders-item-info {
@@ -1286,4 +1619,125 @@
   .customer-orders-loading-spinner {
     animation: none;
   }
+}
+
+/* Review Button */
+.customer-orders-item-review-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+  color: white;
+  text-decoration: none;
+  border-radius: 0.75rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  margin-left: 0.5rem;
+  box-shadow: 0 2px 4px rgba(245, 158, 11, 0.2);
+}
+
+.customer-orders-item-review-btn:hover {
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 6px rgba(245, 158, 11, 0.3);
+  color: white;
+  text-decoration: none;
+}
+
+.customer-orders-item-review-btn svg {
+  font-size: 1rem;
+}
+
+/* Responsive Design for Modern Cards */
+@media (max-width: 1024px) {
+  .customer-orders-card-content {
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+  
+  .customer-orders-price-section {
+    align-items: flex-start;
+    flex-direction: row;
+    justify-content: space-between;
+  }
+  
+  .customer-orders-price {
+    text-align: left;
+  }
+}
+
+@media (max-width: 768px) {
+  .customer-orders-card-header {
+    flex-direction: column;
+    gap: 1rem;
+    align-items: flex-start;
+  }
+  
+  .customer-orders-card-meta {
+    width: 100%;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .customer-orders-card-actions {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+  
+  .customer-orders-action-btn {
+    flex: none;
+  }
+  
+  .customer-orders-package-details {
+    gap: 0.5rem;
+  }
+  
+  .customer-orders-detail-item {
+    font-size: 0.8rem;
+  }
+  
+  .customer-orders-price-value {
+    font-size: 1.25rem;
+  }
+  
+  .customer-orders-card:hover {
+    transform: translateY(-3px) scale(1.01);
+  }
+}
+
+@media (max-width: 480px) {
+  .customer-orders-package-title {
+    font-size: 1.125rem;
+  }
+  
+  .customer-orders-card-content {
+    padding: 1rem;
+  }
+  
+  .customer-orders-card-header {
+    padding: 1rem 1rem 0;
+  }
+  
+  .customer-orders-card-actions {
+    padding: 0 1rem 1rem;
+  }
+}
+
+/* Review Status */
+.customer-orders-review-status {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%);
+  border: 1px solid #22c55e;
+  border-radius: 1rem;
+  color: #166534;
+  font-weight: 600;
+  font-size: 0.875rem;
+  min-width: 140px;
+  justify-content: center;
 }

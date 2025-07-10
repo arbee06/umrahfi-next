@@ -1,9 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/router';
 import Layout from '../../components/Layout';
 import ProtectedRoute from '../../components/ProtectedRoute';
 import { useAuth } from '../../utils/AuthContext';
 import authService from '../../services/authService';
+import { getCountries } from '../../utils/countries';
 import Swal from 'sweetalert2';
 import soundManager from '../../utils/soundUtils';
 import Icon from '../../components/FontAwesome';
@@ -14,6 +15,13 @@ export default function CompanyProfile() {
   const [loading, setLoading] = useState(false);
   const [uploadingPicture, setUploadingPicture] = useState(false);
   const [message, setMessage] = useState({ type: '', text: '' });
+  
+  // Country dropdown states
+  const [countries] = useState(() => getCountries());
+  const [isCountryOpen, setIsCountryOpen] = useState(false);
+  const [countrySearch, setCountrySearch] = useState('');
+  const [filteredCountries, setFilteredCountries] = useState(getCountries());
+  const countryDropdownRef = useRef(null);
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -22,6 +30,7 @@ export default function CompanyProfile() {
     companyName: '',
     companyLicense: '',
     companyAddress: '',
+    country: '',
     bankName: '',
     bankAccountNumber: '',
     bankAccountHolderName: '',
@@ -41,6 +50,7 @@ export default function CompanyProfile() {
       companyName: user.companyName || '',
       companyLicense: user.companyLicense || '',
       companyAddress: user.companyAddress || '',
+      country: user.country || '',
       bankName: user.bankName || '',
       bankAccountNumber: user.bankAccountNumber || '',
       bankAccountHolderName: user.bankAccountHolderName || '',
@@ -51,11 +61,55 @@ export default function CompanyProfile() {
     }
   }, [user]);
 
+  // Country dropdown effects
+  useEffect(() => {
+    const filtered = countries.filter(country =>
+      country.name.toLowerCase().includes(countrySearch.toLowerCase())
+    );
+    setFilteredCountries(filtered);
+  }, [countrySearch, countries]);
+
+  useEffect(() => {
+    if (formData.country && !isCountryOpen) {
+      setCountrySearch(formData.country);
+    }
+  }, [formData.country, isCountryOpen]);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (countryDropdownRef.current && !countryDropdownRef.current.contains(event.target)) {
+        setIsCountryOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
   const handleChange = (e) => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value
     });
+  };
+
+  // Country dropdown handlers
+  const handleCountryInputChange = (e) => {
+    setCountrySearch(e.target.value);
+    if (!isCountryOpen) setIsCountryOpen(true);
+  };
+
+  const handleCountryInputFocus = () => {
+    setIsCountryOpen(true);
+    setCountrySearch('');
+  };
+
+  const handleCountrySelect = (country) => {
+    setFormData({
+      ...formData,
+      country: country.name
+    });
+    setCountrySearch(country.name);
+    setIsCountryOpen(false);
   };
 
   const handleSubmit = async (e) => {
@@ -332,7 +386,7 @@ export default function CompanyProfile() {
                   <h2 className="company-profile-section-title">Company Information</h2>
                 </div>
                 
-                <div className="company-profile-form-grid">
+                <div className="company-profile-form-grid three-columns">
                   <div className="company-profile-form-group">
                     <label className="company-profile-form-label">Company Name</label>
                     <input
@@ -357,6 +411,52 @@ export default function CompanyProfile() {
                       className="company-profile-form-input"
                       placeholder="License Number"
                     />
+                  </div>
+
+                  <div className="company-profile-form-group">
+                    <label className="company-profile-form-label">Country</label>
+                    <div className="country-select" ref={countryDropdownRef}>
+                      <div className="country-select-input-wrapper">
+                        <input
+                          type="text"
+                          value={countrySearch}
+                          onChange={handleCountryInputChange}
+                          onFocus={handleCountryInputFocus}
+                          placeholder="Select your country"
+                          required
+                          className="company-profile-form-input"
+                        />
+                        <div 
+                          className={`country-select-arrow ${isCountryOpen ? 'open' : ''}`}
+                          onClick={() => setIsCountryOpen(!isCountryOpen)}
+                        >
+                          <Icon icon="chevron-down" />
+                        </div>
+                      </div>
+                      
+                      {isCountryOpen && (
+                        <div className="country-select-dropdown">
+                          {filteredCountries.length > 0 ? (
+                            <div className="country-select-options">
+                              {filteredCountries.map((country) => (
+                                <div
+                                  key={country.code}
+                                  className={`country-select-option ${formData.country === country.name ? 'selected' : ''}`}
+                                  onClick={() => handleCountrySelect(country)}
+                                >
+                                  <span className="country-name">{country.name}</span>
+                                </div>
+                              ))}
+                            </div>
+                          ) : (
+                            <div className="country-select-no-results">
+                              <Icon icon="search" />
+                              <span>No countries found for "{countrySearch}"</span>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
 

@@ -2,9 +2,10 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Layout from '@/components/Layout';
 import ProtectedRoute from '@/components/ProtectedRoute';
+import { useAuth } from '@/utils/AuthContext';
 import packageService from '@/services/packageService';
 import packageTemplateService from '@/services/packageTemplateService';
-import { getAirports, formatAirportDisplay } from '@/utils/airports';
+import { getAirports, getAirportsByCountry, formatAirportDisplay } from '@/utils/airports';
 import { getCountries } from '@/utils/countries';
 import Icon from '@/components/FontAwesome';
 import DateRangePickerInline from '@/components/DateRangePickerInline';
@@ -13,17 +14,21 @@ import Swal from 'sweetalert2';
 export default function EditPackage() {
   const router = useRouter();
   const { id } = router.query;
+  const { user } = useAuth();
   const [loading, setLoading] = useState(false);
   const [pageLoading, setPageLoading] = useState(true);
   const [error, setError] = useState('');
   const [currentStep, setCurrentStep] = useState(1);
   const totalSteps = 6;
-  const [airports] = useState(() => getAirports());
+  const [departureAirports, setDepartureAirports] = useState([]);
+  const [arrivalAirports] = useState(() => getAirports().filter(airport => ['JED', 'RUH', 'DMM', 'MED'].includes(airport.iata)));
   const [countries] = useState(() => getCountries());
   const [templates, setTemplates] = useState({ inclusions: [], exclusions: [] });
   const [uploadedImages, setUploadedImages] = useState([]);
   const [uploadingImages, setUploadingImages] = useState(false);
   const [packageData, setPackageData] = useState(null);
+  const [autocompleteData, setAutocompleteData] = useState({ inclusions: [], exclusions: [] });
+  const [showSuggestions, setShowSuggestions] = useState({ field: null, index: null, suggestions: [], selectedIndex: -1 });
   
   const [formData, setFormData] = useState({
     title: '',
@@ -31,15 +36,16 @@ export default function EditPackage() {
     price: '',
     childPrice: '',
     duration: '',
+    makkahDays: '7',
+    madinaDays: '3',
     departureDate: '',
     returnDate: '',
-    departureAirport: '',
-    arrivalAirport: 'JED',
-    transitAirport: '',
+    departureAirports: [''],
+    arrivalAirports: ['JED'],
     totalSeats: '',
     availableSeats: '',
-    hotelName: '',
-    hotelRating: '3',
+    makkahHotels: [{ name: '', rating: '3' }],
+    madinahHotels: [{ name: '', rating: '3' }],
     mealPlan: 'Breakfast',
     transportation: 'Flight',
     country: 'Saudi Arabia',
@@ -58,6 +64,17 @@ export default function EditPackage() {
       fetchTemplates();
     }
   }, [router.isReady, id]);
+
+  useEffect(() => {
+    // Set departure airports based on current user's country
+    if (user?.country) {
+      const countryAirports = getAirportsByCountry(user.country);
+      setDepartureAirports(countryAirports);
+    } else {
+      // If no country is set, show all airports (fallback)
+      setDepartureAirports(getAirports());
+    }
+  }, [user]);
 
   const fetchPackageData = async () => {
     try {
@@ -80,18 +97,19 @@ export default function EditPackage() {
         price: pkg.price?.toString() || '',
         childPrice: pkg.childPrice?.toString() || '',
         duration: pkg.duration?.toString() || '',
+        makkahDays: pkg.makkahDays?.toString() || '7',
+        madinaDays: pkg.madinaDays?.toString() || '3',
         departureDate: formatDateForInput(pkg.departureDate),
         returnDate: formatDateForInput(pkg.returnDate),
-        departureAirport: pkg.departureAirport || '',
-        arrivalAirport: pkg.arrivalAirport || 'JED',
-        transitAirport: pkg.transitAirport || '',
+        departureAirports: pkg.departureAirports && pkg.departureAirports.length > 0 ? pkg.departureAirports : (pkg.departureAirport ? [pkg.departureAirport] : ['']),
+        arrivalAirports: pkg.arrivalAirports && pkg.arrivalAirports.length > 0 ? pkg.arrivalAirports : (pkg.arrivalAirport ? [pkg.arrivalAirport] : ['JED']),
         totalSeats: pkg.totalSeats?.toString() || '',
         availableSeats: pkg.availableSeats?.toString() || '',
-        hotelName: pkg.hotelName || '',
-        hotelRating: pkg.hotelRating?.toString() || '3',
+        makkahHotels: pkg.makkahHotels && pkg.makkahHotels.length > 0 ? pkg.makkahHotels : (pkg.hotelName ? [{ name: pkg.hotelName, rating: pkg.hotelRating?.toString() || '3' }] : [{ name: '', rating: '3' }]),
+        madinahHotels: pkg.madinahHotels && pkg.madinahHotels.length > 0 ? pkg.madinahHotels : [{ name: '', rating: '3' }],
         mealPlan: pkg.mealPlan || 'Breakfast',
         transportation: pkg.transportation || 'Flight',
-        country: pkg.country || 'Saudi Arabia',
+        country: user?.country || pkg.country || 'Saudi Arabia',
         inclusions: pkg.inclusions && pkg.inclusions.length > 0 ? pkg.inclusions : [''],
         exclusions: pkg.exclusions && pkg.exclusions.length > 0 ? pkg.exclusions : [''],
         itinerary: pkg.itinerary && pkg.itinerary.length > 0 ? pkg.itinerary : [{ day: 1, description: '' }],
@@ -139,6 +157,15 @@ export default function EditPackage() {
         inclusions: inclusionsResponse.templates,
         exclusions: exclusionsResponse.templates
       });
+      
+      // Flatten all template items for autocomplete
+      const allInclusions = inclusionsResponse.templates.flatMap(template => template.items);
+      const allExclusions = exclusionsResponse.templates.flatMap(template => template.items);
+      
+      setAutocompleteData({
+        inclusions: [...new Set(allInclusions)], // Remove duplicates
+        exclusions: [...new Set(allExclusions)]
+      });
     } catch (error) {
       console.error('Error fetching templates:', error);
     }
@@ -159,6 +186,99 @@ export default function EditPackage() {
       ...prev,
       [field]: newArray
     }));
+    
+    // Show autocomplete suggestions
+    if (value.trim().length > 0 && (field === 'inclusions' || field === 'exclusions')) {
+      const suggestions = autocompleteData[field].filter(item => 
+        item.toLowerCase().includes(value.toLowerCase())
+      ).slice(0, 5); // Limit to 5 suggestions
+      
+      if (suggestions.length > 0) {
+        setShowSuggestions({ field, index, suggestions, selectedIndex: -1 });
+      } else {
+        setShowSuggestions({ field: null, index: null, suggestions: [], selectedIndex: -1 });
+      }
+    } else {
+      setShowSuggestions({ field: null, index: null, suggestions: [], selectedIndex: -1 });
+    }
+  };
+
+  const handleHotelChange = (field, index, property, value) => {
+    const newHotels = [...formData[field]];
+    newHotels[index][property] = value;
+    setFormData(prev => ({
+      ...prev,
+      [field]: newHotels
+    }));
+  };
+
+  const addHotel = (field) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: [...prev[field], { name: '', rating: '3' }]
+    }));
+  };
+
+  const removeHotel = (field, index) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: prev[field].filter((_, i) => i !== index)
+    }));
+  };
+
+  const handleKeyDown = (e, field, index) => {
+    if (showSuggestions.field === field && showSuggestions.index === index && showSuggestions.suggestions.length > 0) {
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        setShowSuggestions(prev => ({
+          ...prev,
+          selectedIndex: Math.min(prev.selectedIndex + 1, prev.suggestions.length - 1)
+        }));
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        setShowSuggestions(prev => ({
+          ...prev,
+          selectedIndex: Math.max(prev.selectedIndex - 1, -1)
+        }));
+      } else if (e.key === 'Enter' && showSuggestions.selectedIndex >= 0) {
+        e.preventDefault();
+        const selectedSuggestion = showSuggestions.suggestions[showSuggestions.selectedIndex];
+        handleSuggestionClick(selectedSuggestion);
+      } else if (e.key === 'Escape') {
+        e.preventDefault();
+        setShowSuggestions({ field: null, index: null, suggestions: [], selectedIndex: -1 });
+      }
+    }
+  };
+
+  const handleSuggestionClick = (suggestion) => {
+    const { field, index } = showSuggestions;
+    const newArray = [...formData[field]];
+    newArray[index] = suggestion;
+    setFormData(prev => ({
+      ...prev,
+      [field]: newArray
+    }));
+    setShowSuggestions({ field: null, index: null, suggestions: [], selectedIndex: -1 });
+  };
+
+  const handleInputBlur = (e) => {
+    // Delay hiding suggestions to allow click events
+    setTimeout(() => {
+      setShowSuggestions({ field: null, index: null, suggestions: [], selectedIndex: -1 });
+    }, 200);
+  };
+
+  const handleInputFocus = (field, index, value) => {
+    if (value.trim().length > 0) {
+      const suggestions = autocompleteData[field].filter(item => 
+        item.toLowerCase().includes(value.toLowerCase())
+      ).slice(0, 5);
+      
+      if (suggestions.length > 0) {
+        setShowSuggestions({ field, index, suggestions, selectedIndex: -1 });
+      }
+    }
   };
 
   const handleItineraryChange = (index, field, value) => {
@@ -266,11 +386,11 @@ export default function EditPackage() {
   const isStepValid = () => {
     switch (currentStep) {
       case 1:
-        return formData.title && formData.description && formData.price && formData.childPrice && formData.duration;
+        return formData.title && formData.description && formData.price && formData.childPrice && formData.duration && formData.makkahDays && formData.madinaDays;
       case 2:
-        return formData.departureDate && formData.returnDate && formData.departureAirport && formData.arrivalAirport && formData.totalSeats && formData.availableSeats;
+        return formData.departureDate && formData.returnDate && formData.departureAirports.some(airport => airport.trim()) && formData.arrivalAirports.some(airport => airport.trim()) && formData.totalSeats && formData.availableSeats;
       case 3:
-        return formData.hotelName && formData.country;
+        return formData.makkahHotels.some(hotel => hotel.name.trim());
       case 4:
         return formData.itinerary.some(item => item.description.trim());
       case 5:
@@ -302,7 +422,8 @@ export default function EditPackage() {
             <p style="color: #6b7280; margin: 0.25rem 0;">• Duration: ${formData.duration} days</p>
             <p style="color: #6b7280; margin: 0.25rem 0;">• Total Seats: ${formData.totalSeats}</p>
             <p style="color: #6b7280; margin: 0.25rem 0;">• Departure: ${new Date(formData.departureDate).toLocaleDateString()}</p>
-            <p style="color: #6b7280; margin: 0.25rem 0;">• Route: ${formData.departureAirport} → ${formData.transitAirport ? formData.transitAirport + ' → ' : ''}${formData.arrivalAirport}</p>
+            <p style="color: #6b7280; margin: 0.25rem 0;">• Departure: ${formData.departureAirports.filter(a => a).join(', ')}</p>
+            <p style="color: #6b7280; margin: 0.25rem 0;">• Arrival: ${formData.arrivalAirports.filter(a => a).join(', ')}</p>
           </div>
           <p style="color: #6b7280; font-size: 0.9rem;">The changes will be saved and reflected immediately.</p>
         </div>
@@ -353,9 +474,20 @@ export default function EditPackage() {
         price: Number(formData.price),
         childPrice: Number(formData.childPrice),
         duration: Number(formData.duration),
+        makkahDays: Number(formData.makkahDays),
+        madinaDays: Number(formData.madinaDays),
         totalSeats: Number(formData.totalSeats),
         availableSeats: Number(formData.availableSeats),
-        hotelRating: Number(formData.hotelRating),
+        departureAirports: formData.departureAirports.filter(airport => airport.trim()),
+        arrivalAirports: formData.arrivalAirports.filter(airport => airport.trim()),
+        makkahHotels: formData.makkahHotels.filter(hotel => hotel.name.trim()).map(hotel => ({
+          ...hotel,
+          rating: Number(hotel.rating)
+        })),
+        madinahHotels: formData.madinahHotels.filter(hotel => hotel.name.trim()).map(hotel => ({
+          ...hotel,
+          rating: Number(hotel.rating)
+        })),
         inclusions: formData.inclusions.filter(item => item.trim()),
         exclusions: formData.exclusions.filter(item => item.trim()),
         itinerary: formData.itinerary.filter(item => item.description.trim())
@@ -540,6 +672,52 @@ export default function EditPackage() {
                   </div>
                 </div>
               </div>
+
+              <div className="create-package-form-row">
+                <div className="create-package-form-group">
+                  <label className="create-package-form-label">
+                    <span>Days in Makkah</span>
+                    <span className="create-package-required">*</span>
+                  </label>
+                  <div className="create-package-input-wrapper">
+                    <div className="create-package-input-icon">
+                      <Icon icon={['fas', 'kaaba']} />
+                    </div>
+                    <input
+                      type="number"
+                      name="makkahDays"
+                      value={formData.makkahDays}
+                      onChange={handleChange}
+                      className="create-package-form-input"
+                      placeholder="7"
+                      min="1"
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div className="create-package-form-group">
+                  <label className="create-package-form-label">
+                    <span>Days in Madina</span>
+                    <span className="create-package-required">*</span>
+                  </label>
+                  <div className="create-package-input-wrapper">
+                    <div className="create-package-input-icon">
+                      <Icon icon={['fas', 'mosque']} />
+                    </div>
+                    <input
+                      type="number"
+                      name="madinaDays"
+                      value={formData.madinaDays}
+                      onChange={handleChange}
+                      className="create-package-form-input"
+                      placeholder="3"
+                      min="1"
+                      required
+                    />
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         );
@@ -624,82 +802,102 @@ export default function EditPackage() {
                 </div>
               </div>
 
-              <div className="create-package-form-row">
-                <div className="create-package-form-group">
-                  <label className="create-package-form-label">
-                    <span>Departure Airport</span>
-                    <span className="create-package-required">*</span>
-                  </label>
-                  <div className="create-package-input-wrapper">
-                    <div className="create-package-input-icon">
-                      <Icon icon="plane" />
+              {/* Departure Airports */}
+              <div className="create-package-form-group">
+                <label className="create-package-form-label">
+                  <span>Departure Airports</span>
+                  <span className="create-package-required">*</span>
+                </label>
+                <div className="create-package-list">
+                  {formData.departureAirports.map((airport, index) => (
+                    <div key={index} className="create-package-list-item">
+                      <div className="create-package-input-wrapper">
+                        <div className="create-package-input-icon">
+                          <Icon icon="plane-departure" />
+                        </div>
+                        <select
+                          value={airport}
+                          onChange={(e) => handleArrayChange('departureAirports', index, e.target.value)}
+                          className="create-package-form-select"
+                          required={index === 0}
+                        >
+                          <option value="">Select departure airport</option>
+                          {departureAirports.map(airportOption => (
+                            <option key={airportOption.iata} value={airportOption.iata}>
+                              {airportOption.iata} - {airportOption.name}, {airportOption.city}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                      {formData.departureAirports.length > 1 && (
+                        <button
+                          type="button"
+                          onClick={() => removeArrayField('departureAirports', index)}
+                          className="create-package-btn-remove"
+                        >
+                          <Icon icon="trash" />
+                        </button>
+                      )}
                     </div>
-                    <select
-                      name="departureAirport"
-                      value={formData.departureAirport}
-                      onChange={handleChange}
-                      className="create-package-form-select"
-                      required
-                    >
-                      <option value="">Select departure airport</option>
-                      {airports.map(airport => (
-                        <option key={airport.iata} value={airport.iata}>
-                          {airport.iata} - {airport.name}, {airport.city}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
+                  ))}
                 </div>
+                <button
+                  type="button"
+                  onClick={() => addArrayField('departureAirports')}
+                  className="create-package-btn-add"
+                >
+                  <Icon icon="plus" />
+                  <span>Add Departure Option</span>
+                </button>
+              </div>
 
-                <div className="create-package-form-group">
-                  <label className="create-package-form-label">
-                    <span>Arrival Airport</span>
-                    <span className="create-package-required">*</span>
-                  </label>
-                  <div className="create-package-input-wrapper">
-                    <div className="create-package-input-icon">
-                      <Icon icon="plane" />
+              {/* Arrival Airports */}
+              <div className="create-package-form-group">
+                <label className="create-package-form-label">
+                  <span>Arrival Airports</span>
+                  <span className="create-package-required">*</span>
+                </label>
+                <div className="create-package-list">
+                  {formData.arrivalAirports.map((airport, index) => (
+                    <div key={index} className="create-package-list-item">
+                      <div className="create-package-input-wrapper">
+                        <div className="create-package-input-icon">
+                          <Icon icon="plane-arrival" />
+                        </div>
+                        <select
+                          value={airport}
+                          onChange={(e) => handleArrayChange('arrivalAirports', index, e.target.value)}
+                          className="create-package-form-select"
+                          required={index === 0}
+                        >
+                          <option value="">Select arrival airport</option>
+                          {arrivalAirports.map(airportOption => (
+                            <option key={airportOption.iata} value={airportOption.iata}>
+                              {airportOption.iata} - {airportOption.name}, {airportOption.city}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                      {formData.arrivalAirports.length > 1 && (
+                        <button
+                          type="button"
+                          onClick={() => removeArrayField('arrivalAirports', index)}
+                          className="create-package-btn-remove"
+                        >
+                          <Icon icon="trash" />
+                        </button>
+                      )}
                     </div>
-                    <select
-                      name="arrivalAirport"
-                      value={formData.arrivalAirport}
-                      onChange={handleChange}
-                      className="create-package-form-select"
-                      required
-                    >
-                      <option value="">Select arrival airport</option>
-                      {airports.filter(airport => ['JED', 'RUH', 'DMM', 'MED'].includes(airport.iata)).map(airport => (
-                        <option key={airport.iata} value={airport.iata}>
-                          {airport.iata} - {airport.name}, {airport.city}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
+                  ))}
                 </div>
-
-                <div className="create-package-form-group">
-                  <label className="create-package-form-label">
-                    <span>Transit Airport (Optional)</span>
-                  </label>
-                  <div className="create-package-input-wrapper">
-                    <div className="create-package-input-icon">
-                      <Icon icon="exchange-alt" />
-                    </div>
-                    <select
-                      name="transitAirport"
-                      value={formData.transitAirport}
-                      onChange={handleChange}
-                      className="create-package-form-select"
-                    >
-                      <option value="">No transit (Direct flight)</option>
-                      {airports.filter(airport => ['DXB', 'DOH', 'IST', 'CAI', 'KWI', 'AUH'].includes(airport.iata)).map(airport => (
-                        <option key={airport.iata} value={airport.iata}>
-                          {airport.iata} - {airport.name}, {airport.city}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
+                <button
+                  type="button"
+                  onClick={() => addArrayField('arrivalAirports')}
+                  className="create-package-btn-add"
+                >
+                  <Icon icon="plus" />
+                  <span>Add Arrival Option</span>
+                </button>
               </div>
             </div>
           </div>
@@ -719,50 +917,126 @@ export default function EditPackage() {
             </div>
 
             <div className="create-package-form-section">
-              <div className="create-package-form-row">
-                <div className="create-package-form-group">
-                  <label className="create-package-form-label">
-                    <span>Hotel Name</span>
-                    <span className="create-package-required">*</span>
-                  </label>
-                  <div className="create-package-input-wrapper">
-                    <div className="create-package-input-icon">
-                      <Icon icon="hotel" />
+              {/* Makkah Hotels */}
+              <div className="create-package-form-group">
+                <label className="create-package-form-label">
+                  <span>Makkah Hotels</span>
+                  <span className="create-package-required">*</span>
+                </label>
+                <div className="create-package-list">
+                  {formData.makkahHotels.map((hotel, index) => (
+                    <div key={index} className="create-package-list-item">
+                      <div className="create-package-hotel-row">
+                        <div className="create-package-input-wrapper">
+                          <div className="create-package-input-icon">
+                            <Icon icon="hotel" />
+                          </div>
+                          <input
+                            type="text"
+                            value={hotel.name}
+                            onChange={(e) => handleHotelChange('makkahHotels', index, 'name', e.target.value)}
+                            className="create-package-form-input"
+                            placeholder="e.g., Makkah Hilton"
+                            required={index === 0}
+                          />
+                        </div>
+                        <div className="create-package-input-wrapper">
+                          <div className="create-package-input-icon">
+                            <Icon icon="star" />
+                          </div>
+                          <select
+                            value={hotel.rating}
+                            onChange={(e) => handleHotelChange('makkahHotels', index, 'rating', e.target.value)}
+                            className="create-package-form-select"
+                          >
+                            <option value="1">1 Star</option>
+                            <option value="2">2 Stars</option>
+                            <option value="3">3 Stars</option>
+                            <option value="4">4 Stars</option>
+                            <option value="5">5 Stars</option>
+                          </select>
+                        </div>
+                      </div>
+                      {formData.makkahHotels.length > 1 && (
+                        <button
+                          type="button"
+                          onClick={() => removeHotel('makkahHotels', index)}
+                          className="create-package-btn-remove"
+                        >
+                          <Icon icon="trash" />
+                        </button>
+                      )}
                     </div>
-                    <input
-                      type="text"
-                      name="hotelName"
-                      value={formData.hotelName}
-                      onChange={handleChange}
-                      className="create-package-form-input"
-                      placeholder="e.g., Madinah Hilton"
-                      required
-                    />
-                  </div>
+                  ))}
                 </div>
+                <button
+                  type="button"
+                  onClick={() => addHotel('makkahHotels')}
+                  className="create-package-btn-add"
+                >
+                  <Icon icon="plus" />
+                  <span>Add Makkah Hotel</span>
+                </button>
+              </div>
 
-                <div className="create-package-form-group">
-                  <label className="create-package-form-label">
-                    <span>Hotel Rating</span>
-                  </label>
-                  <div className="create-package-input-wrapper">
-                    <div className="create-package-input-icon">
-                      <Icon icon="star" />
+              {/* Madinah Hotels */}
+              <div className="create-package-form-group">
+                <label className="create-package-form-label">
+                  <span>Madinah Hotels</span>
+                </label>
+                <div className="create-package-list">
+                  {formData.madinahHotels.map((hotel, index) => (
+                    <div key={index} className="create-package-list-item">
+                      <div className="create-package-hotel-row">
+                        <div className="create-package-input-wrapper">
+                          <div className="create-package-input-icon">
+                            <Icon icon="hotel" />
+                          </div>
+                          <input
+                            type="text"
+                            value={hotel.name}
+                            onChange={(e) => handleHotelChange('madinahHotels', index, 'name', e.target.value)}
+                            className="create-package-form-input"
+                            placeholder="e.g., Madinah Hilton"
+                          />
+                        </div>
+                        <div className="create-package-input-wrapper">
+                          <div className="create-package-input-icon">
+                            <Icon icon="star" />
+                          </div>
+                          <select
+                            value={hotel.rating}
+                            onChange={(e) => handleHotelChange('madinahHotels', index, 'rating', e.target.value)}
+                            className="create-package-form-select"
+                          >
+                            <option value="1">1 Star</option>
+                            <option value="2">2 Stars</option>
+                            <option value="3">3 Stars</option>
+                            <option value="4">4 Stars</option>
+                            <option value="5">5 Stars</option>
+                          </select>
+                        </div>
+                      </div>
+                      {formData.madinahHotels.length > 1 && (
+                        <button
+                          type="button"
+                          onClick={() => removeHotel('madinahHotels', index)}
+                          className="create-package-btn-remove"
+                        >
+                          <Icon icon="trash" />
+                        </button>
+                      )}
                     </div>
-                    <select
-                      name="hotelRating"
-                      value={formData.hotelRating}
-                      onChange={handleChange}
-                      className="create-package-form-select"
-                    >
-                      <option value="1">1 Star</option>
-                      <option value="2">2 Stars</option>
-                      <option value="3">3 Stars</option>
-                      <option value="4">4 Stars</option>
-                      <option value="5">5 Stars</option>
-                    </select>
-                  </div>
+                  ))}
                 </div>
+                <button
+                  type="button"
+                  onClick={() => addHotel('madinahHotels')}
+                  className="create-package-btn-add"
+                >
+                  <Icon icon="plus" />
+                  <span>Add Madinah Hotel</span>
+                </button>
               </div>
 
               <div className="create-package-form-row">
@@ -811,30 +1085,7 @@ export default function EditPackage() {
                 </div>
               </div>
 
-              <div className="create-package-form-group">
-                <label className="create-package-form-label">
-                  <span>Country</span>
-                  <span className="create-package-required">*</span>
-                </label>
-                <div className="create-package-input-wrapper">
-                  <div className="create-package-input-icon">
-                    <Icon icon="map-marker-alt" />
-                  </div>
-                  <select
-                    name="country"
-                    value={formData.country}
-                    onChange={handleChange}
-                    className="create-package-form-select"
-                    required
-                  >
-                    {countries.map(country => (
-                      <option key={country.code} value={country.name}>
-                        {country.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
+              {/* Country is auto-set from user data - no UI needed */}
             </div>
           </div>
         );
@@ -966,7 +1217,7 @@ export default function EditPackage() {
                 <div className="create-package-list">
                   {formData.inclusions.map((item, index) => (
                     <div key={index} className="create-package-list-item">
-                      <div className="create-package-input-wrapper">
+                      <div className="create-package-input-wrapper create-package-autocomplete-wrapper">
                         <div className="create-package-input-icon">
                           <Icon icon="check" />
                         </div>
@@ -974,9 +1225,26 @@ export default function EditPackage() {
                           type="text"
                           value={item}
                           onChange={(e) => handleArrayChange('inclusions', index, e.target.value)}
+                          onFocus={() => handleInputFocus('inclusions', index, item)}
+                          onBlur={handleInputBlur}
+                          onKeyDown={(e) => handleKeyDown(e, 'inclusions', index)}
                           className="create-package-form-input"
                           placeholder="e.g., Round-trip flights, Hotel accommodation..."
                         />
+                        {showSuggestions.field === 'inclusions' && showSuggestions.index === index && (
+                          <div className="create-package-autocomplete-dropdown">
+                            {showSuggestions.suggestions.map((suggestion, suggestionIndex) => (
+                              <div
+                                key={suggestionIndex}
+                                className={`create-package-autocomplete-item ${suggestionIndex === showSuggestions.selectedIndex ? 'selected' : ''}`}
+                                onClick={() => handleSuggestionClick(suggestion)}
+                              >
+                                <Icon icon="check" className="create-package-suggestion-icon" />
+                                <span>{suggestion}</span>
+                              </div>
+                            ))}
+                          </div>
+                        )}
                       </div>
                       {formData.inclusions.length > 1 && (
                         <button
@@ -1008,7 +1276,7 @@ export default function EditPackage() {
                 <div className="create-package-list">
                   {formData.exclusions.map((item, index) => (
                     <div key={index} className="create-package-list-item">
-                      <div className="create-package-input-wrapper">
+                      <div className="create-package-input-wrapper create-package-autocomplete-wrapper">
                         <div className="create-package-input-icon">
                           <Icon icon="times" />
                         </div>
@@ -1016,9 +1284,26 @@ export default function EditPackage() {
                           type="text"
                           value={item}
                           onChange={(e) => handleArrayChange('exclusions', index, e.target.value)}
+                          onFocus={() => handleInputFocus('exclusions', index, item)}
+                          onBlur={handleInputBlur}
+                          onKeyDown={(e) => handleKeyDown(e, 'exclusions', index)}
                           className="create-package-form-input"
                           placeholder="e.g., Personal expenses, Visa fees..."
                         />
+                        {showSuggestions.field === 'exclusions' && showSuggestions.index === index && (
+                          <div className="create-package-autocomplete-dropdown">
+                            {showSuggestions.suggestions.map((suggestion, suggestionIndex) => (
+                              <div
+                                key={suggestionIndex}
+                                className={`create-package-autocomplete-item ${suggestionIndex === showSuggestions.selectedIndex ? 'selected' : ''}`}
+                                onClick={() => handleSuggestionClick(suggestion)}
+                              >
+                                <Icon icon="times" className="create-package-suggestion-icon" />
+                                <span>{suggestion}</span>
+                              </div>
+                            ))}
+                          </div>
+                        )}
                       </div>
                       {formData.exclusions.length > 1 && (
                         <button

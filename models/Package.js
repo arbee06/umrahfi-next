@@ -33,26 +33,13 @@ const Package = sequelize.define('Package', {
       min: 0
     }
   },
-  departureAirport: {
-    type: DataTypes.STRING(3),
-    allowNull: true,
-    validate: {
-      len: [3, 3]
-    }
+  departureAirports: {
+    type: DataTypes.JSON,
+    defaultValue: []
   },
-  arrivalAirport: {
-    type: DataTypes.STRING(3),
-    allowNull: true,
-    validate: {
-      len: [3, 3]
-    }
-  },
-  transitAirport: {
-    type: DataTypes.STRING(3),
-    allowNull: true,
-    validate: {
-      len: [3, 3]
-    }
+  arrivalAirports: {
+    type: DataTypes.JSON,
+    defaultValue: []
   },
   duration: {
     type: DataTypes.INTEGER,
@@ -95,17 +82,13 @@ const Package = sequelize.define('Package', {
     type: DataTypes.JSON,
     defaultValue: []
   },
-  hotelName: {
-    type: DataTypes.STRING,
-    allowNull: false
+  makkahHotels: {
+    type: DataTypes.JSON,
+    defaultValue: []
   },
-  hotelRating: {
-    type: DataTypes.INTEGER,
-    validate: {
-      min: 1,
-      max: 5
-    },
-    defaultValue: 3
+  madinahHotels: {
+    type: DataTypes.JSON,
+    defaultValue: []
   },
   mealPlan: {
     type: DataTypes.ENUM('Breakfast', 'Half Board', 'Full Board', 'All Inclusive'),
@@ -155,6 +138,24 @@ const Package = sequelize.define('Package', {
     type: DataTypes.DECIMAL(10, 2),
     defaultValue: 0.00,
     field: 'visa_assistance_fee'
+  },
+  makkahDays: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+    defaultValue: 7,
+    validate: {
+      min: 1
+    },
+    field: 'makkah_days'
+  },
+  madinaDays: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+    defaultValue: 3,
+    validate: {
+      min: 1
+    },
+    field: 'madina_days'
   }
 }, {
   tableName: 'packages',
@@ -167,15 +168,6 @@ const Package = sequelize.define('Package', {
     },
     {
       fields: ['price']
-    },
-    {
-      fields: ['departureAirport']
-    },
-    {
-      fields: ['arrivalAirport']
-    },
-    {
-      fields: ['transitAirport']
     }
   ]
 });

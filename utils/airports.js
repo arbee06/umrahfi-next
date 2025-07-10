@@ -1,4 +1,5 @@
 import airportsData from '@/data/airports.json';
+import { getCountryByName } from '@/utils/countries';
 
 export const getAirports = () => {
   return airportsData.sort((a, b) => a.name.localeCompare(b.name));
@@ -21,6 +22,22 @@ export const searchAirports = (query) => {
 export const getAirportsByContinent = (continent) => {
   return airportsData.filter(airport => 
     airport.continent === continent
+  ).sort((a, b) => a.name.localeCompare(b.name));
+};
+
+export const getAirportsByCountry = (country) => {
+  if (!country) return airportsData.sort((a, b) => a.name.localeCompare(b.name));
+  
+  // Handle both country names ("Germany") and country codes ("DE")
+  let countryCode = country;
+  if (country.length > 2) {
+    // It's a country name, convert to code
+    const countryData = getCountryByName(country);
+    countryCode = countryData?.code || country;
+  }
+  
+  return airportsData.filter(airport => 
+    airport.country.toLowerCase() === countryCode.toLowerCase()
   ).sort((a, b) => a.name.localeCompare(b.name));
 };
 

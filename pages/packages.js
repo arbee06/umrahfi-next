@@ -730,7 +730,9 @@ export default function Packages() {
                       </div>
 
                       <div className="packages-package-content">
-                        <h3 className="packages-package-title">{pkg.title}</h3>
+                        <Link href={`/packages/${pkg.id}`} className="packages-title-link">
+                          <h3 className="packages-package-title packages-package-title-clickable">{pkg.title}</h3>
+                        </Link>
                         <p className="packages-package-description">{pkg.description}</p>
 
                         <div className="packages-package-price">
@@ -782,19 +784,47 @@ export default function Packages() {
                             </div>
                           </div>
 
-                          {(pkg.departureAirport || pkg.arrivalAirport) && (
+                          {(pkg.departureAirports?.length > 0 || pkg.arrivalAirports?.length > 0) && (
                             <div className="packages-detail-item">
                               <Icon icon="route" className="packages-detail-icon" />
                               <div className="packages-detail-content">
-                                <span className="packages-detail-label">Route</span>
-                                <span className="packages-detail-value">
-                                  {pkg.departureAirport && getAirportByCode(pkg.departureAirport) ? 
-                                    `${pkg.departureAirport} (${getAirportByCode(pkg.departureAirport).city})` : 
-                                    pkg.departureAirport || 'Various'
-                                  } 
-                                  {pkg.transitAirport && ` → ${pkg.transitAirport}`}
-                                  {pkg.arrivalAirport && ` → ${pkg.arrivalAirport} (${getAirportByCode(pkg.arrivalAirport)?.city || 'Saudi Arabia'})`}
-                                </span>
+                                <span className="packages-detail-label">Flight Options</span>
+                                <div className="packages-airport-options">
+                                  {pkg.departureAirports?.length > 0 && (
+                                    <div className="packages-airport-group">
+                                      <span className="packages-airport-group-label">From:</span>
+                                      <div className="packages-airport-pills">
+                                        {pkg.departureAirports.slice(0, 2).map((airport, index) => (
+                                          <span key={index} className="packages-airport-pill departure">
+                                            {airport}
+                                          </span>
+                                        ))}
+                                        {pkg.departureAirports.length > 2 && (
+                                          <span className="packages-airport-pill-more">
+                                            +{pkg.departureAirports.length - 2} more
+                                          </span>
+                                        )}
+                                      </div>
+                                    </div>
+                                  )}
+                                  {pkg.arrivalAirports?.length > 0 && (
+                                    <div className="packages-airport-group">
+                                      <span className="packages-airport-group-label">To:</span>
+                                      <div className="packages-airport-pills">
+                                        {pkg.arrivalAirports.slice(0, 2).map((airport, index) => (
+                                          <span key={index} className="packages-airport-pill arrival">
+                                            {airport}
+                                          </span>
+                                        ))}
+                                        {pkg.arrivalAirports.length > 2 && (
+                                          <span className="packages-airport-pill-more">
+                                            +{pkg.arrivalAirports.length - 2} more
+                                          </span>
+                                        )}
+                                      </div>
+                                    </div>
+                                  )}
+                                </div>
                               </div>
                             </div>
                           )}
@@ -802,12 +832,63 @@ export default function Packages() {
                           <div className="packages-detail-item">
                             <Icon icon="hotel" className="packages-detail-icon" />
                             <div className="packages-detail-content">
-                              <span className="packages-detail-label">Hotel</span>
-                              <div className="packages-hotel-info">
-                                <span className="packages-hotel-name">{pkg.hotelName}</span>
-                                <div className="packages-hotel-rating">
-                                  {renderStars(pkg.hotelRating)}
-                                </div>
+                              <span className="packages-detail-label">Accommodation</span>
+                              <div className="packages-hotel-options">
+                                {pkg.makkahHotels?.length > 0 && (
+                                  <div className="packages-hotel-group">
+                                    <div className="packages-hotel-city">
+                                      {/* <Icon icon={['fas', 'kaaba']} className="packages-city-icon makkah" /> */}
+                                      <span className="packages-hotel-city-name">Makkah</span>
+                                      <span className="packages-city-days-badge">{pkg.makkahDays || 0} days</span>
+                                    </div>
+                                    <div className="packages-hotel-pills">
+                                      {pkg.makkahHotels.slice(0, 1).map((hotel, index) => (
+                                        <span key={index} className="packages-hotel-pill makkah">
+                                          <span className="packages-hotel-pill-name">{hotel.name}</span>
+                                          <div className="packages-hotel-pill-rating">
+                                            {[...Array(parseInt(hotel.rating))].map((_, i) => (
+                                              <Icon key={i} icon="star" className="packages-hotel-star" />
+                                            ))}
+                                          </div>
+                                        </span>
+                                      ))}
+                                      {pkg.makkahHotels.length > 1 && (
+                                        <span className="packages-hotel-pill-more">
+                                          +{pkg.makkahHotels.length - 1} option{pkg.makkahHotels.length > 2 ? 's' : ''}
+                                        </span>
+                                      )}
+                                    </div>
+                                  </div>
+                                )}
+                                {pkg.madinahHotels?.length > 0 && (
+                                  <div className="packages-hotel-group">
+                                    <div className="packages-hotel-city">
+                                      {/* <Icon icon={['fas', 'mosque']} className="packages-city-icon madinah" /> */}
+                                      <span className="packages-hotel-city-name">Madinah</span>
+                                      <span className="packages-city-days-badge">{pkg.madinaDays || 0} days</span>
+                                    </div>
+                                    <div className="packages-hotel-pills">
+                                      {pkg.madinahHotels.slice(0, 1).map((hotel, index) => (
+                                        <span key={index} className="packages-hotel-pill madinah">
+                                          <span className="packages-hotel-pill-name">{hotel.name}</span>
+                                          <div className="packages-hotel-pill-rating">
+                                            {[...Array(parseInt(hotel.rating))].map((_, i) => (
+                                              <Icon key={i} icon="star" className="packages-hotel-star" />
+                                            ))}
+                                          </div>
+                                        </span>
+                                      ))}
+                                      {pkg.madinahHotels.length > 1 && (
+                                        <span className="packages-hotel-pill-more">
+                                          +{pkg.madinahHotels.length - 1} option{pkg.madinahHotels.length > 2 ? 's' : ''}
+                                        </span>
+                                      )}
+                                    </div>
+                                  </div>
+                                )}
+                                {(!pkg.makkahHotels?.length && !pkg.madinahHotels?.length) && (
+                                  <span className="packages-hotel-fallback">Hotel options available</span>
+                                )}
                               </div>
                             </div>
                           </div>

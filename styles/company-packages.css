@@ -144,9 +144,11 @@
 
 .packages-table th:nth-child(2), /* Price */
 .packages-table th:nth-child(3), /* Departure */
-.packages-table th:nth-child(4), /* Availability */
-.packages-table th:nth-child(5), /* Status */
-.packages-table th:nth-child(6) { /* Actions */
+.packages-table th:nth-child(4), /* Makkah Days */
+.packages-table th:nth-child(5), /* Madina Days */
+.packages-table th:nth-child(6), /* Availability */
+.packages-table th:nth-child(7), /* Status */
+.packages-table th:nth-child(8) { /* Actions */
   text-align: center;
 }
 
@@ -176,9 +178,11 @@
 
 .packages-table td:nth-child(2), /* Price */
 .packages-table td:nth-child(3), /* Departure */
-.packages-table td:nth-child(4), /* Availability */
-.packages-table td:nth-child(5), /* Status */
-.packages-table td:nth-child(6) { /* Actions */
+.packages-table td:nth-child(4), /* Makkah Days */
+.packages-table td:nth-child(5), /* Madina Days */
+.packages-table td:nth-child(6), /* Availability */
+.packages-table td:nth-child(7), /* Status */
+.packages-table td:nth-child(8) { /* Actions */
   text-align: center;
 }
 
@@ -218,6 +222,25 @@
   color: #6b7280;
   font-weight: 500;
   font-size: 0.875rem;
+}
+
+/* Days Count Columns */
+.days-count {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #374151;
+  font-weight: 600;
+  font-size: 0.875rem;
+  background: rgba(59, 130, 246, 0.1);
+  padding: 0.5rem 0.75rem;
+  border-radius: 1rem;
+  border: 1px solid rgba(59, 130, 246, 0.2);
+}
+
+.days-icon {
+  color: #3b82f6;
+  font-size: 0.75rem;
 }
 
 /* Availability Column */

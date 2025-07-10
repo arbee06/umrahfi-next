@@ -44,10 +44,11 @@ export default function Layout({ children }) {
             {/* Brand */}
             <div className={styles.navbarBrandSection}>
               <Link href="/" className={styles.navbarBrand} onClick={closeMobileMenu}>
-                <div className={styles.brandIcon}>
-                  <span className={styles.brandSymbol}>🕌</span>
-                </div>
-                <span className={styles.brandText}>Umrahfi</span>
+                <img 
+                  src="/images/logo_horizontal.svg" 
+                  alt="Umrahfi - Your way to Mecca" 
+                  className={styles.brandLogo}
+                />
               </Link>
             </div>
 
@@ -400,10 +401,11 @@ export default function Layout({ children }) {
           <div className={styles.footerTop}>
             <div className={styles.footerBrand}>
               <div className={styles.footerLogo}>
-                <div className={styles.footerLogoIcon}>
-                  <span>🕌</span>
-                </div>
-                <span className={styles.footerLogoText}>Umrahfi</span>
+                <img 
+                  src="/images/logo_horizontal.svg" 
+                  alt="Umrahfi - Your way to Mecca" 
+                  className={styles.footerLogoImage}
+                />
               </div>
               <p className={styles.footerDescription}>
                 Your trusted partner for sacred journeys. We connect pilgrims 

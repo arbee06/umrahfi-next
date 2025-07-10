@@ -181,6 +181,23 @@ export default function CompanyOrders() {
     return badges[paymentStatus] || badges.pending;
   };
 
+  const calculateDuration = (order) => {
+    if (order.package?.duration) {
+      return `${order.package.duration} days`;
+    }
+    
+    if (order.package?.departureDate && order.package?.returnDate) {
+      const departure = new Date(order.package.departureDate);
+      const returnDate = new Date(order.package.returnDate);
+      const diffTime = Math.abs(returnDate - departure);
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      return `${diffDays} days`;
+    }
+    
+    // Default duration for Umrah packages
+    return '14 days';
+  };
+
   const filteredOrders = allOrders
     .filter(order => {
       // Filter by status
@@ -332,98 +349,130 @@ export default function CompanyOrders() {
                   const statusBadge = getStatusBadge(order.status);
                   const paymentBadge = getPaymentStatusBadge(order.paymentStatus);
                   return (
-                    <div key={order.id} className="company-orders-list-item">
-                      <div className="company-orders-item-id">#{order.orderNumber}</div>
-                      
-                      <div className="company-orders-item-content">
-                        <h4 className="company-orders-item-title">{order.package?.title}</h4>
-                        <div className="company-orders-item-details">
-                          <span className="company-orders-item-customer">{order.customer?.name}</span>
-                          <span className="company-orders-item-date">{formatDate(order.createdAt)}</span>
-                        </div>
-                      </div>
-                      
-                      <div className="company-orders-item-amount">
-                        {formatCurrency(order.totalAmount)}
-                      </div>
-                      
-                      <div className="company-orders-item-badges">
-                        <div className={statusBadge.class}>
-                          <span className="company-orders-status-icon"><Icon icon={statusBadge.icon} /></span>
-                          <span className="company-orders-status-text">{statusBadge.text}</span>
-                        </div>
-                        {/* Show payment status for draft orders or when payment is pending */}
-                        {(order.status === 'draft' || order.paymentStatus === 'pending') && (
-                          <div className={paymentBadge.class}>
-                            <span className="company-orders-payment-icon"><Icon icon={paymentBadge.icon} /></span>
-                            <span className="company-orders-payment-text">{paymentBadge.text}</span>
+                    <div key={order.id} className="company-orders-card">
+                      {/* Order Header */}
+                      <div className="company-orders-card-header">
+                        <div className="company-orders-card-meta">
+                          <div className="company-orders-card-id">#{order.orderNumber}</div>
+                          <div className="company-orders-card-date">
+                            <Icon icon={['fas', 'calendar-alt']} />
+                            {formatDate(order.createdAt)}
                           </div>
-                        )}
+                        </div>
+                        <div className="company-orders-card-status">
+                          <div className={statusBadge.class}>
+                            <Icon icon={['fas', statusBadge.icon]} />
+                            <span>{statusBadge.text}</span>
+                          </div>
+                        </div>
                       </div>
 
-                      <div className="company-orders-item-actions">
-                        <Link href={`/company/orders/${order.id}`} className="company-orders-action-view-btn">
-                          <Icon icon="eye" />
-                          View Details
+                      {/* Package & Customer Info */}
+                      <div className="company-orders-card-content">
+                        <div className="company-orders-package-info">
+                          <h3 className="company-orders-package-title">{order.package?.title}</h3>
+                          <div className="company-orders-package-details">
+                            <div className="company-orders-detail-item">
+                              <Icon icon={['fas', 'user']} />
+                              <span>Customer: {order.customer?.name}</span>
+                            </div>
+                            <div className="company-orders-detail-item">
+                              <Icon icon={['fas', 'calendar-check']} />
+                              <span>Departure: {order.package?.departureDate ? new Date(order.package.departureDate).toLocaleDateString() : 'TBD'}</span>
+                            </div>
+                            <div className="company-orders-detail-item">
+                              <Icon icon={['fas', 'users']} />
+                              <span>{order.travelers?.length || (order.numberOfAdults || 0) + (order.numberOfChildren || 0) || order.numberOfTravelers || 1} travelers</span>
+                            </div>
+                            <div className="company-orders-detail-item">
+                              <Icon icon={['fas', 'clock']} />
+                              <span>{calculateDuration(order)}</span>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <div className="company-orders-price-section">
+                          <div className="company-orders-price">
+                            <span className="company-orders-price-label">Total Amount</span>
+                            <span className="company-orders-price-value">{formatCurrency(order.totalAmount)}</span>
+                          </div>
+                          {(order.status === 'draft' || order.paymentStatus === 'pending') && (
+                            <div className={`company-orders-payment-status ${paymentBadge.class}`}>
+                              <Icon icon={['fas', paymentBadge.icon]} />
+                              <span>{paymentBadge.text}</span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Actions */}
+                      <div className="company-orders-card-actions">
+                        <Link href={`/company/orders/${order.id}`} className="company-orders-action-btn primary">
+                          <Icon icon={['fas', 'eye']} />
+                          <span>View Details</span>
                         </Link>
 
-                        {order.status === 'pending' && (
-                          <div className="company-orders-action-buttons">
-                            <button
-                              onClick={() => handleStatusUpdate(order.id, 'confirmed')}
-                              className="company-orders-action-btn-confirm"
-                              disabled={processingOrders.has(order.id)}
-                            >
-                              {processingOrders.has(order.id) ? (
-                                <div className="company-orders-btn-loading">
-                                  <Icon icon="spinner" spin className="company-orders-loading-spinner" />
-                                  {/* <span>Processing...</span> */}
-                                </div>
-                              ) : (
-                                <>
-                                  <Icon icon="check" />
-                                  Confirm
-                                </>
-                              )}
-                            </button>
-                            <button
-                              onClick={() => handleStatusUpdate(order.id, 'cancelled')}
-                              className="company-orders-action-btn-cancel"
-                              disabled={processingOrders.has(order.id)}
-                            >
-                              {processingOrders.has(order.id) ? (
-                                <div className="company-orders-btn-loading">
-                                  <Icon icon="spinner" spin className="company-orders-loading-spinner" />
-                                  {/* <span>Processing...</span> */}
-                                </div>
-                              ) : (
-                                <>
-                                  <Icon icon="times" />
-                                  Cancel
-                                </>
-                              )}
-                            </button>
-                          </div>
-                        )}
-
-                        {order.status === 'confirmed' && (
-                          <button
-                            onClick={() => handleStatusUpdate(order.id, 'completed')}
-                            className="company-orders-action-btn-complete"
-                            disabled={processingOrders.has(order.id)}
-                          >
-                            {processingOrders.has(order.id) ? (
-                              <div className="company-orders-btn-loading">
-                                <Icon icon="spinner" spin className="company-orders-loading-spinner" />
-                                <span>Processing...</span>
-                              </div>
-                            ) : (
+                        {(order.status === 'pending' || order.status === 'confirmed') && (
+                          <div className="company-orders-card-actions-secondary">
+                            {order.status === 'pending' && (
                               <>
-                                <Icon icon="check-circle" />
-                                Complete
+                                <button
+                                  onClick={() => handleStatusUpdate(order.id, 'confirmed')}
+                                  className="company-orders-action-btn confirm"
+                                  disabled={processingOrders.has(order.id)}
+                                >
+                                  {processingOrders.has(order.id) ? (
+                                    <>
+                                      <Icon icon={['fas', 'spinner']} spin />
+                                      <span>Processing...</span>
+                                    </>
+                                  ) : (
+                                    <>
+                                      <Icon icon={['fas', 'check']} />
+                                      <span>Confirm</span>
+                                    </>
+                                  )}
+                                </button>
+                                <button
+                                  onClick={() => handleStatusUpdate(order.id, 'cancelled')}
+                                  className="company-orders-action-btn cancel"
+                                  disabled={processingOrders.has(order.id)}
+                                >
+                                  {processingOrders.has(order.id) ? (
+                                    <>
+                                      <Icon icon={['fas', 'spinner']} spin />
+                                      <span>Processing...</span>
+                                    </>
+                                  ) : (
+                                    <>
+                                      <Icon icon={['fas', 'times']} />
+                                      <span>Cancel</span>
+                                    </>
+                                  )}
+                                </button>
                               </>
                             )}
-                          </button>
+
+                            {order.status === 'confirmed' && (
+                              <button
+                                onClick={() => handleStatusUpdate(order.id, 'completed')}
+                                className="company-orders-action-btn complete"
+                                disabled={processingOrders.has(order.id)}
+                              >
+                                {processingOrders.has(order.id) ? (
+                                  <>
+                                    <Icon icon={['fas', 'spinner']} spin />
+                                    <span>Processing...</span>
+                                  </>
+                                ) : (
+                                  <>
+                                    <Icon icon={['fas', 'check-circle']} />
+                                    <span>Complete</span>
+                                  </>
+                                )}
+                              </button>
+                            )}
+                          </div>
                         )}
                       </div>
                     </div>

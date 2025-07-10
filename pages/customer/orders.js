@@ -5,22 +5,109 @@ import ProtectedRoute from '@/components/ProtectedRoute';
 import orderService from '@/services/orderService';
 import Icon from '@/components/FontAwesome';
 
+// Review Button Component with individual review checking
+function ReviewButton({ orderId, hasReview, onWriteReview }) {
+  const [reviewExists, setReviewExists] = useState(hasReview);
+  const [checking, setChecking] = useState(false);
+
+  useEffect(() => {
+    // If we don't have review status from parent, check individually
+    if (hasReview === undefined && !checking) {
+      setChecking(true);
+      checkReviewExists();
+    } else {
+      setReviewExists(hasReview);
+    }
+  }, [hasReview, orderId]);
+
+  const checkReviewExists = async () => {
+    try {
+      const response = await fetch(`/api/reviews?orderId=${orderId}`);
+      if (response.ok) {
+        const reviews = await response.json();
+        setReviewExists(reviews.length > 0);
+      } else {
+        setReviewExists(false);
+      }
+    } catch (error) {
+      console.error('Error checking review:', error);
+      setReviewExists(false);
+    } finally {
+      setChecking(false);
+    }
+  };
+
+  if (checking) {
+    return (
+      <div className="customer-orders-action-btn review checking">
+        <Icon icon={['fas', 'spinner']} spin />
+        <span>Checking...</span>
+      </div>
+    );
+  }
+
+  if (reviewExists) {
+    return null; // Don't show anything if review exists
+  }
+
+  return (
+    <Link 
+      href={`/customer/orders/${orderId}/review`} 
+      className="customer-orders-action-btn review"
+      onClick={onWriteReview}
+    >
+      <Icon icon={['fas', 'star']} />
+      <span>Write Review</span>
+    </Link>
+  );
+}
+
 export default function CustomerOrders() {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
+  const [filterLoading, setFilterLoading] = useState(false);
+  const [orderReviews, setOrderReviews] = useState(new Map()); // Track which orders have reviews
 
   useEffect(() => {
     fetchOrders();
-  }, [filter]);
+  }, []); // Remove filter dependency
 
   const fetchOrders = async () => {
     setLoading(true);
     try {
-      const params = filter !== 'all' ? { status: filter } : {};
-      const response = await orderService.getOrders(params);
+      // Always fetch all orders, filtering will be done client-side
+      const response = await orderService.getOrders();
       setOrders(response.orders);
+      
+      // For completed orders, check if reviews exist
+      const completedOrders = response.orders.filter(order => order.status === 'completed');
+      const reviewsMap = new Map();
+      
+      await Promise.all(completedOrders.map(async (order) => {
+        try {
+          console.log(`Checking reviews for order ${order.id}...`);
+          const reviewResponse = await fetch(`/api/reviews?orderId=${order.id}`);
+          console.log(`Review response status for order ${order.id}:`, reviewResponse.status);
+          
+          if (reviewResponse.ok) {
+            const reviews = await reviewResponse.json();
+            console.log(`Reviews found for order ${order.id}:`, reviews);
+            const hasReview = reviews.length > 0;
+            reviewsMap.set(order.id, hasReview);
+            console.log(`Order ${order.id} has review:`, hasReview);
+          } else {
+            console.log(`Failed to fetch reviews for order ${order.id}`);
+            reviewsMap.set(order.id, false);
+          }
+        } catch (error) {
+          console.error('Error checking review for order', order.id, error);
+          reviewsMap.set(order.id, false);
+        }
+      }));
+      
+      setOrderReviews(reviewsMap);
     } catch (error) {
       console.error('Error fetching orders:', error);
     } finally {
@@ -63,6 +150,23 @@ export default function CustomerOrders() {
       refunded: { class: 'customer-orders-payment-badge refunded', text: 'Refunded', icon: 'undo' }
     };
     return badges[paymentStatus] || badges.pending;
+  };
+
+  const calculateDuration = (order) => {
+    if (order.package?.duration) {
+      return `${order.package.duration} days`;
+    }
+    
+    if (order.package?.departureDate && order.package?.returnDate) {
+      const departure = new Date(order.package.departureDate);
+      const returnDate = new Date(order.package.returnDate);
+      const diffTime = Math.abs(returnDate - departure);
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      return `${diffDays} days`;
+    }
+    
+    // Default duration for Umrah packages
+    return '14 days';
   };
 
   const getFilterCount = (status) => {
@@ -122,7 +226,12 @@ export default function CustomerOrders() {
                 <button
                   key={tab.key}
                   className={`customer-orders-filter-tab ${filter === tab.key ? 'active' : ''}`}
-                  onClick={() => setFilter(tab.key)}
+                  onClick={() => {
+                    setFilterLoading(true);
+                    setFilter(tab.key);
+                    // Quick visual feedback - reset after animation
+                    setTimeout(() => setFilterLoading(false), 300);
+                  }}
                 >
                   <span className="customer-orders-tab-label">{tab.label}</span>
                   <span className="customer-orders-tab-count">{tab.count}</span>
@@ -183,47 +292,86 @@ export default function CustomerOrders() {
                 )}
               </div>
             ) : (
-              <div className="customer-orders-list">
+              <div className={`customer-orders-list ${filterLoading ? 'filtering' : ''}`}>
                 {filteredOrders.map((order) => {
                   const statusBadge = getStatusBadge(order.status);
                   const paymentBadge = getPaymentStatusBadge(order.paymentStatus);
                   return (
-                    <div key={order.id} className="customer-orders-list-item">
-                      <div className="customer-orders-item-info">
-                        <div className="customer-orders-item-id">#{order.orderNumber}</div>
-                        
-                        <div className="customer-orders-item-content">
-                          <h4 className="customer-orders-item-title">{order.package?.title}</h4>
-                          <div className="customer-orders-item-date">{formatDate(order.createdAt)}</div>
-                        </div>
-                        
-                        <div className="customer-orders-item-amount">
-                          {formatCurrency(order.totalAmount)}
-                        </div>
-                        
-                        <div className="customer-orders-item-badges">
-                          <div className={statusBadge.class}>
-                            <Icon icon={['fas', statusBadge.icon]} className="customer-orders-status-icon" />
-                            <span className="customer-orders-status-text">{statusBadge.text}</span>
+                    <div key={order.id} className="customer-orders-card">
+                      {/* Order Header */}
+                      <div className="customer-orders-card-header">
+                        <div className="customer-orders-card-meta">
+                          <div className="customer-orders-card-id">#{order.orderNumber}</div>
+                          <div className="customer-orders-card-date">
+                            <Icon icon={['fas', 'calendar-alt']} />
+                            {formatDate(order.createdAt)}
                           </div>
-                          {/* Show payment status for draft orders or when payment is pending */}
+                        </div>
+                        <div className="customer-orders-card-status">
+                          <div className={statusBadge.class}>
+                            <Icon icon={['fas', statusBadge.icon]} />
+                            <span>{statusBadge.text}</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Package Info */}
+                      <div className="customer-orders-card-content">
+                        <div className="customer-orders-package-info">
+                          <h3 className="customer-orders-package-title">{order.package?.title}</h3>
+                          <div className="customer-orders-package-details">
+                            <div className="customer-orders-detail-item">
+                              <Icon icon={['fas', 'calendar-check']} />
+                              <span>Departure: {order.package?.departureDate ? new Date(order.package.departureDate).toLocaleDateString() : 'TBD'}</span>
+                            </div>
+                            <div className="customer-orders-detail-item">
+                              <Icon icon={['fas', 'users']} />
+                              <span>{order.travelers?.length || (order.numberOfAdults || 0) + (order.numberOfChildren || 0) || order.numberOfTravelers || 1} travelers</span>
+                            </div>
+                            <div className="customer-orders-detail-item">
+                              <Icon icon={['fas', 'clock']} />
+                              <span>{calculateDuration(order)}</span>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <div className="customer-orders-price-section">
+                          <div className="customer-orders-price">
+                            <span className="customer-orders-price-label">Total Amount</span>
+                            <span className="customer-orders-price-value">{formatCurrency(order.totalAmount)}</span>
+                          </div>
                           {(order.status === 'draft' || order.paymentStatus === 'pending') && (
-                            <div className={paymentBadge.class}>
-                              <Icon icon={['fas', paymentBadge.icon]} className="customer-orders-payment-icon" />
-                              <span className="customer-orders-payment-text">{paymentBadge.text}</span>
+                            <div className={`customer-orders-payment-status ${paymentBadge.class}`}>
+                              <Icon icon={['fas', paymentBadge.icon]} />
+                              <span>{paymentBadge.text}</span>
                             </div>
                           )}
                         </div>
                       </div>
 
-                      <div className="customer-orders-item-actions">
-                        <Link href={`/customer/orders/${order.id}`} className="customer-orders-item-view-btn">
-                          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                          </svg>
-                          View Details
+                      {/* Actions */}
+                      <div className="customer-orders-card-actions">
+                        <Link href={`/customer/orders/${order.id}`} className="customer-orders-action-btn primary">
+                          <Icon icon={['fas', 'eye']} />
+                          <span>View Details</span>
                         </Link>
+                        {order.status === 'completed' && (
+                          <ReviewButton 
+                            orderId={order.id}
+                            hasReview={orderReviews.get(order.id)}
+                            onWriteReview={() => {
+                              if (typeof window !== 'undefined') {
+                                sessionStorage.setItem('reviewBackPath', '/customer/orders');
+                              }
+                            }}
+                          />
+                        )}
+                        {order.status === 'draft' && (
+                          <Link href={`/customer/book/${order.packageId}?completeOrder=${order.id}`} className="customer-orders-action-btn payment">
+                            <Icon icon={['fas', 'credit-card']} />
+                            <span>Complete Payment</span>
+                          </Link>
+                        )}
                       </div>
                     </div>
                   );

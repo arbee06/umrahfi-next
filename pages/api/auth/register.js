@@ -10,7 +10,7 @@ export default async function handler(req, res) {
     // Ensure database is synced
     await syncDatabase();
 
-    const { name, email, password, role, companyName, companyLicense, companyAddress, phone, address } = req.body;
+    const { name, email, password, role, companyName, companyLicense, companyAddress, phone, address, country } = req.body;
 
     // Validate input
     if (!name || !email || !password || !role) {
@@ -38,7 +38,8 @@ export default async function handler(req, res) {
       password,
       role,
       phone,
-      address
+      address,
+      country
     };
 
     if (role === 'company') {

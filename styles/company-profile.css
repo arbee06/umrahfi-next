@@ -1,5 +1,15 @@
 /* ===== MODERN COMPACT COMPANY PROFILE STYLES ===== */
 
+/* Field note styling */
+.company-profile-field-note {
+  display: block;
+  font-size: 0.75rem;
+  color: var(--gray-500);
+  font-weight: normal;
+  margin-top: 0.25rem;
+  font-style: italic;
+}
+
 /* Profile Container */
 .company-profile-container {
   max-width: 900px;
@@ -257,8 +267,20 @@
 /* Form Grid */
 .company-profile-form-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: 1rem;
+}
+
+/* Three column grid for company info section */
+.company-profile-form-grid.three-columns {
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 1rem;
+}
+
+@media (max-width: 768px) {
+  .company-profile-form-grid.three-columns {
+    grid-template-columns: 1fr;
+  }
 }
 
 .company-profile-form-grid-full {
@@ -292,6 +314,11 @@
   box-sizing: border-box;
 }
 
+/* Country select input needs extra right padding for arrow */
+.country-select-input-wrapper .company-profile-form-input {
+  padding-right: 2.5rem;
+}
+
 .company-profile-form-input:focus,
 .company-profile-form-textarea:focus {
   outline: none;
@@ -319,6 +346,109 @@
   display: flex;
   align-items: center;
   gap: 0.375rem;
+}
+
+
+/* Country Select Dropdown Styles */
+.country-select {
+  position: relative;
+  width: 100%;
+}
+
+.country-select-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.country-select-arrow {
+  position: absolute;
+  right: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #9ca3af;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  padding: 0.25rem;
+  border-radius: 0.25rem;
+}
+
+.country-select-arrow:hover {
+  color: #6b7280;
+  background-color: #f3f4f6;
+}
+
+.country-select-arrow.open {
+  transform: translateY(-50%) rotate(180deg);
+  color: #f59e0b;
+}
+
+.country-select-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  background: white;
+  border: 1.5px solid #f59e0b;
+  border-top: none;
+  border-radius: 0 0 0.5rem 0.5rem;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+  max-height: 300px;
+  overflow: hidden;
+}
+
+.country-select-options {
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.country-select-option {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.country-select-option:last-child {
+  border-bottom: none;
+}
+
+.country-select-option:hover,
+.country-select-option.highlighted {
+  background-color: #fef3c7;
+  color: #92400e;
+}
+
+.country-select-option.selected {
+  background-color: #fde68a;
+  color: #78350f;
+  font-weight: 600;
+}
+
+.country-flag {
+  font-size: 1.25rem;
+  line-height: 1;
+  min-width: 1.5rem;
+}
+
+.country-name {
+  flex: 1;
+  font-size: 0.875rem;
+}
+
+.country-select-no-results {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 2rem;
+  color: #6b7280;
+  font-size: 0.875rem;
+  text-align: center;
 }
 
 /* Submit Button */

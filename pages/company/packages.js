@@ -206,6 +206,8 @@ export default function CompanyPackages() {
                       <th className="text-left">Package Details</th>
                       <th className="text-center">Price</th>
                       <th className="text-center">Departure</th>
+                      <th className="text-center">Makkah Days</th>
+                      <th className="text-center">Madina Days</th>
                       <th className="text-center">Availability</th>
                       <th className="text-center">Status</th>
                       <th className="text-center">Actions</th>
@@ -235,6 +237,22 @@ export default function CompanyPackages() {
                         <td className="text-center">
                           <span className="date">
                             {pkg.departureDate ? formatDate(pkg.departureDate) : 'N/A'}
+                          </span>
+                        </td>
+
+                        {/* Makkah Days */}
+                        <td className="text-center">
+                          <span className="days-count">
+                            <Icon icon={['fas', 'calendar-day']} className="days-icon" />
+                            {pkg.makkahDays || 0} days
+                          </span>
+                        </td>
+
+                        {/* Madina Days */}
+                        <td className="text-center">
+                          <span className="days-count">
+                            <Icon icon={['fas', 'calendar-day']} className="days-icon" />
+                            {pkg.madinaDays || 0} days
                           </span>
                         </td>
 

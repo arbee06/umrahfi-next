@@ -620,6 +620,20 @@ export default function CompanyOrderDetails() {
                         <div className="company-order-info-value">{order.package?.duration} days</div>
                       </div>
                       <div className="company-order-info-item">
+                        <div className="company-order-info-label">
+                          <Icon icon={['fas', 'kaaba']} className="company-order-info-icon" />
+                          Makkah Days
+                        </div>
+                        <div className="company-order-info-value">{order.package?.makkahDays || 'N/A'} days</div>
+                      </div>
+                      <div className="company-order-info-item">
+                        <div className="company-order-info-label">
+                          <Icon icon={['fas', 'mosque']} className="company-order-info-icon" />
+                          Madina Days
+                        </div>
+                        <div className="company-order-info-value">{order.package?.madinaDays || 'N/A'} days</div>
+                      </div>
+                      <div className="company-order-info-item">
                         <div className="company-order-info-label">Hotel</div>
                         <div className="company-order-info-value">{order.package?.hotelName} ({order.package?.hotelRating}★)</div>
                       </div>
