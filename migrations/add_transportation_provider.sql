@@ -1,0 +1,2 @@
+-- Add transportation provider field to packages table
+ALTER TABLE packages ADD COLUMN transportationProvider VARCHAR(255) NULL COMMENT 'Transportation provider name (e.g., airline name, bus company)';

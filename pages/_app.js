@@ -19,6 +19,9 @@ import '@/styles/package-gallery-modal.css'
 import '@/styles/package-image-upload.css'
 import '@/styles/template-styles.css'
 import '@/styles/company-template-management.css'
+import '@/styles/language-switcher.css'
+import '@/styles/admin-subscriptions.css';
+
 
 import '@/styles/customer-profile.css';
 import '@/styles/customer-dashboard.css'

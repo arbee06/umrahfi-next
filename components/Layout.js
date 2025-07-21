@@ -1,15 +1,22 @@
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { useAuth } from '@/utils/AuthContext';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import styles from './Layout.module.css';
 import Icon from '@/components/FontAwesome';
+import useTranslation from 'next-translate/useTranslation';
+import LanguageSwitcher from '@/components/LanguageSwitcher';
 
 export default function Layout({ children }) {
   const { user, logout, isAuthenticated } = useAuth();
   const router = useRouter();
+  const { t } = useTranslation('navigation');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+  const [isAdminDropdownOpen, setIsAdminDropdownOpen] = useState(false);
+  const [isCompanyDropdownOpen, setIsCompanyDropdownOpen] = useState(false);
+  const dropdownRef = useRef(null);
+  const companyDropdownRef = useRef(null);
 
   const handleLogout = async () => {
     await logout();
@@ -26,6 +33,20 @@ export default function Layout({ children }) {
 
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsAdminDropdownOpen(false);
+      }
+      if (companyDropdownRef.current && !companyDropdownRef.current.contains(event.target)) {
+        setIsCompanyDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
   const toggleMobileMenu = () => {
@@ -81,7 +102,7 @@ export default function Layout({ children }) {
                     href="/packages" 
                     className={`${styles.navLink} ${isActive('/packages') ? styles.navLinkActive : ''}`}
                   >
-                    <span className={styles.navLinkText}>Browse</span>
+                    <span className={styles.navLinkText}>{t('packages')}</span>
                     <span className={styles.navLinkIndicator}></span>
                   </Link>
                     {user.role === 'customer' && (
@@ -90,14 +111,14 @@ export default function Layout({ children }) {
                           href="/customer" 
                           className={`${styles.navLink} ${isActive('/customer') ? styles.navLinkActive : ''}`}
                         >
-                          <span className={styles.navLinkText}>Dashboard</span>
+                          <span className={styles.navLinkText}>{t('dashboard')}</span>
                           <span className={styles.navLinkIndicator}></span>
                         </Link>
                         <Link 
                           href="/customer/orders"
                           className={`${styles.navLink} ${isActive('/customer/orders') ? styles.navLinkActive : ''}`}
                         >
-                          <span className={styles.navLinkText}>My Orders</span>
+                          <span className={styles.navLinkText}>{t('myBookings')}</span>
                           <span className={styles.navLinkIndicator}></span>
                         </Link>
                       </>
@@ -109,30 +130,47 @@ export default function Layout({ children }) {
                           href="/company"
                           className={`${styles.navLink} ${isActive('/company') ? styles.navLinkActive : ''}`}
                         >
-                          <span className={styles.navLinkText}>Dashboard</span>
+                          <span className={styles.navLinkText}>{t('dashboard')}</span>
                           <span className={styles.navLinkIndicator}></span>
                         </Link>
-                        <Link 
-                          href="/company/packages"
-                          className={`${styles.navLink} ${isActive('/company/packages') ? styles.navLinkActive : ''}`}
-                        >
-                          <span className={styles.navLinkText}>My Packages</span>
-                          <span className={styles.navLinkIndicator}></span>
-                        </Link>
-                        <Link 
-                          href="/company/orders"
-                          className={`${styles.navLink} ${isActive('/company/orders') ? styles.navLinkActive : ''}`}
-                        >
-                          <span className={styles.navLinkText}>Orders</span>
-                          <span className={styles.navLinkIndicator}></span>
-                        </Link>
-                        <Link 
-                          href="/company/templates"
-                          className={`${styles.navLink} ${isActive('/company/templates') ? styles.navLinkActive : ''}`}
-                        >
-                          <span className={styles.navLinkText}>Templates</span>
-                          <span className={styles.navLinkIndicator}></span>
-                        </Link>
+                        <div className={styles.navDropdown} ref={companyDropdownRef}>
+                          <button
+                            className={`${styles.navLink} ${styles.navLinkDropdown} ${isActiveSection('/company/') && !isActive('/company') ? styles.navLinkActive : ''}`}
+                            onClick={() => setIsCompanyDropdownOpen(!isCompanyDropdownOpen)}
+                          >
+                            <span className={styles.navLinkText}>Manage</span>
+                            <Icon 
+                              icon={['fas', 'chevron-down']} 
+                              className={`${styles.dropdownIcon} ${isCompanyDropdownOpen ? styles.dropdownIconOpen : ''}`}
+                            />
+                          </button>
+                          <div className={`${styles.dropdownMenu} ${isCompanyDropdownOpen ? styles.dropdownMenuOpen : ''}`}>
+                            <Link 
+                              href="/company/packages"
+                              className={`${styles.dropdownItem} ${isActive('/company/packages') ? styles.dropdownItemActive : ''}`}
+                              onClick={() => setIsCompanyDropdownOpen(false)}
+                            >
+                              <Icon icon={['fas', 'box']} className={styles.dropdownItemIcon} />
+                              {t('myPackages')}
+                            </Link>
+                            <Link 
+                              href="/company/orders"
+                              className={`${styles.dropdownItem} ${isActive('/company/orders') ? styles.dropdownItemActive : ''}`}
+                              onClick={() => setIsCompanyDropdownOpen(false)}
+                            >
+                              <Icon icon={['fas', 'clipboard-list']} className={styles.dropdownItemIcon} />
+                              Orders
+                            </Link>
+                            <Link 
+                              href="/company/templates"
+                              className={`${styles.dropdownItem} ${isActive('/company/templates') ? styles.dropdownItemActive : ''}`}
+                              onClick={() => setIsCompanyDropdownOpen(false)}
+                            >
+                              <Icon icon={['fas', 'file-alt']} className={styles.dropdownItemIcon} />
+                              Templates
+                            </Link>
+                          </div>
+                        </div>
                       </>
                     )}
                     
@@ -142,23 +180,55 @@ export default function Layout({ children }) {
                           href="/admin"
                           className={`${styles.navLink} ${isActive('/admin') ? styles.navLinkActive : ''}`}
                         >
-                          <span className={styles.navLinkText}>Dashboard</span>
+                          <span className={styles.navLinkText}>{t('dashboard')}</span>
                           <span className={styles.navLinkIndicator}></span>
                         </Link>
-                        <Link 
-                          href="/admin/users"
-                          className={`${styles.navLink} ${isActive('/admin/users') ? styles.navLinkActive : ''}`}
-                        >
-                          <span className={styles.navLinkText}>Users</span>
-                          <span className={styles.navLinkIndicator}></span>
-                        </Link>
-                        <Link 
-                          href="/admin/packages"
-                          className={`${styles.navLink} ${isActive('/admin/packages') ? styles.navLinkActive : ''}`}
-                        >
-                          <span className={styles.navLinkText}>Packages</span>
-                          <span className={styles.navLinkIndicator}></span>
-                        </Link>
+                        <div className={styles.navDropdown} ref={dropdownRef}>
+                          <button
+                            className={`${styles.navLink} ${styles.navLinkDropdown} ${isActiveSection('/admin/') && !isActive('/admin') ? styles.navLinkActive : ''}`}
+                            onClick={() => setIsAdminDropdownOpen(!isAdminDropdownOpen)}
+                          >
+                            <span className={styles.navLinkText}>Manage</span>
+                            <Icon 
+                              icon={['fas', 'chevron-down']} 
+                              className={`${styles.dropdownIcon} ${isAdminDropdownOpen ? styles.dropdownIconOpen : ''}`}
+                            />
+                          </button>
+                          <div className={`${styles.dropdownMenu} ${isAdminDropdownOpen ? styles.dropdownMenuOpen : ''}`}>
+                            <Link 
+                              href="/admin/customers"
+                              className={`${styles.dropdownItem} ${isActive('/admin/customers') ? styles.dropdownItemActive : ''}`}
+                              onClick={() => setIsAdminDropdownOpen(false)}
+                            >
+                              <Icon icon={['fas', 'users']} className={styles.dropdownItemIcon} />
+                              <span>Customers</span>
+                            </Link>
+                            <Link 
+                              href="/admin/companies"
+                              className={`${styles.dropdownItem} ${isActive('/admin/companies') ? styles.dropdownItemActive : ''}`}
+                              onClick={() => setIsAdminDropdownOpen(false)}
+                            >
+                              <Icon icon={['fas', 'building']} className={styles.dropdownItemIcon} />
+                              <span>Companies</span>
+                            </Link>
+                            <Link 
+                              href="/admin/subscriptions"
+                              className={`${styles.dropdownItem} ${isActive('/admin/subscriptions') ? styles.dropdownItemActive : ''}`}
+                              onClick={() => setIsAdminDropdownOpen(false)}
+                            >
+                              <Icon icon={['fas', 'credit-card']} className={styles.dropdownItemIcon} />
+                              <span>Subscriptions</span>
+                            </Link>
+                            <Link 
+                              href="/admin/packages"
+                              className={`${styles.dropdownItem} ${isActive('/admin/packages') ? styles.dropdownItemActive : ''}`}
+                              onClick={() => setIsAdminDropdownOpen(false)}
+                            >
+                              <Icon icon={['fas', 'box']} className={styles.dropdownItemIcon} />
+                              <span>Packages</span>
+                            </Link>
+                          </div>
+                        </div>
                       </>
                     )}
                   </>
@@ -168,47 +238,61 @@ export default function Layout({ children }) {
               {/* Auth Section */}
               <div className={styles.navbarAuth}>
                 {!isAuthenticated ? (
-                  <div className={styles.authButtons}>
-                    <Link href="/login">
-                      <button className={`btn btn-ghost ${styles.btnNav}`}>
-                        Sign In
-                      </button>
-                    </Link>
-                    <Link href="/register">
-                      <button className={`btn btn-primary ${styles.btnNav}`}>
-                        <span>Get Started</span>
-                        <svg className={styles.btnIcon} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                        </svg>
-                      </button>
-                    </Link>
-                  </div>
+                  <>
+                    <div className={styles.authButtons}>
+                      <Link href="/login">
+                        <button className={`btn btn-ghost ${styles.btnNav}`}>
+                          {t('login')}
+                        </button>
+                      </Link>
+                      <Link href="/register">
+                        <button className={`btn btn-primary ${styles.btnNav}`}>
+                          <span>{t('register')}</span>
+                          <svg className={styles.btnIcon} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                          </svg>
+                        </button>
+                      </Link>
+                    </div>
+                    
+                    {/* Language Switcher for unauthenticated users */}
+                    <div className={styles.navbarLanguage}>
+                      <LanguageSwitcher variant="dropdown" showLabels={false} className="navbar-lang-guest" />
+                    </div>
+                  </>
                 ) : (
-                  <div className={styles.userMenu}>
-                    <div className={styles.userAvatar}>
-                      {user?.profilePicture ? (
-                        <img 
-                          src={user.profilePicture} 
-                          alt={user.name || 'User'} 
-                          className={styles.avatarImage}
-                        />
-                      ) : (
-                        <span>
-                          {user.name?.charAt(0)?.toUpperCase() || 'U'}
-                        </span>
-                      )}
+                  <>
+                    <div className={styles.userMenu}>
+                      <div className={styles.userAvatar}>
+                        {user?.profilePicture ? (
+                          <img 
+                            src={user.profilePicture} 
+                            alt={user.name || 'User'} 
+                            className={styles.avatarImage}
+                          />
+                        ) : (
+                          <span>
+                            {user.name?.charAt(0)?.toUpperCase() || 'U'}
+                          </span>
+                        )}
+                      </div>
+                      <div className={styles.userInfo}>
+                        <span className={styles.userName}>Hi, {user.name}</span>
+                        <span className={styles.userRole}>{user.role}</span>
+                      </div>
+                      <button onClick={handleLogout} className={`btn btn-ghost btn-sm ${styles.logoutBtn}`}>
+                        <svg className={styles.logoutIcon} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                        </svg>
+                        <span>{t('logout')}</span>
+                      </button>
                     </div>
-                    <div className={styles.userInfo}>
-                      <span className={styles.userName}>Hi, {user.name}</span>
-                      <span className={styles.userRole}>{user.role}</span>
+
+                    {/* Language Switcher for authenticated users */}
+                    <div className={styles.navbarLanguage}>
+                      <LanguageSwitcher variant="dropdown" showLabels={false} className="navbar-lang-auth" />
                     </div>
-                    <button onClick={handleLogout} className={`btn btn-ghost btn-sm ${styles.logoutBtn}`}>
-                      <svg className={styles.logoutIcon} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                      </svg>
-                      <span>Sign Out</span>
-                    </button>
-                  </div>
+                  </>
                 )}
               </div>
             </div>
@@ -237,7 +321,7 @@ export default function Layout({ children }) {
                   onClick={closeMobileMenu}
                 >
                   <Icon icon={['fas', 'box']} className={styles.mobileNavIcon} />
-                  <span>Packages</span>
+                  <span>{t('packages')}</span>
                 </Link>
 
                 {!isAuthenticated ? (
@@ -322,20 +406,28 @@ export default function Layout({ children }) {
                           <span>Dashboard</span>
                         </Link>
                         <Link 
-                          href="/admin/users"
-                          className={`${styles.mobileNavLink} ${isActive('/admin/users') ? styles.mobileNavLinkActive : ''}`}
+                          href="/admin/customers"
+                          className={`${styles.mobileNavLink} ${isActive('/admin/customers') ? styles.mobileNavLinkActive : ''}`}
                           onClick={closeMobileMenu}
                         >
                           <Icon icon={['fas', 'users']} className={styles.mobileNavIcon} />
-                          <span>Users</span>
+                          <span>Customers</span>
                         </Link>
                         <Link 
-                          href="/admin/packages"
-                          className={`${styles.mobileNavLink} ${isActive('/admin/packages') ? styles.mobileNavLinkActive : ''}`}
+                          href="/admin/companies"
+                          className={`${styles.mobileNavLink} ${isActive('/admin/companies') ? styles.mobileNavLinkActive : ''}`}
                           onClick={closeMobileMenu}
                         >
-                          <Icon icon={['fas', 'box']} className={styles.mobileNavIcon} />
-                          <span>Packages</span>
+                          <Icon icon={['fas', 'building']} className={styles.mobileNavIcon} />
+                          <span>Companies</span>
+                        </Link>
+                        <Link 
+                          href="/admin/subscriptions"
+                          className={`${styles.mobileNavLink} ${isActive('/admin/subscriptions') ? styles.mobileNavLinkActive : ''}`}
+                          onClick={closeMobileMenu}
+                        >
+                          <Icon icon={['fas', 'credit-card']} className={styles.mobileNavIcon} />
+                          <span>Subscriptions</span>
                         </Link>
                       </>
                     )}
@@ -346,44 +438,58 @@ export default function Layout({ children }) {
               {/* Mobile Auth */}
               <div className={styles.mobileAuth}>
                 {!isAuthenticated ? (
-                  <div className={styles.mobileAuthButtons}>
-                    <Link href="/login" onClick={closeMobileMenu}>
-                      <button className={`btn btn-secondary ${styles.btnMobileAuth}`}>
-                        Sign In
-                      </button>
-                    </Link>
-                    <Link href="/register" onClick={closeMobileMenu}>
-                      <button className={`btn btn-primary ${styles.btnMobileAuth}`}>
-                        Get Started
-                      </button>
-                    </Link>
-                  </div>
-                ) : (
-                  <div className={styles.mobileUserSection}>
-                    <div className={styles.mobileUserInfo}>
-                      <div className={styles.mobileUserAvatar}>
-                        {user?.profilePicture ? (
-                          <img 
-                            src={user.profilePicture} 
-                            alt={user.name || 'User'} 
-                            className={styles.mobileAvatarImage}
-                          />
-                        ) : (
-                          <span>{user.name?.charAt(0)?.toUpperCase() || 'U'}</span>
-                        )}
-                      </div>
-                      <div className={styles.mobileUserDetails}>
-                        <span className={styles.mobileUserName}>{user.name}</span>
-                        <span className={styles.mobileUserRole}>{user.role}</span>
-                      </div>
+                  <>
+                    <div className={styles.mobileAuthButtons}>
+                      <Link href="/login" onClick={closeMobileMenu}>
+                        <button className={`btn btn-secondary ${styles.btnMobileAuth}`}>
+{t('login')}
+                        </button>
+                      </Link>
+                      <Link href="/register" onClick={closeMobileMenu}>
+                        <button className={`btn btn-primary ${styles.btnMobileAuth}`}>
+{t('register')}
+                        </button>
+                      </Link>
                     </div>
-                    <button onClick={handleLogout} className={`btn btn-ghost ${styles.btnMobileLogout}`}>
-                      <svg className={styles.logoutIcon} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                      </svg>
-                      Sign Out
-                    </button>
-                  </div>
+                    
+                    {/* Mobile Language Switcher for guests */}
+                    <div className={styles.mobileLanguage}>
+                      <LanguageSwitcher variant="toggle" showLabels={true} className="mobile-lang-guest" />
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div className={styles.mobileUserSection}>
+                      <div className={styles.mobileUserInfo}>
+                        <div className={styles.mobileUserAvatar}>
+                          {user?.profilePicture ? (
+                            <img 
+                              src={user.profilePicture} 
+                              alt={user.name || 'User'} 
+                              className={styles.mobileAvatarImage}
+                            />
+                          ) : (
+                            <span>{user.name?.charAt(0)?.toUpperCase() || 'U'}</span>
+                          )}
+                        </div>
+                        <div className={styles.mobileUserDetails}>
+                          <span className={styles.mobileUserName}>{user.name}</span>
+                          <span className={styles.mobileUserRole}>{user.role}</span>
+                        </div>
+                      </div>
+                      <button onClick={handleLogout} className={`btn btn-ghost ${styles.btnMobileLogout}`}>
+                        <svg className={styles.logoutIcon} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 713 3v1" />
+                        </svg>
+{t('logout')}
+                      </button>
+                    </div>
+
+                    {/* Mobile Language Switcher for authenticated users */}
+                    <div className={styles.mobileLanguage}>
+                      <LanguageSwitcher variant="toggle" showLabels={true} className="mobile-lang-auth" />
+                    </div>
+                  </>
                 )}
               </div>
             </div>

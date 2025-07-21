@@ -116,6 +116,27 @@ Use unique prefixes to avoid conflicts:
 - Admin pages: `admin-*`
 - Shared components: `umrahfi-*`
 
+**ALWAYS make CSS class names unique** across the entire application to prevent style conflicts. Every CSS file should have a unique prefix that matches its component or page name.
+
+## CSS Import Pattern
+
+**ALWAYS import CSS files in `pages/_app.js`** to ensure global availability and proper loading order:
+
+```javascript
+// In pages/_app.js
+import '../styles/globals.css';
+import '../styles/customer-profile.css';
+import '../styles/company-dashboard.css';
+import '../styles/admin-dashboard.css';
+// ... other CSS imports
+```
+
+This ensures:
+- Consistent styling across all pages
+- Proper CSS loading order
+- No missing styles due to forgotten imports
+- Better performance with bundled CSS
+
 ## User Feedback Pattern
 
 Use SweetAlert2 with sound alerts for user actions:

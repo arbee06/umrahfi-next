@@ -17,6 +17,8 @@ export default function CompanyProfile() {
   const [message, setMessage] = useState({ type: '', text: '' });
   const [showStripeModal, setShowStripeModal] = useState(false);
   const [showBankModal, setShowBankModal] = useState(false);
+  const [activeTab, setActiveTab] = useState('company');
+  const [verificationStatus, setVerificationStatus] = useState('pending');
   
   // Country dropdown states
   const [countries] = useState(() => getCountries());
@@ -366,6 +368,19 @@ export default function CompanyProfile() {
     }
   };
 
+  if (loading && !user) {
+    return (
+      <ProtectedRoute allowedRoles={['company']}>
+        <Layout>
+          <div style={{display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '60vh', flexDirection: 'column', gap: '1rem'}}>
+            <Icon icon={['fas', 'spinner']} spin size="3x" color="#10b981" />
+            <p style={{color: '#6b7280', fontSize: '1.1rem'}}>Loading company profile...</p>
+          </div>
+        </Layout>
+      </ProtectedRoute>
+    );
+  }
+
   return (
     <ProtectedRoute allowedRoles={['company']}>
       <Layout>
@@ -416,6 +431,78 @@ export default function CompanyProfile() {
             </div>
           </div>
 
+          {/* Company Stats Dashboard */}
+          <div className="company-profile-stats-dashboard">
+            <div className="company-profile-stat-card">
+              <div className="company-profile-stat-icon">
+                <Icon icon={['fas', 'box']} />
+              </div>
+              <div className="company-profile-stat-content">
+                <span className="company-profile-stat-value">24</span>
+                <span className="company-profile-stat-label">Active Packages</span>
+              </div>
+            </div>
+            <div className="company-profile-stat-card">
+              <div className="company-profile-stat-icon">
+                <Icon icon={['fas', 'users']} />
+              </div>
+              <div className="company-profile-stat-content">
+                <span className="company-profile-stat-value">156</span>
+                <span className="company-profile-stat-label">Total Customers</span>
+              </div>
+            </div>
+            <div className="company-profile-stat-card">
+              <div className="company-profile-stat-icon">
+                <Icon icon={['fas', 'star']} />
+              </div>
+              <div className="company-profile-stat-content">
+                <span className="company-profile-stat-value">4.9</span>
+                <span className="company-profile-stat-label">Average Rating</span>
+              </div>
+            </div>
+            <div className="company-profile-stat-card">
+              <div className="company-profile-stat-icon">
+                <Icon icon={['fas', 'dollar-sign']} />
+              </div>
+              <div className="company-profile-stat-content">
+                <span className="company-profile-stat-value">$125k</span>
+                <span className="company-profile-stat-label">Total Revenue</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Tab Navigation */}
+          <div className="company-profile-tabs">
+            <button
+              className={`company-profile-tab ${activeTab === 'company' ? 'active' : ''}`}
+              onClick={() => setActiveTab('company')}
+            >
+              <Icon icon={['fas', 'building']} />
+              Company Info
+            </button>
+            <button
+              className={`company-profile-tab ${activeTab === 'contact' ? 'active' : ''}`}
+              onClick={() => setActiveTab('contact')}
+            >
+              <Icon icon={['fas', 'user-tie']} />
+              Contact Person
+            </button>
+            <button
+              className={`company-profile-tab ${activeTab === 'payment' ? 'active' : ''}`}
+              onClick={() => setActiveTab('payment')}
+            >
+              <Icon icon={['fas', 'credit-card']} />
+              Payment Settings
+            </button>
+            <button
+              className={`company-profile-tab ${activeTab === 'verification' ? 'active' : ''}`}
+              onClick={() => setActiveTab('verification')}
+            >
+              <Icon icon={['fas', 'shield-check']} />
+              Verification
+            </button>
+          </div>
+
           {/* Alert Messages */}
           {message.text && (
             <div className={`company-profile-alert company-profile-alert-${message.type}`}>
@@ -434,6 +521,7 @@ export default function CompanyProfile() {
           <div className="company-profile-form">
             <form onSubmit={handleSubmit}>
               {/* Contact Person Information Section */}
+              {activeTab === 'contact' && (
               <div className="company-profile-form-section">
                 <div className="company-profile-section-header">
                   <Icon icon={['fas', 'user-tie']} className="company-profile-section-icon" />
@@ -494,8 +582,10 @@ export default function CompanyProfile() {
                   />
                 </div>
               </div>
+              )}
 
               {/* Company Information Section */}
+              {activeTab === 'company' && (
               <div className="company-profile-form-section">
                 <div className="company-profile-section-header">
                   <Icon icon={['fas', 'building']} className="company-profile-section-icon" />
@@ -589,9 +679,10 @@ export default function CompanyProfile() {
                   />
                 </div>
               </div>
-
+              )}
 
               {/* Payment Configuration Section */}
+              {activeTab === 'payment' && (
               <div className="company-profile-form-section">
                 <div className="company-profile-section-header">
                   <Icon icon={['fas', 'credit-card']} className="company-profile-section-icon" />
@@ -681,7 +772,77 @@ export default function CompanyProfile() {
                 </div>
 
               </div>
+              )}
 
+              {/* Verification Section */}
+              {activeTab === 'verification' && (
+              <div className="company-profile-form-section">
+                <div className="company-profile-section-header">
+                  <Icon icon={['fas', 'shield-check']} className="company-profile-section-icon" />
+                  <h2 className="company-profile-section-title">Company Verification</h2>
+                  <p className="company-profile-section-subtitle">Verify your company to build trust with customers</p>
+                </div>
+
+                <div className="company-profile-verification-status">
+                  <div className={`company-profile-verification-badge ${verificationStatus}`}>
+                    <Icon icon={['fas', verificationStatus === 'verified' ? 'check-circle' : 'clock']} />
+                    <span>{verificationStatus === 'verified' ? 'Verified' : 'Pending Verification'}</span>
+                  </div>
+                  <p className="company-profile-verification-info">
+                    {verificationStatus === 'verified' 
+                      ? 'Your company has been successfully verified.'
+                      : 'Upload required documents to complete verification process.'}
+                  </p>
+                </div>
+
+                <div className="company-profile-document-upload">
+                  <h3>Required Documents</h3>
+                  <div className="company-profile-document-list">
+                    <div className="company-profile-document-item">
+                      <div className="company-profile-document-info">
+                        <Icon icon={['fas', 'file-alt']} />
+                        <div>
+                          <h4>Business License</h4>
+                          <p>Valid government-issued business license</p>
+                        </div>
+                      </div>
+                      <button type="button" className="company-profile-upload-doc-btn">
+                        <Icon icon={['fas', 'upload']} />
+                        Upload
+                      </button>
+                    </div>
+                    <div className="company-profile-document-item">
+                      <div className="company-profile-document-info">
+                        <Icon icon={['fas', 'file-invoice']} />
+                        <div>
+                          <h4>Tax Registration</h4>
+                          <p>Tax registration certificate</p>
+                        </div>
+                      </div>
+                      <button type="button" className="company-profile-upload-doc-btn">
+                        <Icon icon={['fas', 'upload']} />
+                        Upload
+                      </button>
+                    </div>
+                    <div className="company-profile-document-item">
+                      <div className="company-profile-document-info">
+                        <Icon icon={['fas', 'file-contract']} />
+                        <div>
+                          <h4>Insurance Certificate</h4>
+                          <p>Valid insurance coverage certificate</p>
+                        </div>
+                      </div>
+                      <button type="button" className="company-profile-upload-doc-btn">
+                        <Icon icon={['fas', 'upload']} />
+                        Upload
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              )}
+
+              {(activeTab === 'company' || activeTab === 'contact' || activeTab === 'payment') && (
               <div className="company-profile-form-section">
                 <button
                   type="submit"
@@ -701,6 +862,7 @@ export default function CompanyProfile() {
                   )}
                 </button>
               </div>
+              )}
             </form>
           </div>
         </div>

@@ -5,10 +5,15 @@ import packageService from '@/services/packageService';
 import { getAirports, getAirportByCode } from '@/utils/airports';
 import { getCountries } from '@/utils/countries';
 import Icon from '@/components/FontAwesome';
+import CompanyDetailsModal from '@/components/CompanyDetailsModal';
 
 export default function Packages() {
   const [packages, setPackages] = useState([]);
+  const [companies, setCompanies] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [viewMode, setViewMode] = useState('packages'); // 'packages' or 'companies'
+  const [selectedCompany, setSelectedCompany] = useState(null);
+  const [showCompanyModal, setShowCompanyModal] = useState(false);
   const [filters, setFilters] = useState({
     minPrice: '',
     maxPrice: '',
@@ -25,10 +30,15 @@ export default function Packages() {
   const [selectedDates, setSelectedDates] = useState({ start: null, end: null });
   const [airports] = useState(() => getAirports());
   const [countries] = useState(() => getCountries());
+  const [currentPhotoIndex, setCurrentPhotoIndex] = useState({});
 
   useEffect(() => {
-    fetchPackages();
-  }, []);
+    if (viewMode === 'packages') {
+      fetchPackages();
+    } else {
+      fetchCompanies();
+    }
+  }, [viewMode]);
 
   useEffect(() => {
     const handleClickOutside = (e) => {
@@ -56,6 +66,32 @@ export default function Packages() {
     }
   };
 
+  const fetchCompanies = async (filterParams = {}) => {
+    setLoading(true);
+    try {
+      const response = await fetch('/api/browse/companies', {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' }
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        setCompanies(data.companies);
+      } else {
+        console.error('Failed to fetch companies:', response.status);
+      }
+    } catch (error) {
+      console.error('Error fetching companies:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCompanyClick = (company) => {
+    setSelectedCompany(company);
+    setShowCompanyModal(true);
+  };
+
   const applyFilters = () => {
     const filterParams = {};
     if (filters.minPrice) filterParams.minPrice = filters.minPrice;
@@ -67,7 +103,11 @@ export default function Packages() {
     if (filters.arrivalAirport) filterParams.arrivalAirport = filters.arrivalAirport;
     if (filters.guests) filterParams.guests = filters.guests;
     
-    fetchPackages(filterParams);
+    if (viewMode === 'packages') {
+      fetchPackages(filterParams);
+    } else {
+      fetchCompanies(filterParams);
+    }
     setActiveFilter(null);
     setShowDatePicker(false);
   };
@@ -83,7 +123,11 @@ export default function Packages() {
       arrivalAirport: '',
       guests: '1'
     });
-    fetchPackages();
+    if (viewMode === 'packages') {
+      fetchPackages();
+    } else {
+      fetchCompanies();
+    }
     setActiveFilter(null);
     setShowDatePicker(false);
   };
@@ -229,6 +273,52 @@ export default function Packages() {
   const hasActiveFilters = Object.entries(filters).some(([key, value]) => 
     key !== 'guests' && value !== '' && value !== '1'
   );
+
+  const handlePhotoNavigation = (packageId, direction) => {
+    const pkg = packages.find(p => p.id === packageId);
+    const photos = getPackagePhotos(pkg);
+    
+    const currentIndex = currentPhotoIndex[packageId] || 0;
+    let newIndex;
+    
+    if (direction === 'next') {
+      newIndex = currentIndex >= photos.length - 1 ? 0 : currentIndex + 1;
+    } else {
+      newIndex = currentIndex <= 0 ? photos.length - 1 : currentIndex - 1;
+    }
+    
+    setCurrentPhotoIndex(prev => ({
+      ...prev,
+      [packageId]: newIndex
+    }));
+  };
+
+  const hasActualPhotos = (pkg) => {
+    return (pkg.photos && pkg.photos.length > 0) || (pkg.images && pkg.images.length > 0);
+  };
+
+  const getCurrentPhoto = (pkg) => {
+    if (!hasActualPhotos(pkg)) {
+      return null; // No photo available
+    }
+    
+    const photos = getPackagePhotos(pkg);
+    const currentIndex = currentPhotoIndex[pkg.id] || 0;
+    return photos[currentIndex];
+  };
+
+  const getPackagePhotos = (pkg) => {
+    // Use actual package images/photos from database
+    if (pkg.photos && pkg.photos.length > 0) {
+      return pkg.photos;
+    }
+    
+    if (pkg.images && pkg.images.length > 0) {
+      return pkg.images;
+    }
+    
+    return [];
+  };
 
   return (
     <Layout>
@@ -709,207 +799,370 @@ export default function Packages() {
             </div>
           ) : (
             <>
+              {/* View Toggle */}
+              <div className="packages-view-toggle">
+                <div className="packages-view-toggle-container">
+                  <button 
+                    className={`packages-view-toggle-btn ${viewMode === 'packages' ? 'active' : ''}`}
+                    onClick={() => setViewMode('packages')}
+                  >
+                    <Icon icon={['fas', 'box']} />
+                    <span>Packages</span>
+                  </button>
+                  <button 
+                    className={`packages-view-toggle-btn ${viewMode === 'companies' ? 'active' : ''}`}
+                    onClick={() => setViewMode('companies')}
+                  >
+                    <Icon icon={['fas', 'building']} />
+                    <span>Companies</span>
+                  </button>
+                </div>
+              </div>
+
               <div className="packages-packages-header">
-                <h2>Available Packages</h2>
-                <span className="packages-packages-count">{packages.length} packages found</span>
+                <h2>{viewMode === 'packages' ? 'Available Packages' : 'Travel Companies'}</h2>
+                <span className="packages-packages-count">
+                  {viewMode === 'packages' 
+                    ? `${packages.length} packages found` 
+                    : `${companies.length} companies found`}
+                </span>
               </div>
               
-              <div className="packages-packages-grid">
-                {packages.map((pkg) => {
+              <div className="packages-packages-modern-grid">
+                {viewMode === 'packages' ? packages.map((pkg) => {
                   const availability = getAvailabilityStatus(pkg.availableSeats, pkg.totalSeats);
                   
                   return (
-                    <div key={pkg.id} className="packages-package-card">
-                      <div className="packages-package-header">
-                        <div className="packages-package-badge">
-                          {pkg.price <= 1500 ? 'Economy' : pkg.price >= 4000 ? 'Luxury' : 'Premium'}
+                    <div key={pkg.id} className="packages-modern-card">
+                      {/* Photo Section */}
+                      <div className="packages-modern-photo-section">
+                        <div className="packages-modern-photo-container">
+                          <div className="packages-modern-photo-slideshow">
+                            {hasActualPhotos(pkg) ? (
+                              <>
+                                <img 
+                                  src={getCurrentPhoto(pkg)} 
+                                  alt={pkg.title}
+                                  className="packages-modern-photo-main"
+                                  onClick={() => handlePhotoNavigation(pkg.id, 'next')}
+                                />
+                                {getPackagePhotos(pkg).length > 1 && (
+                                  <>
+                                    <button 
+                                      className="packages-modern-photo-nav packages-modern-photo-prev"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        handlePhotoNavigation(pkg.id, 'prev');
+                                      }}
+                                    >
+                                      <Icon icon={['fas', 'chevron-left']} />
+                                    </button>
+                                    <button 
+                                      className="packages-modern-photo-nav packages-modern-photo-next"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        handlePhotoNavigation(pkg.id, 'next');
+                                      }}
+                                    >
+                                      <Icon icon={['fas', 'chevron-right']} />
+                                    </button>
+                                    <div className="packages-modern-photo-indicators">
+                                      {getPackagePhotos(pkg).slice(0, 3).map((_, index) => (
+                                        <div 
+                                          key={index} 
+                                          className={`packages-modern-photo-dot ${index === (currentPhotoIndex[pkg.id] || 0) ? 'active' : ''}`}
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            setCurrentPhotoIndex(prev => ({...prev, [pkg.id]: index}));
+                                          }}
+                                        />
+                                      ))}
+                                      {getPackagePhotos(pkg).length > 3 && (
+                                        <span className="packages-modern-photo-count">+{getPackagePhotos(pkg).length - 3}</span>
+                                      )}
+                                    </div>
+                                  </>
+                                )}
+                              </>
+                            ) : (
+                              <div className="packages-modern-photo-placeholder">
+                                <Icon icon={['fas', 'image']} className="packages-placeholder-icon" />
+                                <span className="packages-placeholder-text">Photo not available</span>
+                              </div>
+                            )}
+                          </div>
                         </div>
-                        <div className={`packages-availability-badge ${availability.status}`}>
-                          {availability.text}
+                        
+                        {/* Package Badges */}
+                        <div className="packages-modern-badges">
+                          <span className="packages-modern-badge packages-modern-badge-type">
+                            {pkg.price <= 1500 ? 'Economy' : pkg.price >= 4000 ? 'Luxury' : 'Premium'}
+                          </span>
+                          {pkg.isAllInclusive && (
+                            <span className="packages-modern-badge packages-modern-badge-inclusive">
+                              All-inclusive package
+                            </span>
+                          )}
                         </div>
                       </div>
 
-                      <div className="packages-package-content">
-                        <Link href={`/packages/${pkg.id}`} className="packages-title-link">
-                          <h3 className="packages-package-title packages-package-title-clickable">{pkg.title}</h3>
-                        </Link>
-                        <p className="packages-package-description">{pkg.description}</p>
-
-                        <div className="packages-package-price">
-                          <span className="packages-price-label">Starting from</span>
-                          <div className="packages-price-wrapper">
-                            <div className="packages-price-item">
-                              <span className="packages-price-value">{formatPrice(pkg.price)}</span>
-                              <span className="packages-price-period">per adult</span>
+                      {/* Content Section */}
+                      <div className="packages-modern-content">
+                        {/* Top Content */}
+                        <div className="packages-modern-content-top">
+                          <div className="packages-modern-header">
+                            <Link href={`/packages/${pkg.id}`} className="packages-modern-title-link">
+                              <h3 className="packages-modern-title">{pkg.title}</h3>
+                            </Link>
+                            <div className="packages-modern-location">
+                              <Icon icon={['fas', 'map-marker-alt']} />
+                              <span>{pkg.country || 'Saudi Arabia'}</span>
                             </div>
-                            {pkg.childPrice > 0 && (
-                              <div className="packages-price-item packages-price-child">
-                                <span className="packages-price-value">{formatPrice(pkg.childPrice)}</span>
-                                <span className="packages-price-period">per child</span>
+                          </div>
+
+                          {/* Company Info */}
+                          <div className="packages-modern-company">
+                            <div className="packages-modern-company-info">
+                              <Icon icon={['fas', 'star']} className="packages-modern-rating-icon" />
+                              <span className="packages-modern-rating">{pkg.companyRating || 'No rating'}</span>
+                              <span className="packages-modern-company-name">
+                                {pkg.companyName || 'Travel Company'}
+                              </span>
+                            </div>
+                            {pkg.isGuideIncluded && (
+                              <div className="packages-modern-features">
+                                <span className="packages-modern-feature">
+                                  <Icon icon={['fas', 'user-tie']} />
+                                  Ziarah & Umrah Guide Optional
+                                </span>
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Package Details */}
+                          <div className="packages-modern-details">
+                            <div className="packages-modern-detail-item">
+                              <Icon icon={['fas', 'clock']} />
+                              <span>{pkg.duration} days</span>
+                            </div>
+                            <div className="packages-modern-detail-item">
+                              <Icon icon={['fas', 'calendar']} />
+                              <span>{formatDate(pkg.departureDate)}</span>
+                            </div>
+                            <div className="packages-modern-detail-item">
+                              <Icon icon={['fas', 'users']} />
+                              <span>{pkg.availableSeats}/{pkg.totalSeats} seats</span>
+                            </div>
+                            <div className="packages-modern-detail-item">
+                              <Icon icon={['fas', 'plane']} />
+                              <span>{pkg.transportation || 'Flight'}</span>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Flight Information - Modern & Sleek */}
+                        {(pkg.departureAirports?.length > 0 || pkg.airline) && (
+                          <div className="packages-modern-flight-section">
+                            <div className="packages-modern-flight-header">
+                              <Icon icon={['fas', 'plane']} />
+                              <span>Flight Details</span>
+                            </div>
+                            <div className="packages-modern-flight-content">
+                              {pkg.departureAirports?.length > 0 && (
+                                <div className="packages-modern-flight-item">
+                                  <div className="packages-modern-flight-label">
+                                    <Icon icon={['fas', 'plane-departure']} />
+                                    <span>Departure</span>
+                                  </div>
+                                  <div className="packages-modern-flight-value">
+                                    {pkg.departureAirports.slice(0, 2).join(', ')}
+                                    {pkg.departureAirports.length > 2 && (
+                                      <span className="packages-modern-extra-count">+{pkg.departureAirports.length - 2} more</span>
+                                    )}
+                                  </div>
+                                </div>
+                              )}
+                              {pkg.airline && (
+                                <div className="packages-modern-flight-item">
+                                  <div className="packages-modern-flight-label">
+                                    <Icon icon={['fas', 'building']} />
+                                    <span>Airlines</span>
+                                  </div>
+                                  <div className="packages-modern-flight-value">
+                                    {pkg.airline}
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Price and Actions Section */}
+                      <div className="packages-modern-sidebar">
+                        {/* Nights Breakdown - Improved Layout */}
+                        <div className="packages-modern-nights-breakdown">
+                          <div className="packages-modern-nights-header">
+                            <Icon icon={['fas', 'bed']} />
+                            <span>Accommodation</span>
+                          </div>
+                          <div className="packages-modern-nights-content">
+                            {pkg.makkahDays > 0 && (
+                              <div className="packages-modern-night-item">
+                                <div className="packages-modern-city-info">
+                                  <span className="packages-modern-city-name">Makkah</span>
+                                  <span className="packages-modern-night-count">{pkg.makkahDays} Nights</span>
+                                </div>
+                                {pkg.makkahHotels?.[0] && (
+                                  <div className="packages-modern-hotel-info">
+                                    <span className="packages-modern-hotel-name">{pkg.makkahHotels[0].name}</span>
+                                    <div className="packages-modern-hotel-rating">
+                                      {Array.from({ length: pkg.makkahHotels[0].rating || 3 }, (_, i) => (
+                                        <Icon key={i} icon={['fas', 'star']} className="packages-star-small" />
+                                      ))}
+                                    </div>
+                                  </div>
+                                )}
+                              </div>
+                            )}
+                            {pkg.madinaDays > 0 && (
+                              <div className="packages-modern-night-item">
+                                <div className="packages-modern-city-info">
+                                  <span className="packages-modern-city-name">Madinah</span>
+                                  <span className="packages-modern-night-count">{pkg.madinaDays} Nights</span>
+                                </div>
+                                {pkg.madinahHotels?.[0] && (
+                                  <div className="packages-modern-hotel-info">
+                                    <span className="packages-modern-hotel-name">{pkg.madinahHotels[0].name}</span>
+                                    <div className="packages-modern-hotel-rating">
+                                      {Array.from({ length: pkg.madinahHotels[0].rating || 3 }, (_, i) => (
+                                        <Icon key={i} icon={['fas', 'star']} className="packages-star-small" />
+                                      ))}
+                                    </div>
+                                  </div>
+                                )}
                               </div>
                             )}
                           </div>
                         </div>
 
-                        <div className="packages-package-details">
-                          <div className="packages-detail-item">
-                            <Icon icon="clock" className="packages-detail-icon" />
-                            <div className="packages-detail-content">
-                              <span className="packages-detail-label">Duration</span>
-                              <span className="packages-detail-value">{pkg.duration} days</span>
-                            </div>
-                          </div>
-
-                          <div className="packages-detail-item">
-                            <Icon icon="plane" className="packages-detail-icon" />
-                            <div className="packages-detail-content">
-                              <span className="packages-detail-label">Departure</span>
-                              <span className="packages-detail-value">{formatDate(pkg.departureDate)}</span>
-                            </div>
-                          </div>
-
-                          <div className="packages-detail-item">
-                            <Icon icon="users" className="packages-detail-icon" />
-                            <div className="packages-detail-content">
-                              <span className="packages-detail-label">Available Seats</span>
-                              <span className="packages-detail-value">{pkg.availableSeats}/{pkg.totalSeats}</span>
-                            </div>
-                          </div>
-
-                          <div className="packages-detail-item">
-                            <Icon icon="globe" className="packages-detail-icon" />
-                            <div className="packages-detail-content">
-                              <span className="packages-detail-label">Country</span>
-                              <span className="packages-detail-value">{pkg.country}</span>
-                            </div>
-                          </div>
-
-                          {(pkg.departureAirports?.length > 0 || pkg.arrivalAirports?.length > 0) && (
-                            <div className="packages-detail-item">
-                              <Icon icon="route" className="packages-detail-icon" />
-                              <div className="packages-detail-content">
-                                <span className="packages-detail-label">Flight Options</span>
-                                <div className="packages-airport-options">
-                                  {pkg.departureAirports?.length > 0 && (
-                                    <div className="packages-airport-group">
-                                      <span className="packages-airport-group-label">From:</span>
-                                      <div className="packages-airport-pills">
-                                        {pkg.departureAirports.slice(0, 2).map((airport, index) => (
-                                          <span key={index} className="packages-airport-pill departure">
-                                            {airport}
-                                          </span>
-                                        ))}
-                                        {pkg.departureAirports.length > 2 && (
-                                          <span className="packages-airport-pill-more">
-                                            +{pkg.departureAirports.length - 2} more
-                                          </span>
-                                        )}
-                                      </div>
-                                    </div>
-                                  )}
-                                  {pkg.arrivalAirports?.length > 0 && (
-                                    <div className="packages-airport-group">
-                                      <span className="packages-airport-group-label">To:</span>
-                                      <div className="packages-airport-pills">
-                                        {pkg.arrivalAirports.slice(0, 2).map((airport, index) => (
-                                          <span key={index} className="packages-airport-pill arrival">
-                                            {airport}
-                                          </span>
-                                        ))}
-                                        {pkg.arrivalAirports.length > 2 && (
-                                          <span className="packages-airport-pill-more">
-                                            +{pkg.arrivalAirports.length - 2} more
-                                          </span>
-                                        )}
-                                      </div>
-                                    </div>
-                                  )}
-                                </div>
-                              </div>
-                            </div>
-                          )}
-
-                          <div className="packages-detail-item">
-                            <Icon icon="hotel" className="packages-detail-icon" />
-                            <div className="packages-detail-content">
-                              <span className="packages-detail-label">Accommodation</span>
-                              <div className="packages-hotel-options">
-                                {pkg.makkahHotels?.length > 0 && (
-                                  <div className="packages-hotel-group">
-                                    <div className="packages-hotel-city">
-                                      {/* <Icon icon={['fas', 'kaaba']} className="packages-city-icon makkah" /> */}
-                                      <span className="packages-hotel-city-name">Makkah</span>
-                                      <span className="packages-city-days-badge">{pkg.makkahDays || 0} days</span>
-                                    </div>
-                                    <div className="packages-hotel-pills">
-                                      {pkg.makkahHotels.slice(0, 1).map((hotel, index) => (
-                                        <span key={index} className="packages-hotel-pill makkah">
-                                          <span className="packages-hotel-pill-name">{hotel.name}</span>
-                                          <div className="packages-hotel-pill-rating">
-                                            {[...Array(parseInt(hotel.rating))].map((_, i) => (
-                                              <Icon key={i} icon="star" className="packages-hotel-star" />
-                                            ))}
-                                          </div>
-                                        </span>
-                                      ))}
-                                      {pkg.makkahHotels.length > 1 && (
-                                        <span className="packages-hotel-pill-more">
-                                          +{pkg.makkahHotels.length - 1} option{pkg.makkahHotels.length > 2 ? 's' : ''}
-                                        </span>
-                                      )}
-                                    </div>
-                                  </div>
-                                )}
-                                {pkg.madinahHotels?.length > 0 && (
-                                  <div className="packages-hotel-group">
-                                    <div className="packages-hotel-city">
-                                      {/* <Icon icon={['fas', 'mosque']} className="packages-city-icon madinah" /> */}
-                                      <span className="packages-hotel-city-name">Madinah</span>
-                                      <span className="packages-city-days-badge">{pkg.madinaDays || 0} days</span>
-                                    </div>
-                                    <div className="packages-hotel-pills">
-                                      {pkg.madinahHotels.slice(0, 1).map((hotel, index) => (
-                                        <span key={index} className="packages-hotel-pill madinah">
-                                          <span className="packages-hotel-pill-name">{hotel.name}</span>
-                                          <div className="packages-hotel-pill-rating">
-                                            {[...Array(parseInt(hotel.rating))].map((_, i) => (
-                                              <Icon key={i} icon="star" className="packages-hotel-star" />
-                                            ))}
-                                          </div>
-                                        </span>
-                                      ))}
-                                      {pkg.madinahHotels.length > 1 && (
-                                        <span className="packages-hotel-pill-more">
-                                          +{pkg.madinahHotels.length - 1} option{pkg.madinahHotels.length > 2 ? 's' : ''}
-                                        </span>
-                                      )}
-                                    </div>
-                                  </div>
-                                )}
-                                {(!pkg.makkahHotels?.length && !pkg.madinahHotels?.length) && (
-                                  <span className="packages-hotel-fallback">Hotel options available</span>
-                                )}
-                              </div>
-                            </div>
+                        <div className="packages-modern-pricing">
+                          <div className="packages-modern-price-main">
+                            <span className="packages-modern-price-currency">$</span>
+                            <span className="packages-modern-price-amount">{formatPrice(pkg.price).replace('$', '')}</span>
                           </div>
                         </div>
-                      </div>
 
-                      <div className="packages-package-footer">
                         <Link href={`/packages/${pkg.id}`}>
-                          <button className="btn btn-primary packages-package-cta">
-                            View Details & Book
+                          <button className="packages-modern-customize-btn">
+                            See details
                           </button>
                         </Link>
                       </div>
                     </div>
                   );
-                })}
+                }) : companies.map((company) => (
+                  <div key={company.id} className="packages-company-card" onClick={() => handleCompanyClick(company)}>
+                    <div className="packages-company-header">
+                      <div className="packages-company-info">
+                        <h3 className="packages-company-name">{company.name}</h3>
+                        <div className="packages-company-badges">
+                          {company.isVerified && (
+                            <span className="packages-badge packages-badge-verified">
+                              <Icon icon={['fas', 'check-circle']} />
+                              Verified
+                            </span>
+                          )}
+                          <span className="packages-badge packages-badge-plan">
+                            <Icon icon={['fas', 'crown']} />
+                            {company.subscriptionPlan?.charAt(0).toUpperCase() + company.subscriptionPlan?.slice(1) || 'Free'}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="packages-company-avatar">
+                        {company.profilePicture ? (
+                          <img src={company.profilePicture} alt={company.name} />
+                        ) : (
+                          <Icon icon={['fas', 'building']} />
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="packages-company-content">
+                      <div className="packages-company-stats">
+                        <div className="packages-company-stat">
+                          <Icon icon={['fas', 'box']} />
+                          <span className="packages-stat-number">{company.packageCount || 0}</span>
+                          <span className="packages-stat-label">Packages</span>
+                        </div>
+                        <div className="packages-company-stat">
+                          <Icon icon={['fas', 'star']} />
+                          <span className="packages-stat-number">{company.avgRating || 'N/A'}</span>
+                          <span className="packages-stat-label">Rating</span>
+                        </div>
+                        <div className="packages-company-stat">
+                          <Icon icon={['fas', 'calendar']} />
+                          <span className="packages-stat-number">{new Date(company.joinedDate).getFullYear()}</span>
+                          <span className="packages-stat-label">Since</span>
+                        </div>
+                      </div>
+
+                      <div className="packages-company-details">
+                        <div className="packages-company-detail">
+                          <Icon icon={['fas', 'envelope']} />
+                          <span>{company.email}</span>
+                        </div>
+                        {company.phone && (
+                          <div className="packages-company-detail">
+                            <Icon icon={['fas', 'phone']} />
+                            <span>{company.phone}</span>
+                          </div>
+                        )}
+                        {company.address && (
+                          <div className="packages-company-detail">
+                            <Icon icon={['fas', 'map-marker-alt']} />
+                            <span>{company.address}</span>
+                          </div>
+                        )}
+                      </div>
+
+                      {company.recentPackages && company.recentPackages.length > 0 && (
+                        <div className="packages-company-recent">
+                          <h4>Recent Packages</h4>
+                          <div className="packages-company-recent-list">
+                            {company.recentPackages.slice(0, 3).map((pkg) => (
+                              <div key={pkg.id} className="packages-company-recent-item">
+                                <span className="packages-recent-title">{pkg.title}</span>
+                                <span className="packages-recent-price">${pkg.price}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="packages-company-footer">
+                      <button className="btn btn-primary packages-company-cta">
+                        View Company Details
+                      </button>
+                    </div>
+                  </div>
+                ))}
               </div>
             </>
           )}
         </div>
       </div>
+
+      {/* Company Details Modal */}
+      <CompanyDetailsModal 
+        company={selectedCompany}
+        isOpen={showCompanyModal}
+        onClose={() => {
+          setShowCompanyModal(false);
+          setSelectedCompany(null);
+        }}
+      />
     </Layout>
   );
 }

@@ -668,21 +668,28 @@
 
 /* Flight Options Section - Left Side */
 .package-details-flights-section {
-  justify-self: start;
-  min-width: 0;
+  background: #f8f9fa;
+  padding: 16px;
+  border-radius: 12px;
+  border: 1px solid #e9ecef;
+  margin-bottom: 20px;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .package-details-flights-grid {
   display: flex;
-  gap: 20px;
-  margin-top: 8px;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-top: 12px;
 }
 
 .package-details-flight-item {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 8px;
   flex: 0 0 auto;
+  min-width: 120px;
 }
 
 .package-details-flight-label {
@@ -700,7 +707,13 @@
 .package-details-service-compact {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 8px;
+  padding: 16px;
+  background: #f8f9fa;
+  border-radius: 12px;
+  border: 1px solid #e9ecef;
+  min-height: fit-content;
+  text-align: center;
 }
 
 .package-details-service-compact:last-child {

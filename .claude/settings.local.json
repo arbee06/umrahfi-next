@@ -18,7 +18,8 @@
       "Bash(mkdir:*)",
       "Bash(curl:*)",
       "Bash(open http://localhost:3000/test-cookies)",
-      "Bash(mysql:*)"
+      "Bash(mysql:*)",
+      "Bash(npm run lint)"
     ],
     "deny": []
   }

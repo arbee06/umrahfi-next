@@ -142,6 +142,82 @@ const User = sequelize.define('User', {
     type: DataTypes.BOOLEAN,
     defaultValue: true,
     comment: 'Whether company accepts bank transfers'
+  },
+  // Verification fields for companies
+  isVerified: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: false,
+    comment: 'Whether the company is verified by admin'
+  },
+  verificationStatus: {
+    type: DataTypes.ENUM('pending', 'approved', 'rejected', 'not_submitted'),
+    defaultValue: 'not_submitted',
+    comment: 'Current verification status'
+  },
+  verificationDate: {
+    type: DataTypes.DATE,
+    allowNull: true,
+    comment: 'Date when verification was completed'
+  },
+  verifiedBy: {
+    type: DataTypes.INTEGER,
+    allowNull: true,
+    comment: 'Admin user ID who verified the company'
+  },
+  verificationNotes: {
+    type: DataTypes.TEXT,
+    allowNull: true,
+    comment: 'Admin notes about verification'
+  },
+  rejectionReason: {
+    type: DataTypes.TEXT,
+    allowNull: true,
+    comment: 'Reason for rejection if verification was rejected'
+  },
+  // Subscription fields for companies
+  subscriptionStatus: {
+    type: DataTypes.ENUM('inactive', 'trial', 'active', 'cancelled', 'expired'),
+    defaultValue: 'inactive',
+    comment: 'Current subscription status for company users'
+  },
+  subscriptionPlan: {
+    type: DataTypes.STRING,
+    allowNull: true,
+    comment: 'Current subscription plan ID'
+  },
+  subscriptionStartDate: {
+    type: DataTypes.DATE,
+    allowNull: true,
+    comment: 'Subscription start date'
+  },
+  subscriptionEndDate: {
+    type: DataTypes.DATE,
+    allowNull: true,
+    comment: 'Subscription end date'
+  },
+  trialEndDate: {
+    type: DataTypes.DATE,
+    allowNull: true,
+    comment: 'Trial period end date'
+  },
+  subscriptionFeatures: {
+    type: DataTypes.JSON,
+    allowNull: true,
+    comment: 'JSON object containing subscription features and limits',
+    get() {
+      const value = this.getDataValue('subscriptionFeatures');
+      if (value === null || value === undefined) {
+        return {
+          maxPackages: 0,
+          maxBookingsPerMonth: 0,
+          maxPhotosPerPackage: 0,
+          prioritySupport: false,
+          featuredListings: false,
+          analyticsAccess: false
+        };
+      }
+      return value;
+    }
   }
 }, {
   tableName: 'users',

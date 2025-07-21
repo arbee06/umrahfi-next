@@ -1,0 +1,14 @@
+{
+  "welcome": "Welcome back",
+  "overview": "Overview",
+  "statistics": "Statistics",
+  "recentActivity": "Recent Activity",
+  "quickActions": "Quick Actions",
+  "viewAll": "View All",
+  "noData": "No data available",
+  "loading": "Loading...",
+  "refresh": "Refresh",
+  "filter": "Filter",
+  "export": "Export",
+  "settings": "Settings"
+}

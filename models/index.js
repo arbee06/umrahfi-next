@@ -5,6 +5,8 @@ const Order = require('./Order');
 const Passport = require('./Passport');
 const Visa = require('./Visa');
 const PackageTemplate = require('./PackageTemplate');
+const CompanyDocument = require('./CompanyDocument');
+const Subscription = require('./Subscription');
 
 // Define associations
 User.hasMany(Package, { 
@@ -77,6 +79,26 @@ PackageTemplate.belongsTo(User, {
   as: 'company' 
 });
 
+User.hasMany(CompanyDocument, { 
+  foreignKey: 'userId', 
+  as: 'documents',
+  onDelete: 'CASCADE'
+});
+CompanyDocument.belongsTo(User, { 
+  foreignKey: 'userId', 
+  as: 'user' 
+});
+
+User.hasMany(Subscription, { 
+  foreignKey: 'companyId', 
+  as: 'subscriptions',
+  onDelete: 'CASCADE'
+});
+Subscription.belongsTo(User, { 
+  foreignKey: 'companyId', 
+  as: 'company' 
+});
+
 // Function to sync database
 async function syncDatabase(force = false) {
   try {
@@ -95,5 +117,7 @@ module.exports = {
   Passport,
   Visa,
   PackageTemplate,
+  CompanyDocument,
+  Subscription,
   syncDatabase
 };

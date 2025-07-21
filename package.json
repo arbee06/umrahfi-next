@@ -31,6 +31,7 @@
     "multer": "^2.0.1",
     "mysql2": "^3.14.1",
     "next": "^15.3.3",
+    "next-translate": "^2.6.2",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "sequelize": "^6.37.7",
@@ -39,6 +40,7 @@
     "swr": "^2.3.3"
   },
   "devDependencies": {
-    "@types/formidable": "^3.4.5"
+    "@types/formidable": "^3.4.5",
+    "next-translate-plugin": "^2.6.2"
   }
 }

@@ -67,7 +67,7 @@ export default async function handler(req, res) {
   switch (req.method) {
     case 'GET':
       try {
-        const { page = 1, limit = 10, role, search } = req.query;
+        const { page = 1, limit = 10, role, search, isActive } = req.query;
         const offset = (page - 1) * limit;
 
         let where = {};
@@ -84,6 +84,10 @@ export default async function handler(req, res) {
           ];
         }
 
+        if (isActive !== undefined && isActive !== null && isActive !== '') {
+          where.isActive = isActive === 'true';
+        }
+
         const { count, rows: users } = await User.findAndCountAll({
           where,
           attributes: { exclude: ['password'] },
@@ -92,9 +96,25 @@ export default async function handler(req, res) {
           offset: Number(offset)
         });
 
+        // Add booking counts for customers
+        const usersWithBookingCounts = await Promise.all(
+          users.map(async (user) => {
+            const userObj = user.toJSON();
+            if (user.role === 'customer') {
+              const bookingCount = await Order.count({
+                where: { customerId: user.id }
+              });
+              userObj.bookingCount = bookingCount;
+            } else {
+              userObj.bookingCount = 0;
+            }
+            return userObj;
+          })
+        );
+
         res.status(200).json({
           success: true,
-          users,
+          users: usersWithBookingCounts,
           pagination: {
             page: Number(page),
             limit: Number(limit),
@@ -108,12 +128,56 @@ export default async function handler(req, res) {
       }
       break;
 
+    case 'POST':
+      try {
+        const userData = req.body;
+        
+        // Validate required fields
+        if (!userData.name || !userData.email || !userData.password || !userData.role) {
+          return res.status(400).json({ error: 'Missing required fields' });
+        }
+
+        // Check if user already exists
+        const existingUser = await User.findOne({
+          where: { email: userData.email }
+        });
+
+        if (existingUser) {
+          return res.status(409).json({ error: 'User with this email already exists' });
+        }
+
+        // Create the user
+        const newUser = await User.create(userData);
+
+        // Return user without password
+        const userResponse = await User.findByPk(newUser.id, {
+          attributes: { exclude: ['password'] }
+        });
+
+        res.status(201).json({
+          success: true,
+          user: userResponse
+        });
+      } catch (error) {
+        console.error('Create user error:', error);
+        res.status(500).json({ error: 'Server error' });
+      }
+      break;
+
     case 'PUT':
       try {
         const { userId, updates } = req.body;
 
-        // Don't allow updating password through this endpoint
-        delete updates.password;
+        // Handle password updates separately for security
+        const { password, confirmPassword, ...otherUpdates } = updates;
+        
+        // If password is provided, validate it
+        if (password) {
+          if (password !== confirmPassword) {
+            return res.status(400).json({ error: 'Passwords do not match' });
+          }
+          otherUpdates.password = password;
+        }
 
         const user = await User.findByPk(userId);
 
@@ -122,11 +186,11 @@ export default async function handler(req, res) {
         }
 
         // Handle cascading effects when deactivating users
-        if (updates.hasOwnProperty('isActive') && !updates.isActive) {
+        if (otherUpdates.hasOwnProperty('isActive') && !otherUpdates.isActive) {
           await handleUserDeactivation(user);
         }
 
-        await user.update(updates);
+        await user.update(otherUpdates);
 
         // Return user without password
         const updatedUser = await User.findByPk(userId, {

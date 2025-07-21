@@ -61,20 +61,6 @@ export default function AdminDashboard() {
                   Monitor platform performance and manage all operations
                 </p>
               </div>
-              <div className="admin-dashboard-header-actions">
-                <Link href="/admin/users">
-                  <button className="admin-dashboard-btn-header-primary">
-                    <Icon icon="users" className="admin-dashboard-btn-icon" />
-                    <span>Manage Users</span>
-                  </button>
-                </Link>
-                <Link href="/admin/packages">
-                  <button className="admin-dashboard-btn-header-primary">
-                    <Icon icon="suitcase" className="admin-dashboard-btn-icon" />
-                    <span>Manage Packages</span>
-                  </button>
-                </Link>
-              </div>
             </div>
           </div>
 
@@ -86,7 +72,7 @@ export default function AdminDashboard() {
                   <Icon icon="users" />
                 </div>
                 <div className="admin-dashboard-stat-menu">
-                  <Link href="/admin/users">
+                  <Link href="/admin/customers">
                     <Icon icon="arrow-right" />
                   </Link>
                 </div>
@@ -179,6 +165,32 @@ export default function AdminDashboard() {
                 </div>
               </div>
             </div>
+
+            <div className="admin-dashboard-stat-card subscriptions">
+              <div className="admin-dashboard-stat-header">
+                <div className="admin-dashboard-stat-icon">
+                  <Icon icon="credit-card" />
+                </div>
+                <div className="admin-dashboard-stat-menu">
+                  <Link href="/admin/subscriptions">
+                    <Icon icon="arrow-right" />
+                  </Link>
+                </div>
+              </div>
+              <div className="admin-dashboard-stat-content">
+                <div className="admin-dashboard-stat-number">
+                  {loading ? (
+                    <div className="admin-dashboard-stat-loading"></div>
+                  ) : (
+                    stats?.subscriptions.active || 0
+                  )}
+                </div>
+                <div className="admin-dashboard-stat-label">Active Subscriptions</div>
+                <div className="admin-dashboard-stat-sublabel">
+                  {stats?.subscriptions.trial || 0} trial, {stats?.subscriptions.cancelled || 0} cancelled
+                </div>
+              </div>
+            </div>
           </div>
 
           {/* Main Content */}
@@ -190,7 +202,7 @@ export default function AdminDashboard() {
                   <h3>Recent Users</h3>
                   <span className="admin-dashboard-card-subtitle">Latest registrations</span>
                 </div>
-                <Link href="/admin/users" className="admin-dashboard-card-action">
+                <Link href="/admin/customers" className="admin-dashboard-card-action">
                   View All
                   <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
@@ -303,15 +315,27 @@ export default function AdminDashboard() {
             
             <div className="admin-dashboard-card-content">
               <div className="admin-dashboard-actions-grid">
-                <Link href="/admin/users" className="admin-dashboard-action-item primary">
+                <Link href="/admin/companies" className="admin-dashboard-action-item primary">
+                  <div className="admin-dashboard-action-icon">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                    </svg>
+                  </div>
+                  <div className="admin-dashboard-action-content">
+                    <span className="admin-dashboard-action-title">Manage Companies</span>
+                    <span className="admin-dashboard-action-subtitle">View and verify companies</span>
+                  </div>
+                </Link>
+
+                <Link href="/admin/customers" className="admin-dashboard-action-item">
                   <div className="admin-dashboard-action-icon">
                     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
                     </svg>
                   </div>
                   <div className="admin-dashboard-action-content">
-                    <span className="admin-dashboard-action-title">Manage Users</span>
-                    <span className="admin-dashboard-action-subtitle">View and manage all users</span>
+                    <span className="admin-dashboard-action-title">Manage Customers</span>
+                    <span className="admin-dashboard-action-subtitle">View and manage customers</span>
                   </div>
                 </Link>
 
@@ -324,6 +348,18 @@ export default function AdminDashboard() {
                   <div className="admin-dashboard-action-content">
                     <span className="admin-dashboard-action-title">Manage Packages</span>
                     <span className="admin-dashboard-action-subtitle">Review company packages</span>
+                  </div>
+                </Link>
+
+                <Link href="/admin/subscriptions" className="admin-dashboard-action-item">
+                  <div className="admin-dashboard-action-icon">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                    </svg>
+                  </div>
+                  <div className="admin-dashboard-action-content">
+                    <span className="admin-dashboard-action-title">Manage Subscriptions</span>
+                    <span className="admin-dashboard-action-subtitle">Monitor company subscriptions</span>
                   </div>
                 </Link>
 

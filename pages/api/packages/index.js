@@ -8,7 +8,7 @@ export default async function handler(req, res) {
       try {
         const { 
           page = 1, 
-          limit = 10, 
+          limit = 50, // Increased limit to show more packages
           minPrice, 
           maxPrice, 
           startDate, 
@@ -21,7 +21,10 @@ export default async function handler(req, res) {
           status = 'active'
         } = req.query;
 
-        const where = { status };
+        const where = { 
+          status,
+          adminApprovalStatus: 'approved'  // Only show approved packages
+        };
 
         if (minPrice || maxPrice) {
           where.price = {};
@@ -65,7 +68,12 @@ export default async function handler(req, res) {
             {
               model: User,
               as: 'company',
-              attributes: ['id', 'companyName', 'email', 'phone']
+              attributes: ['id', 'name', 'email', 'phone', 'profilePicture', 'isVerified'],
+              where: {
+                role: 'company',
+                isActive: true
+              },
+              required: false  // LEFT JOIN instead of INNER JOIN
             }
           ],
           order: [['createdAt', 'DESC']],
@@ -73,9 +81,26 @@ export default async function handler(req, res) {
           offset: Number(offset)
         });
 
+        // Transform packages to include computed fields
+        const transformedPackages = packages.map(pkg => {
+          const packageData = pkg.toJSON();
+          
+          return {
+            ...packageData,
+            companyName: packageData.company?.name || 'Unknown Company',
+            companyAvatar: packageData.company?.profilePicture,
+            isCompanyVerified: packageData.company?.isVerified || false,
+            companyRating: null, // No rating available
+            photos: packageData.images || [], // Use images field as photos
+            isGuideIncluded: packageData.inclusions?.includes('Guide') || false,
+            isAllInclusive: packageData.inclusions?.includes('All Inclusive') || false,
+            airline: packageData.transportationProvider || 'Various Airlines'
+          };
+        });
+
         res.status(200).json({
           success: true,
-          packages,
+          packages: transformedPackages,
           pagination: {
             page: Number(page),
             limit: Number(limit),

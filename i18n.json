@@ -1,0 +1,23 @@
+{
+  "locales": ["en", "de"],
+  "defaultLocale": "en",
+  "pages": {
+    "*": ["common", "navigation", "auth"],
+    "/": ["home"],
+    "/packages": ["packages"],
+    "/packages/[id]": ["packages", "booking"],
+    "/dashboard": ["dashboard"],
+    "/customer-dashboard": ["customer-dashboard"],
+    "/customer-profile": ["customer-profile"],
+    "/company-dashboard": ["company-dashboard"],
+    "/company-profile": ["company-profile"],
+    "/admin": ["admin"],
+    "/admin/companies": ["admin", "companies"],
+    "/admin/packages": ["admin", "packages"],
+    "/admin/subscriptions": ["admin", "subscriptions"],
+    "/about": ["about"],
+    "/contact": ["contact"],
+    "/privacy": ["legal"],
+    "/terms": ["legal"]
+  }
+}

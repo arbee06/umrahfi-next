@@ -1,4 +1,4 @@
-import { User, Package, Order } from '@/models';
+import { User, Package, Order, Subscription } from '@/models';
 import { isAdmin } from '@/middleware/auth';
 import { Op } from 'sequelize';
 
@@ -32,6 +32,35 @@ export default async function handler(req, res) {
     });
     
     const totalRevenue = orders.reduce((sum, order) => sum + parseFloat(order.totalAmount || 0), 0);
+
+    // Get subscription data
+    const activeSubscriptions = await User.count({ 
+      where: { 
+        role: 'company',
+        subscriptionStatus: 'active'
+      } 
+    });
+    
+    const trialSubscriptions = await User.count({ 
+      where: { 
+        role: 'company',
+        subscriptionStatus: 'trial'
+      } 
+    });
+    
+    const cancelledSubscriptions = await User.count({ 
+      where: { 
+        role: 'company',
+        subscriptionStatus: 'cancelled'
+      } 
+    });
+    
+    const expiredSubscriptions = await User.count({ 
+      where: { 
+        role: 'company',
+        subscriptionStatus: 'expired'
+      } 
+    });
 
     // Get recent activity
     const recentUsers = await User.findAll({
@@ -76,6 +105,13 @@ export default async function handler(req, res) {
         },
         revenue: {
           total: totalRevenue
+        },
+        subscriptions: {
+          active: activeSubscriptions,
+          trial: trialSubscriptions,
+          cancelled: cancelledSubscriptions,
+          expired: expiredSubscriptions,
+          total: activeSubscriptions + trialSubscriptions + cancelledSubscriptions + expiredSubscriptions
         }
       },
       recentActivity: {

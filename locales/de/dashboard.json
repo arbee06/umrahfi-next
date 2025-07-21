@@ -1,0 +1,14 @@
+{
+  "welcome": "Willkommen zurück",
+  "overview": "Übersicht",
+  "statistics": "Statistiken",
+  "recentActivity": "Letzte Aktivität",
+  "quickActions": "Schnellaktionen",
+  "viewAll": "Alle anzeigen",
+  "noData": "Keine Daten verfügbar",
+  "loading": "Wird geladen...",
+  "refresh": "Aktualisieren",
+  "filter": "Filter",
+  "export": "Exportieren",
+  "settings": "Einstellungen"
+}

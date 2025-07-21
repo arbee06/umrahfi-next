@@ -21,6 +21,24 @@ class AdminService {
     }
   }
 
+  async getUser(userId) {
+    try {
+      const response = await axios.get(`${API_URL}/api/admin/users/${userId}`);
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || { error: 'Failed to fetch user' };
+    }
+  }
+
+  async createUser(userData) {
+    try {
+      const response = await axios.post(`${API_URL}/api/admin/users`, userData);
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || { error: 'Failed to create user' };
+    }
+  }
+
   async updateUser(userId, updates) {
     try {
       const response = await axios.put(`${API_URL}/api/admin/users`, {

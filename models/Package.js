@@ -98,6 +98,11 @@ const Package = sequelize.define('Package', {
     type: DataTypes.ENUM('Flight', 'Bus', 'Train', 'Private Car'),
     defaultValue: 'Flight'
   },
+  transportationProvider: {
+    type: DataTypes.STRING,
+    allowNull: true,
+    comment: 'Transportation provider name (e.g., airline name, bus company)'
+  },
   images: {
     type: DataTypes.JSON,
     defaultValue: []
@@ -118,6 +123,35 @@ const Package = sequelize.define('Package', {
   status: {
     type: DataTypes.ENUM('active', 'inactive', 'soldout'),
     defaultValue: 'active'
+  },
+  adminApprovalStatus: {
+    type: DataTypes.ENUM('pending', 'approved', 'rejected'),
+    defaultValue: 'pending',
+    comment: 'Admin approval status for package'
+  },
+  approvedBy: {
+    type: DataTypes.INTEGER,
+    allowNull: true,
+    references: {
+      model: 'users',
+      key: 'id'
+    },
+    comment: 'Admin user ID who approved/rejected the package'
+  },
+  approvedAt: {
+    type: DataTypes.DATE,
+    allowNull: true,
+    comment: 'Date when package was approved/rejected'
+  },
+  adminNotes: {
+    type: DataTypes.TEXT,
+    allowNull: true,
+    comment: 'Admin notes about the package approval'
+  },
+  rejectionReason: {
+    type: DataTypes.TEXT,
+    allowNull: true,
+    comment: 'Reason for rejection if package was rejected'
   },
   includesPassportAssistance: {
     type: DataTypes.BOOLEAN,

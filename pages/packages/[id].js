@@ -470,6 +470,16 @@ export default function PackageDetails() {
                                 </div>
                               </div>
                             )}
+                            {packageData.transportationProvider && (
+                              <div className="package-details-flight-item">
+                                <span className="package-details-flight-label">Airlines:</span>
+                                <div className="package-details-airport-list">
+                                  <span className="package-details-airport-tag">
+                                    {packageData.transportationProvider}
+                                  </span>
+                                </div>
+                              </div>
+                            )}
                           </div>
                         </div>
                       )}

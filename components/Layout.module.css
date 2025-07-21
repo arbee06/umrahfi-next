@@ -1,3 +1,6 @@
+/* Import Language Switcher Styles */
+@import url('../styles/language-switcher.css');
+
 /* Modern Navbar */
 .navbarModern {
   position: fixed;
@@ -143,8 +146,91 @@
   transform: translateX(-50%) scaleX(1);
 }
 
+/* Dropdown Styles */
+.navDropdown {
+  position: relative;
+}
+
+.navLinkDropdown {
+  cursor: pointer;
+  gap: 0.5rem;
+  background: none;
+  border: none;
+  font-family: inherit;
+  font-size: inherit;
+}
+
+.dropdownIcon {
+  width: 0.75rem;
+  height: 0.75rem;
+  transition: transform 0.2s ease;
+}
+
+.dropdownIconOpen {
+  transform: rotate(180deg);
+}
+
+.dropdownMenu {
+  position: absolute;
+  top: calc(100% + 0.5rem);
+  left: 50%;
+  transform: translateX(-50%);
+  min-width: 200px;
+  background: white;
+  border-radius: 0.75rem;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  padding: 0.5rem;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateX(-50%) translateY(-10px);
+  transition: all 0.2s ease;
+}
+
+.dropdownMenuOpen {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(-50%) translateY(0);
+}
+
+.dropdownItem {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  text-decoration: none;
+  color: var(--gray-700);
+  font-weight: 500;
+  font-size: 0.875rem;
+  border-radius: 0.5rem;
+  transition: all 0.2s ease;
+}
+
+.dropdownItem:hover {
+  background: var(--gray-50);
+  color: var(--gray-900);
+}
+
+.dropdownItemActive {
+  background: var(--primary-light);
+  color: var(--primary);
+}
+
+.dropdownItemIcon {
+  width: 1rem;
+  height: 1rem;
+  opacity: 0.7;
+}
+
 /* Auth Section */
 .navbarAuth {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+/* Language Section */
+.navbarLanguage {
   display: flex;
   align-items: center;
 }
@@ -153,6 +239,15 @@
   display: flex;
   align-items: center;
   gap: 1rem;
+}
+
+/* Mobile Language Switcher */
+.mobileLanguage {
+  display: flex;
+  justify-content: center;
+  padding: 1rem 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  margin-top: 1rem;
 }
 
 .btnNav {

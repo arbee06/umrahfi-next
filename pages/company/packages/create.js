@@ -45,6 +45,7 @@ export default function CreatePackage() {
     madinahHotels: [{ name: '', rating: '3' }],
     mealPlan: 'Breakfast',
     transportation: 'Flight',
+    transportationProvider: '',
     country: '',
     inclusions: [''],
     exclusions: [''],
@@ -1037,6 +1038,36 @@ export default function CreatePackage() {
                       <option value="Train">Train</option>
                       <option value="Private Car">Private Car</option>
                     </select>
+                  </div>
+                </div>
+
+                <div className="create-package-form-group">
+                  <label className="create-package-form-label">
+                    <span>
+                      {formData.transportation === 'Flight' ? 'Airlines' : 'Transportation Provider'}
+                    </span>
+                  </label>
+                  <div className="create-package-input-wrapper">
+                    <div className="create-package-input-icon">
+                      <Icon icon={
+                        formData.transportation === 'Flight' ? 'plane' : 
+                        formData.transportation === 'Bus' ? 'bus' : 
+                        formData.transportation === 'Train' ? 'train' : 
+                        'car'
+                      } />
+                    </div>
+                    <input
+                      type="text"
+                      name="transportationProvider"
+                      value={formData.transportationProvider}
+                      onChange={handleChange}
+                      className="create-package-form-input"
+                      placeholder={
+                        formData.transportation === 'Flight' 
+                          ? 'e.g., Emirates, Qatar Airways, Saudi Airlines' 
+                          : `Enter ${formData.transportation.toLowerCase()} provider name`
+                      }
+                    />
                   </div>
                 </div>
               </div>
